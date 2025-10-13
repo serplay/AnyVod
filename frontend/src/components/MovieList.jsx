@@ -1,18 +1,47 @@
-import React from 'react'
+import React, { useRef } from 'react'
 
 export default function MovieList({ movies = [], onSelect = () => {} }) {
+  const handleMove = (e) => {
+    const card = e.currentTarget
+    const inner = card.querySelector('.movie-card-inner')
+    const rect = card.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const cx = rect.width / 2
+    const cy = rect.height / 2
+    const dx = (x - cx) / cx
+    const dy = (y - cy) / cy
+    const max = 12 // max degrees
+    const tiltX = (-dy * max).toFixed(2)
+    const tiltY = (dx * max).toFixed(2)
+    inner.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateZ(8px)`
+  }
+
+  const handleLeave = (e) => {
+    const inner = e.currentTarget.querySelector('.movie-card-inner')
+    inner.style.transform = ''
+  }
+
   return (
     <div className="movie-grid">
       {movies.map((m) => (
-        <div key={m.id} className="movie-card" onClick={() => onSelect(m)}>
-          {m.poster_path ? (
-            <img src={`https://image.tmdb.org/t/p/w342${m.poster_path}`} alt={m.title} />
-          ) : (
-            <div className="poster-placeholder">No Image</div>
-          )}
-          <div className="meta">
-            <h3>{m.title ? m.title : m.name}</h3>
-            <p>{m.release_date ? m.release_date : m.first_air_date}</p>
+        <div
+          key={m.id}
+          className="movie-card"
+          onClick={() => onSelect(m)}
+          onMouseMove={handleMove}
+          onMouseLeave={handleLeave}
+        >
+          <div className="movie-card-inner">
+            {m.poster_path ? (
+              <img src={`https://image.tmdb.org/t/p/w342${m.poster_path}`} alt={m.title} />
+            ) : (
+              <div className="poster-placeholder">No Image</div>
+            )}
+            <div className="meta">
+              <h3>{m.title ? m.title : m.name}</h3>
+              <p>{m.release_date ? m.release_date : m.first_air_date}</p>
+            </div>
           </div>
         </div>
       ))}
