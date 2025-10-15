@@ -42,6 +42,7 @@ export default function Search({ onSearch = () => {}, onClear = () => {} }) {
             <select value={type} onChange={(e) => setType(e.target.value)}>
               <option value="movie">Movie</option>
               <option value="tv">TV</option>
+              <option value="All">All</option>
             </select>
           </label>
 

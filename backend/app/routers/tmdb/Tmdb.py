@@ -19,31 +19,45 @@ def tmdb_get(path, params=None):
         raise RuntimeError("TMDB_API_KEY not set in environment")
     params = {**params, "api_key": TMDB_API_KEY}
     url = f"{TMDB_BASE}{path}"
+    print(url, params)
     resp = requests.get(url, params=params, timeout=10)
     if resp.status_code != 200:
         raise HTTPException(status_code=resp.status_code, detail=resp.text)
     return resp.json()
 
-
-@router.get("/popular")
-def popular(page: int = 1):
-    return tmdb_get("/movie/popular", {"page": page})
-
-
-@router.get("/movie/{movie_id}")
-def movie_details(movie_id: int):
-    return tmdb_get(f"/movie/{movie_id}")
-
+def search_by_id(query: str, source: str):
+    return tmdb_get(f"/find/{query}", {"external_id":source})
 
 @router.get("/search")
-
-
-def search_movies(query: str, page: int = 1, type: Optional[str] = None, year: Optional[int] = None):
+def search_movies(query: str, page: int = 1, type: Optional[str] = None, year: Optional[int] = None, exid: Optional[str] = None):
     # Supports optional filtering by type (movie|tv) and year.
     # - type=movie: use /search/movie and pass year as 'year' (TMDB supports this)
     # - type=tv: if year provided, use /discover/tv with first_air_date_year; otherwise /search/tv
-    # - no type: fallback to /search/multi
+    
     params = {"query": query, "page": page}
+    
+    match exid:
+        case "tmdb":
+            return 
+        case "imdb":
+            print('d')
+            return search_by_id(query, "imdb_id")
+        case "fb":
+            return
+        case "ig":
+            return
+        case "tvdb":
+            return
+        case "tt":
+            return
+        case "x":
+            return
+        case "wd":
+            return
+        case "yt":
+            return
+        
+    # - no type: fallback to /search/multi
     if type == 'movie':
         if year:
             params['year'] = year
@@ -62,6 +76,28 @@ def search_movies(query: str, page: int = 1, type: Optional[str] = None, year: O
     else:
         # combined multi search
         return tmdb_get('/search/multi', params)
+
+
+@router.get("/popular")
+def popular(page: int = 1):
+    return tmdb_get("/movie/popular", {"page": page})
+
+
+@router.get("/movie/{movie_id}")
+def movie_details(movie_id: int):
+    # include credits, images and videos for a richer payload
+    return tmdb_get(f"/movie/{movie_id}", {"append_to_response": "credits,images,videos"})
+
+
+@router.get("/tv/{tv_id}")
+def tv_details(tv_id: int):
+    # include credits, images and videos
+    return tmdb_get(f"/tv/{tv_id}", {"append_to_response": "credits,images,videos"})
+
+
+@router.get("/tv/{tv_id}/season/{season_number}")
+def tv_season(tv_id: int, season_number: int):
+    return tmdb_get(f"/tv/{tv_id}/season/{season_number}")
 
 
 @router.get("/image_base")
