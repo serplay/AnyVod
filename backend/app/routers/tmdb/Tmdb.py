@@ -104,3 +104,14 @@ def tv_season(tv_id: int, season_number: int):
 def image_base():
     # return configuration for building image urls
     return tmdb_get("/configuration")
+
+
+@router.get('/person/{person_id}')
+def person_details(person_id: int):
+    # include external_ids maybe later
+    return tmdb_get(f"/person/{person_id}")
+
+
+@router.get('/person/{person_id}/combined_credits')
+def person_credits(person_id: int):
+    return tmdb_get(f"/person/{person_id}/combined_credits")
