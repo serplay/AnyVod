@@ -115,3 +115,13 @@ def person_details(person_id: int):
 @router.get('/person/{person_id}/combined_credits')
 def person_credits(person_id: int):
     return tmdb_get(f"/person/{person_id}/combined_credits")
+
+
+@router.get('/movie/{movie_id}/similar')
+def movie_similar(movie_id: int, page: int = 1):
+    return tmdb_get(f"/movie/{movie_id}/similar", {"page": page})
+
+
+@router.get('/tv/{tv_id}/similar')
+def tv_similar(tv_id: int, page: int = 1):
+    return tmdb_get(f"/tv/{tv_id}/similar", {"page": page})
