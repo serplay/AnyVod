@@ -62,9 +62,9 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 .more-info{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.03)}
 
 /* Cast marquee */
-.cast-marquee{overflow:visible;position:relative;padding:8px 0}
-.cast-track{display:flex;gap:14px;animation:scrollLeft 40s linear infinite}
-.cast-card{width:110px;text-align:center}
+.cast-marquee{overflow:visible;position:relative;padding:8px 0;height:170px}
+.cast-track{position:absolute;left:0;top:0;display:flex;gap:14px;animation:scrollLeft 40s linear infinite;white-space:nowrap}
+.cast-card{width:110px;text-align:center;flex:0 0 auto}
 .cast-card img{width:100px;border-radius:8px}
 
 @keyframes scrollLeft{
@@ -77,15 +77,13 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 .movie-grid { --card-width: 160px }
 
 /* player wrap: make iframe wider than container and allow overflow */
-.player-wrap-container{overflow:visible;display:flex;justify-content:center}
-.player-wrap{position:relative;width:140%;max-width:1400px;left:0;max-width:none;transform:translateX(0)}
+.player-wrap-container{overflow:visible;position:relative}
+/* place the player absolutely so it doesn't increase parent width */
+.player-wrap{position:absolute;left:50%;transform:translateX(-50%);width:140%;max-width:1400px;aspect-ratio:16/9}
 .player-wrap iframe{width:100%;height:100%;border-radius:8px}
-
-/* Responsive player: maintain 16:9 aspect ratio and scale on small screens */
-.player-wrap{aspect-ratio:16/9}
+/* Responsive: on small screens make player flow normally (no absolute) */
 @media (max-width:980px){
-	.player-wrap{width:100%;max-width:100%;aspect-ratio:16/9}
-	.player-wrap iframe{height:100%}
+	.player-wrap{position:relative;left:0;transform:none;width:100%;max-width:100%}
 }
 @media (max-width:560px){
 	.player-wrap{aspect-ratio:4/3}

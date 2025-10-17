@@ -137,7 +137,7 @@ export default function MoviePage() {
 
             {/* Cast marquee — always visible */}
             <div className="cast-marquee" aria-label="Cast members">
-              <div className="cast-track" style={{ overflow: 'hidden' }}>
+              <div className="cast-track">
                 {details.credits?.cast?.slice(0, 40).map(c => (
                   <div key={c.id} className="cast-card">
                     <Link to={`/person/${c.id}`} className="cast-link">
