@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import MovieList from './components/MovieList'
-import MovieDetails from './components/MovieDetails'
 import Search from './components/Search'
 import AppIcon from './assets/anyvod_logo.png'
+import MoviePage from './components/MoviePage'
+import PersonPage from './components/PersonPage'
+import PlayerPage from './components/PlayerPage'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 
 export default function App() {
   const [movies, setMovies] = useState([])
   const [page, setPage] = useState(1)
-  const [selected, setSelected] = useState(null)
   const [query, setQuery] = useState('')
   const [isSearch, setIsSearch] = useState(false)
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetchPopular(page)
@@ -47,6 +50,16 @@ export default function App() {
     }
   }
 
+  function onCardSelect(item) {
+    // navigate to appropriate route based on media type
+    const isTv = item.media_type === 'tv' || !!item.first_air_date
+    if (isTv) {
+      navigate(`/tv/${item.id}`)
+    } else {
+      navigate(`/movie/${item.id}`)
+    }
+  }
+
   return (
     <div className="app">
       <header>
@@ -54,9 +67,18 @@ export default function App() {
         <h1>AnyVod</h1>
       </header>
       <main>
-        <Search onSearch={doSearch} onClear={() => { setIsSearch(false); setQuery(''); setPage(1); fetchPopular(1); }} />
-        <MovieList movies={movies} onSelect={setSelected} />
-        {selected && <MovieDetails movie={selected} onClose={() => setSelected(null)} />}
+        <Routes>
+          <Route path="/" element={
+            <>
+              <Search onSearch={doSearch} onClear={() => { setIsSearch(false); setQuery(''); setPage(1); fetchPopular(1); }} />
+              <MovieList movies={movies} onSelect={onCardSelect} />
+            </>
+          } />
+          <Route path="/movie/:id" element={<MoviePage />} />
+          <Route path="/tv/:id" element={<MoviePage />} />
+          <Route path="/person/:id" element={<PersonPage />} />
+          <Route path="/player/:kind/:id" element={<PlayerPage />} />
+        </Routes>
       </main>
       <footer>
         <button onClick={() => setPage((p) => Math.max(1, p - 1))}>Prev</button>
