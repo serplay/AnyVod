@@ -19,7 +19,6 @@ def tmdb_get(path, params=None):
         raise RuntimeError("TMDB_API_KEY not set in environment")
     params = {**params, "api_key": TMDB_API_KEY}
     url = f"{TMDB_BASE}{path}"
-    print(url, params)
     resp = requests.get(url, params=params, timeout=10)
     if resp.status_code != 200:
         raise HTTPException(status_code=resp.status_code, detail=resp.text)
@@ -40,7 +39,6 @@ def search_movies(query: str, page: int = 1, type: Optional[str] = None, year: O
         case "tmdb":
             return 
         case "imdb":
-            print('d')
             return search_by_id(query, "imdb_id")
         case "fb":
             return
