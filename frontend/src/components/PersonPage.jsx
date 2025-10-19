@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 
 export default function PersonPage() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [person, setPerson] = useState(null)
   const [credits, setCredits] = useState(null)
 
   useEffect(() => {
     fetchPerson()
-    // eslint-disable-next-line
   }, [id])
 
   async function fetchPerson() {
@@ -25,41 +25,153 @@ export default function PersonPage() {
     }
   }
 
-  if (!person) return <div className="details">Loading person...</div>
+  if (!person) return <div className="person-loading">Loading...</div>
+
+  // Calculate age if birthday exists
+  const calculateAge = (birthday) => {
+    if (!birthday) return null
+    const today = new Date()
+    const birthDate = new Date(birthday)
+    let age = today.getFullYear() - birthDate.getFullYear()
+    const monthDiff = today.getMonth() - birthDate.getMonth()
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--
+    }
+    return age
+  }
+
+  const age = calculateAge(person.birthday)
+
+  // Sort and get top credits by popularity
+  const topCredits = credits?.cast
+    ? [...credits.cast]
+        .filter(c => c.poster_path)
+        .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
+        .slice(0, 18)
+    : []
 
   return (
-    <div className="details-page">
-      <div className="details" style={{ maxWidth: 900, margin: '20px auto' }}>
-        <div style={{ display: 'flex', gap: 16 }}>
-          {person.profile_path && <img src={`https://image.tmdb.org/t/p/w342${person.profile_path}`} alt={person.name} style={{ width: 220, borderRadius: 8 }} />}
-          <div>
-            <h2>{person.name}</h2>
-            <div style={{ color: 'var(--muted)' }}>{person.place_of_birth} — {person.birthday}</div>
-            <p style={{ marginTop: 12 }}>{person.biography}</p>
+    <div className="person-page">
+      {/* Hero Section */}
+      <div className="person-hero">
+        <div className="person-hero-gradient"></div>
+        <div className="person-hero-content">
+          <div className="person-profile-container">
+            {person.profile_path ? (
+              <img 
+                src={`https://image.tmdb.org/t/p/h632${person.profile_path}`} 
+                alt={person.name}
+                className="person-profile-img"
+              />
+            ) : (
+              <div className="person-profile-placeholder">
+                {person.name.charAt(0)}
+              </div>
+            )}
+          </div>
+
+          <div className="person-info">
+            <h1 className="person-name">{person.name}</h1>
+            
+            <div className="person-meta">
+              {person.known_for_department && (
+                <span className="person-tag">{person.known_for_department}</span>
+              )}
+              {age && <span className="person-detail">Age: {age}</span>}
+              {person.place_of_birth && (
+                <span className="person-detail">📍 {person.place_of_birth}</span>
+              )}
+            </div>
+
+            {person.biography && (
+              <div className="person-bio-preview">
+                {person.biography.slice(0, 300)}
+                {person.biography.length > 300 ? '...' : ''}
+              </div>
+            )}
           </div>
         </div>
+      </div>
 
-        {credits && (
-          <div style={{ marginTop: 16 }}>
-            <h3>Known For</h3>
-            <div className="movie-grid">
-              {credits.cast?.slice(0, 12).map(c => (
-                <div key={c.credit_id} className="movie-card">
-                  <Link to={`/${c.media_type}/${c.id}`}>
-                    {c.poster_path ? (
-                      <img src={`https://image.tmdb.org/t/p/w342${c.poster_path}`} alt={c.title || c.name} />
-                    ) : (
-                      <div className="poster-placeholder">No Image</div>
+      {/* Main Content */}
+      <div className="person-content">
+        {/* Full Biography */}
+        {person.biography && (
+          <section className="person-section">
+            <h2 className="person-section-title">Biography</h2>
+            <div className="person-biography">
+              {person.biography.split('\n').map((paragraph, idx) => (
+                paragraph.trim() && <p key={idx}>{paragraph}</p>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Personal Info */}
+        <section className="person-section">
+          <h2 className="person-section-title">Personal Info</h2>
+          <div className="person-info-grid">
+            {person.birthday && (
+              <div className="info-item">
+                <div className="info-label">Birthday</div>
+                <div className="info-value">{person.birthday}</div>
+              </div>
+            )}
+            {person.place_of_birth && (
+              <div className="info-item">
+                <div className="info-label">Place of Birth</div>
+                <div className="info-value">{person.place_of_birth}</div>
+              </div>
+            )}
+            {person.known_for_department && (
+              <div className="info-item">
+                <div className="info-label">Known For</div>
+                <div className="info-value">{person.known_for_department}</div>
+              </div>
+            )}
+            {person.popularity && (
+              <div className="info-item">
+                <div className="info-label">Popularity</div>
+                <div className="info-value">{person.popularity.toFixed(1)}</div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Known For / Credits */}
+        {topCredits.length > 0 && (
+          <section className="person-section">
+            <h2 className="person-section-title">Known For</h2>
+            <div className="person-credits-grid">
+              {topCredits.map(credit => (
+                <div 
+                  key={credit.credit_id} 
+                  className="person-credit-card"
+                  onClick={() => {
+                    navigate(`/${credit.media_type}/${credit.id}`)
+                    window.scrollTo(0, 0)
+                  }}
+                >
+                  <img 
+                    src={`https://image.tmdb.org/t/p/w342${credit.poster_path}`} 
+                    alt={credit.title || credit.name}
+                    className="credit-poster"
+                  />
+                  <div className="credit-info">
+                    <h3 className="credit-title">{credit.title || credit.name}</h3>
+                    {credit.character && (
+                      <div className="credit-character">as {credit.character}</div>
                     )}
-                    <div className="meta">
-                      <h3 style={{ fontSize: 14 }}>{c.title || c.name}</h3>
-                      <div style={{ fontSize: 12, color: 'var(--muted)' }}>{c.character}</div>
-                    </div>
-                  </Link>
+                    {credit.vote_average > 0 && (
+                      <div className="credit-rating">
+                        ⭐ {credit.vote_average.toFixed(1)}
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         )}
       </div>
     </div>
