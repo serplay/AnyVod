@@ -1,12 +1,12 @@
 :root{
-	--bg-900: #061226; /* deep navy */
-	--bg-800: #071733;
-	--card: #071328; /* slightly lighter than background */
-	--card-2: #081a3a;
-	--muted: #9fb0c8;
-	--accent: #1fb6ff; /* bright streaming accent */
-	--accent-2: #ffd166; /* warm accent for CTA */
-	--glass: rgba(255,255,255,0.03);
+	--bg-900: #1A1A1D; /* deep dark gray */
+	--bg-800: #3B1C32; /* dark purple */
+	--card: #3B1C32; /* dark purple for cards */
+	--card-2: #6A1E55; /* medium purple */
+	--muted: #d4a5c0; /* light purple-pink */
+	--accent: #A64D79; /* rose-purple accent */
+	--accent-2: #A64D79; /* rose-purple for CTAs */
+	--glass: rgba(166,77,121,0.03);
 }
 
 body{
@@ -47,7 +47,7 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 .details-page .details { padding: 20px }
 .tabs{display:flex;gap:8px;margin-top:12px}
 .tab-btn{background:transparent;border:1px solid rgba(255,255,255,0.03);padding:8px 10px;border-radius:8px;color:var(--muted);cursor:pointer}
-.tab-btn.active{background:linear-gradient(90deg,var(--accent),#2ac0ff);color:#061226;border-color:transparent}
+.tab-btn.active{background:linear-gradient(90deg,var(--accent),#c75f9a);color:#fff;border-color:transparent}
 .cast-link{text-decoration:none;color:inherit}
 
 /* Movie hero (Netflix-like) */
@@ -60,7 +60,7 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 .hero-genres span{margin-right:8px;color:var(--muted)}
 .hero-overview{color:var(--muted);max-height:84px;overflow:hidden}
 .hero-ctas{margin-top:12px;display:flex;gap:12px;align-items:center}
-.play-btn{background:linear-gradient(90deg,var(--accent),#2ac0ff);border:none;padding:12px 18px;border-radius:6px;color:#061226;font-weight:700;cursor:pointer}
+.play-btn{background:linear-gradient(90deg,var(--accent),#c75f9a);border:none;padding:12px 18px;border-radius:6px;color:#fff;font-weight:700;cursor:pointer}
 .more-info{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.03)}
 
 /* Cast marquee */
@@ -106,7 +106,7 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 .search-input{flex:1;display:flex;gap:8px}
 .search-input input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.02);color:var(--muted);outline:none}
 .search-input input::placeholder{color:rgba(159,176,200,0.5)}
-.search-btn{background: linear-gradient(90deg, var(--accent), #2ac0ff); border:none;padding:10px 14px;border-radius:10px;color:#061226;font-weight:700;cursor:pointer}
+.search-btn{background: linear-gradient(90deg, var(--accent), #c75f9a); border:none;padding:10px 14px;border-radius:10px;color:#fff;font-weight:700;cursor:pointer}
 .search-btn:active{transform:translateY(1px)}
 .search-filters{display:flex;gap:10px;align-items:center}
 .search-filters label{display:flex;flex-direction:column;font-size:12px;color:var(--muted)}
@@ -137,8 +137,8 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 .hero-overlay{
   position:absolute;
   inset:0;
-  background:linear-gradient(90deg, rgba(6,18,38,0.98) 0%, rgba(6,18,38,0.85) 50%, rgba(6,18,38,0.6) 100%),
-             linear-gradient(0deg, rgba(6,18,38,0.98) 0%, rgba(6,18,38,0.3) 40%);
+  background:linear-gradient(90deg, rgba(26,26,29,0.98) 0%, rgba(59,28,50,0.85) 50%, rgba(106,30,85,0.6) 100%),
+             linear-gradient(0deg, rgba(26,26,29,0.98) 0%, rgba(26,26,29,0.3) 40%);
   backdrop-filter:blur(2px);
   display:flex;
   align-items:flex-end;
@@ -226,21 +226,21 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 }
 
 .play-button{
-  background:linear-gradient(90deg, var(--accent), #2ac0ff);
+  background:linear-gradient(90deg, var(--accent), #c75f9a);
   border:none;
   padding:16px 40px;
   border-radius:8px;
   font-size:18px;
   font-weight:700;
-  color:#061226;
+  color:#fff;
   cursor:pointer;
   transition:transform 0.2s, box-shadow 0.2s;
-  box-shadow:0 4px 20px rgba(31,182,255,0.4);
+  box-shadow:0 4px 20px rgba(166,77,121,0.4);
 }
 
 .play-button:hover{
   transform:translateY(-2px);
-  box-shadow:0 6px 30px rgba(31,182,255,0.6);
+  box-shadow:0 6px 30px rgba(166,77,121,0.6);
 }
 
 .play-button:active{
@@ -336,8 +336,8 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
   position:absolute;
   top:50%;
   transform:translateY(-50%);
-  background:rgba(6,18,38,0.9);
-  border:2px solid rgba(31,182,255,0.3);
+  background:rgba(26,26,29,0.9);
+  border:2px solid rgba(166,77,121,0.3);
   color:#fff;
   font-size:48px;
   font-weight:300;
@@ -361,7 +361,7 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 }
 
 .cast-arrow:hover{
-  background:rgba(31,182,255,0.2);
+  background:rgba(166,77,121,0.2);
   border-color:var(--accent);
   transform:translateY(-50%) scale(1.1);
 }
@@ -647,7 +647,7 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 .person-hero-gradient{
   position:absolute;
   inset:0;
-  background:radial-gradient(circle at 30% 50%, rgba(31,182,255,0.15), transparent 60%);
+  background:radial-gradient(circle at 30% 50%, rgba(166,77,121,0.15), transparent 60%);
 }
 
 .person-hero-content{
@@ -709,8 +709,8 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 }
 
 .person-tag{
-  background:linear-gradient(90deg, var(--accent), #2ac0ff);
-  color:#061226;
+  background:linear-gradient(90deg, var(--accent), #c75f9a);
+  color:#fff;
   padding:8px 16px;
   border-radius:20px;
   font-size:14px;
