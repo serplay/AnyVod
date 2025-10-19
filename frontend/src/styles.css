@@ -28,6 +28,8 @@ body{
 }
 
 header{display:flex;align-items:center;gap:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.02);margin-bottom:12px}
+.logo-container{display:flex;align-items:center;gap:12px;cursor:pointer;transition:opacity 0.2s}
+.logo-container:hover{opacity:0.8}
 .movie-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-top:12px}
 .movie-card{background:linear-gradient(180deg,var(--card),var(--card-2));padding:10px;border-radius:10px;cursor:pointer;transition:box-shadow .15s ease}
 .movie-card:hover{box-shadow:0 12px 30px rgba(6,12,26,0.6)}
@@ -289,11 +291,28 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 }
 
 /* Cast Horizontal Scroll with Animation */
+.cast-slider-wrapper{
+  position:relative;
+}
+
 .cast-scroll-container{
-  overflow:hidden;
+  overflow-x:auto;
+  overflow-y:hidden;
   position:relative;
   padding:10px 0;
   height:300px;
+  scroll-behavior:smooth;
+  scrollbar-width:none;
+  display:flex;
+  align-items:center;
+}
+
+.cast-scroll-container::-webkit-scrollbar{
+  display:none;
+}
+
+.cast-scroll-container:hover .cast-track{
+  animation-play-state:paused;
 }
 
 .cast-track{
@@ -301,10 +320,7 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
   gap:20px;
   animation:scrollCast 60s linear infinite;
   will-change:transform;
-}
-
-.cast-track:hover{
-  animation-play-state:paused;
+  align-items:center;
 }
 
 @keyframes scrollCast{
@@ -314,6 +330,52 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
   100%{
     transform:translateX(-50%);
   }
+}
+
+.cast-arrow{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  background:rgba(6,18,38,0.9);
+  border:2px solid rgba(31,182,255,0.3);
+  color:#fff;
+  font-size:48px;
+  font-weight:300;
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  z-index:10;
+  opacity:0;
+  transition:all 0.3s ease;
+  backdrop-filter:blur(10px);
+  line-height:1;
+  padding:0;
+}
+
+.cast-slider-wrapper:hover .cast-arrow{
+  opacity:1;
+}
+
+.cast-arrow:hover{
+  background:rgba(31,182,255,0.2);
+  border-color:var(--accent);
+  transform:translateY(-50%) scale(1.1);
+}
+
+.cast-arrow:active{
+  transform:translateY(-50%) scale(0.95);
+}
+
+.cast-arrow-left{
+  left:-30px;
+}
+
+.cast-arrow-right{
+  right:-30px;
 }
 
 .cast-card{

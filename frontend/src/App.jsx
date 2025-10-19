@@ -63,8 +63,10 @@ export default function App() {
   return (
     <div className="app">
       <header>
-        <img src={AppIcon} alt="AnyVod Logo" style={{ height: '40px', marginRight: '10px' }} />
-        <h1>AnyVod</h1>
+        <div className="logo-container" onClick={() => navigate('/')}>
+          <img src={AppIcon} alt="AnyVod Logo" style={{ height: '40px', marginRight: '10px' }} />
+          <h1>AnyVod</h1>
+        </div>
       </header>
       <main>
         <Routes>

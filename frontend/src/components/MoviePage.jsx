@@ -26,6 +26,7 @@ export default function MoviePage() {
   const [details, setDetails] = useState(null)
   const [similar, setSimilar] = useState([])
   const [trailerKey, setTrailerKey] = useState(null)
+  const castContainerRef = React.useRef(null)
 
   const isTv = !!details?.number_of_seasons || details?.media_type === 'tv'
 
@@ -65,6 +66,16 @@ export default function MoviePage() {
     } catch (err) {
       console.error('Failed to fetch details:', err)
     }
+  }
+
+  // Arrow scroll handlers
+  const scrollCast = (direction) => {
+    if (!castContainerRef.current) return
+    const scrollAmount = 600
+    castContainerRef.current.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth'
+    })
   }
 
   if (!details) return <div className="details">Loading...</div>
@@ -140,52 +151,71 @@ export default function MoviePage() {
         {details.credits?.cast && details.credits.cast.length > 0 && (
           <div className="section cast-section">
             <h2 className="section-title">Cast</h2>
-            <div className="cast-scroll-container">
-              <div className="cast-track">
-                {details.credits.cast.slice(0, 30).map(c => (
-                  <Link 
-                    key={c.id} 
-                    to={`/person/${c.id}`} 
-                    className="cast-card"
-                  >
-                    {c.profile_path ? (
-                      <img 
-                        src={`https://image.tmdb.org/t/p/w185${c.profile_path}`} 
-                        alt={c.name} 
-                        className="cast-photo"
-                      />
-                    ) : (
-                      <div className="cast-photo-placeholder">
-                        <span>{c.name.charAt(0)}</span>
-                      </div>
-                    )}
-                    <div className="cast-name">{c.name}</div>
-                    <div className="cast-character">{c.character}</div>
-                  </Link>
-                ))}
-                {/* Duplicate for loop */}
-                {details.credits.cast.slice(0, 30).map(c => (
-                  <Link 
-                    key={`dup-${c.id}`} 
-                    to={`/person/${c.id}`} 
-                    className="cast-card"
-                  >
-                    {c.profile_path ? (
-                      <img 
-                        src={`https://image.tmdb.org/t/p/w185${c.profile_path}`} 
-                        alt={c.name} 
-                        className="cast-photo"
-                      />
-                    ) : (
-                      <div className="cast-photo-placeholder">
-                        <span>{c.name.charAt(0)}</span>
-                      </div>
-                    )}
-                    <div className="cast-name">{c.name}</div>
-                    <div className="cast-character">{c.character}</div>
-                  </Link>
-                ))}
+            <div className="cast-slider-wrapper">
+              <button 
+                className="cast-arrow cast-arrow-left" 
+                onClick={() => scrollCast('left')}
+                aria-label="Scroll left"
+              >
+                ‹
+              </button>
+              <div 
+                className="cast-scroll-container"
+                ref={castContainerRef}
+              >
+                <div className="cast-track">
+                  {details.credits.cast.slice(0, 30).map(c => (
+                    <Link 
+                      key={c.id} 
+                      to={`/person/${c.id}`} 
+                      className="cast-card"
+                    >
+                      {c.profile_path ? (
+                        <img 
+                          src={`https://image.tmdb.org/t/p/w185${c.profile_path}`} 
+                          alt={c.name} 
+                          className="cast-photo"
+                        />
+                      ) : (
+                        <div className="cast-photo-placeholder">
+                          <span>{c.name.charAt(0)}</span>
+                        </div>
+                      )}
+                      <div className="cast-name">{c.name}</div>
+                      <div className="cast-character">{c.character}</div>
+                    </Link>
+                  ))}
+                  {/* Duplicate for loop */}
+                  {details.credits.cast.slice(0, 30).map(c => (
+                    <Link 
+                      key={`dup-${c.id}`} 
+                      to={`/person/${c.id}`} 
+                      className="cast-card"
+                    >
+                      {c.profile_path ? (
+                        <img 
+                          src={`https://image.tmdb.org/t/p/w185${c.profile_path}`} 
+                          alt={c.name} 
+                          className="cast-photo"
+                        />
+                      ) : (
+                        <div className="cast-photo-placeholder">
+                          <span>{c.name.charAt(0)}</span>
+                        </div>
+                      )}
+                      <div className="cast-name">{c.name}</div>
+                      <div className="cast-character">{c.character}</div>
+                    </Link>
+                  ))}
+                </div>
               </div>
+              <button 
+                className="cast-arrow cast-arrow-right" 
+                onClick={() => scrollCast('right')}
+                aria-label="Scroll right"
+              >
+                ›
+              </button>
             </div>
           </div>
         )}

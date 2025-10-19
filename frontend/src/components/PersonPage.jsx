@@ -95,18 +95,6 @@ export default function PersonPage() {
 
       {/* Main Content */}
       <div className="person-content">
-        {/* Full Biography */}
-        {person.biography && (
-          <section className="person-section">
-            <h2 className="person-section-title">Biography</h2>
-            <div className="person-biography">
-              {person.biography.split('\n').map((paragraph, idx) => (
-                paragraph.trim() && <p key={idx}>{paragraph}</p>
-              ))}
-            </div>
-          </section>
-        )}
-
         {/* Personal Info */}
         <section className="person-section">
           <h2 className="person-section-title">Personal Info</h2>
