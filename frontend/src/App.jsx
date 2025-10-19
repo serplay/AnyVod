@@ -72,6 +72,11 @@ export default function App() {
             <>
               <Search onSearch={doSearch} onClear={() => { setIsSearch(false); setQuery(''); setPage(1); fetchPopular(1); }} />
               <MovieList movies={movies} onSelect={onCardSelect} />
+              <footer>
+                <button onClick={() => setPage((p) => Math.max(1, p - 1))}>Prev</button>
+                <span>Page {page}</span>
+                <button onClick={() => setPage((p) => p + 1)}>Next</button>
+              </footer>
             </>
           } />
           <Route path="/movie/:id" element={<MoviePage />} />
@@ -80,11 +85,6 @@ export default function App() {
           <Route path="/player/:kind/:id" element={<PlayerPage />} />
         </Routes>
       </main>
-      <footer>
-        <button onClick={() => setPage((p) => Math.max(1, p - 1))}>Prev</button>
-        <span>Page {page}</span>
-        <button onClick={() => setPage((p) => p + 1)}>Next</button>
-      </footer>
     </div>
   )
 }
