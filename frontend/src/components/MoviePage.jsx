@@ -26,30 +26,36 @@ export default function MoviePage() {
   const [details, setDetails] = useState(null)
   const [similar, setSimilar] = useState([])
   const [trailerKey, setTrailerKey] = useState(null)
+  const [selectedSeason, setSelectedSeason] = useState(1)
+  const [seasonDetails, setSeasonDetails] = useState(null)
   const castContainerRef = React.useRef(null)
 
-  const isTv = !!details?.number_of_seasons || details?.media_type === 'tv'
+  // Determine if TV show based on URL path
+  const currentPath = window.location.pathname
+  const isTv = currentPath.includes('/tv/')
 
   useEffect(() => {
     fetchDetails()
-  }, [id])
+  }, [id, isTv])
+
+  useEffect(() => {
+    if (isTv && details && selectedSeason) {
+      fetchSeasonDetails(selectedSeason)
+    }
+  }, [selectedSeason, details, isTv])
 
   async function fetchDetails() {
     try {
-      // Try movie first, then TV
-      let res = null
-      try {
-        res = await axios.get(`${API_BASE}/tmdb/movie/${id}`)
-      } catch (err) {
-        res = await axios.get(`${API_BASE}/tmdb/tv/${id}`)
-      }
+      // Fetch based on route type
+      const endpoint = isTv ? `${API_BASE}/tmdb/tv/${id}` : `${API_BASE}/tmdb/movie/${id}`
+      const res = await axios.get(endpoint)
       setDetails(res.data)
 
       // Fetch similar titles
       try {
-        const simEndpoint = res.data.media_type === 'tv' || res.data.number_of_seasons 
-          ? `${API_BASE}/tmdb/tv/${res.data.id}/similar` 
-          : `${API_BASE}/tmdb/movie/${res.data.id}/similar`
+        const simEndpoint = isTv 
+          ? `${API_BASE}/tmdb/tv/${id}/similar` 
+          : `${API_BASE}/tmdb/movie/${id}/similar`
         const simRes = await axios.get(simEndpoint)
         setSimilar(simRes.data.results || [])
       } catch (e) {
@@ -65,6 +71,16 @@ export default function MoviePage() {
       }
     } catch (err) {
       console.error('Failed to fetch details:', err)
+    }
+  }
+
+  async function fetchSeasonDetails(seasonNumber) {
+    if (!isTv || !details) return
+    try {
+      const res = await axios.get(`${API_BASE}/tmdb/tv/${id}/season/${seasonNumber}`)
+      setSeasonDetails(res.data)
+    } catch (err) {
+      console.error('Failed to fetch season details:', err)
     }
   }
 
@@ -144,6 +160,74 @@ export default function MoviePage() {
           <div className="section trailer-section">
             <h2 className="section-title">Trailer</h2>
             <YouTubeEmbed videoKey={trailerKey}/>
+          </div>
+        )}
+
+        {/* Seasons & Episodes Section (TV Shows Only) */}
+        {isTv && details.number_of_seasons > 0 && (
+          <div className="section seasons-section">
+            <h2 className="section-title">Seasons & Episodes</h2>
+            
+            {/* Season Selector */}
+            <div className="season-selector">
+              {Array.from({ length: details.number_of_seasons }, (_, i) => i + 1).map(seasonNum => (
+                <button
+                  key={seasonNum}
+                  className={`season-btn ${selectedSeason === seasonNum ? 'active' : ''}`}
+                  onClick={() => setSelectedSeason(seasonNum)}
+                >
+                  Season {seasonNum}
+                </button>
+              ))}
+            </div>
+
+            {/* Episodes List */}
+            {seasonDetails && seasonDetails.episodes && (
+              <div className="episodes-container">
+                <div className="season-info">
+                  <h3>{seasonDetails.name}</h3>
+                  {seasonDetails.overview && <p className="season-overview">{seasonDetails.overview}</p>}
+                </div>
+                <div className="episodes-grid">
+                  {seasonDetails.episodes.map(episode => (
+                    <div key={episode.id} className="episode-card">
+                      <div className="episode-image-container">
+                        {episode.still_path ? (
+                          <img
+                            src={`https://image.tmdb.org/t/p/w300${episode.still_path}`}
+                            alt={episode.name}
+                            className="episode-image"
+                          />
+                        ) : (
+                          <div className="episode-placeholder">
+                            <span>E{episode.episode_number}</span>
+                          </div>
+                        )}
+                        <div className="episode-number-badge">
+                          Episode {episode.episode_number}
+                        </div>
+                      </div>
+                      <div className="episode-info">
+                        <h4 className="episode-title">{episode.name}</h4>
+                        <div className="episode-meta">
+                          {episode.runtime && <span>{episode.runtime}min</span>}
+                          {episode.vote_average > 0 && (
+                            <span className="episode-rating">⭐ {episode.vote_average.toFixed(1)}</span>
+                          )}
+                        </div>
+                        {episode.overview && (
+                          <p className="episode-overview">
+                            {episode.overview.length > 150 
+                              ? episode.overview.slice(0, 150) + '...' 
+                              : episode.overview}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -230,7 +314,9 @@ export default function MoviePage() {
                   key={s.id} 
                   className="similar-card"
                   onClick={() => {
-                    const type = s.media_type || (s.title ? 'movie' : 'tv')
+                    // Determine type: use media_type if available, or check for first_air_date vs release_date
+                    const isShowTv = s.media_type === 'tv' || (s.first_air_date && !s.release_date) || (!s.title && s.name)
+                    const type = isShowTv ? 'tv' : 'movie'
                     navigate(`/${type}/${s.id}`)
                     window.scrollTo(0, 0)
                   }}

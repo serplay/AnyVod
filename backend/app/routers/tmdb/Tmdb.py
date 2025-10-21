@@ -81,6 +81,43 @@ def popular(page: int = 1):
     return tmdb_get("/movie/popular", {"page": page})
 
 
+@router.get("/trending/{media_type}/{time_window}")
+def trending(media_type: str = "all", time_window: str = "day"):
+    # media_type: all, movie, tv, person
+    # time_window: day, week
+    return tmdb_get(f"/trending/{media_type}/{time_window}")
+
+
+@router.get("/movie/top_rated")
+def movie_top_rated(page: int = 1):
+    return tmdb_get("/movie/top_rated", {"page": page})
+
+
+@router.get("/movie/upcoming")
+def movie_upcoming(page: int = 1):
+    return tmdb_get("/movie/upcoming", {"page": page})
+
+
+@router.get("/movie/now_playing")
+def movie_now_playing(page: int = 1):
+    return tmdb_get("/movie/now_playing", {"page": page})
+
+
+@router.get("/tv/popular")
+def tv_popular(page: int = 1):
+    return tmdb_get("/tv/popular", {"page": page})
+
+
+@router.get("/tv/top_rated")
+def tv_top_rated(page: int = 1):
+    return tmdb_get("/tv/top_rated", {"page": page})
+
+
+@router.get("/tv/on_the_air")
+def tv_on_the_air(page: int = 1):
+    return tmdb_get("/tv/on_the_air", {"page": page})
+
+
 @router.get("/movie/{movie_id}")
 def movie_details(movie_id: int):
     # include credits, images and videos for a richer payload
