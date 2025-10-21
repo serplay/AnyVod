@@ -16,6 +16,11 @@ services:
         value: production
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: FRONTEND_ORIGIN
+        fromService:
+          type: web
+          name: anyvod-frontend
+          envVarKey: RENDER_EXTERNAL_URL
     healthCheckPath: /docs
 
   # Frontend Static Site
