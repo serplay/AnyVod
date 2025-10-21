@@ -22,7 +22,6 @@ services:
   - type: web
     name: anyvod-frontend
     runtime: static
-    region: oregon
     plan: free
     branch: main
     rootDir: frontend
