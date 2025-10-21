@@ -1,12 +1,23 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers.tmdb import Tmdb
-from routers import vidsrc
+from app.routers.tmdb import Tmdb
+from app.routers import vidsrc
 import os
 
 app = FastAPI(title="AnyVod API")
 
-origins = [os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")]
+# Allow multiple origins for development and production
+origins_env = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
+origins = [origin.strip() for origin in origins_env.split(",")]
+
+# Add common development origins if in development
+if os.getenv("ENVIRONMENT", "development") == "development":
+    origins.extend([
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:3000",
+    ])
 
 app.add_middleware(
     CORSMiddleware,
