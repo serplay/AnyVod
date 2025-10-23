@@ -48,6 +48,7 @@ export default function App() {
           <Route path="/tv/:id" element={<MoviePage />} />
           <Route path="/person/:id" element={<PersonPage />} />
           <Route path="/player/:kind/:id" element={<PlayerPage />} />
+          <Route path="/player/:kind/:id/:season/:episode" element={<PlayerPage />} />
         </Routes>
       </main>
     </div>

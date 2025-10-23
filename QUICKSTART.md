@@ -73,9 +73,9 @@ That's it! 🎉
    ```
 
 3. **Start development server**:
-   ```bash
-   npm run dev
-   ```
+    ```bash
+    npm run dev
+    ```
 
 4. **Access the app**:
    - Open http://localhost:5173 in your browser

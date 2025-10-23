@@ -190,7 +190,11 @@ export default function MoviePage() {
                 </div>
                 <div className="episodes-grid">
                   {seasonDetails.episodes.map(episode => (
-                    <div key={episode.id} className="episode-card">
+                    <div 
+                      key={episode.id} 
+                      className="episode-card"
+                      onClick={() => navigate(`/player/tv/${details.id}/${selectedSeason}/${episode.episode_number}`)}
+                    >
                       <div className="episode-image-container">
                         {episode.still_path ? (
                           <img
@@ -205,6 +209,9 @@ export default function MoviePage() {
                         )}
                         <div className="episode-number-badge">
                           Episode {episode.episode_number}
+                        </div>
+                        <div className="episode-play-overlay">
+                          <span className="play-icon">▶</span>
                         </div>
                       </div>
                       <div className="episode-info">

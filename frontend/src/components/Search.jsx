@@ -1,8 +1,9 @@
+import { all } from 'axios'
 import React, { useState } from 'react'
 
 export default function Search({ onSearch = () => {}, onClear = () => {} }) {
   const [q, setQ] = useState('')
-  const [type, setType] = useState('movie') // movie or tv
+  const [type, setType] = useState('All') // All, movie, or tv
   const [year, setYear] = useState('')
 
   function submit(e) {
@@ -18,7 +19,7 @@ export default function Search({ onSearch = () => {}, onClear = () => {} }) {
   function clear() {
     setQ('')
     setYear('')
-    setType('movie')
+    setType('All')
     document.title = 'AnyVod'
     onClear()
   }
@@ -40,9 +41,9 @@ export default function Search({ onSearch = () => {}, onClear = () => {} }) {
           <label>
             Type
             <select value={type} onChange={(e) => setType(e.target.value)}>
+              <option value="All">All</option>
               <option value="movie">Movie</option>
               <option value="tv">TV</option>
-              <option value="All">All</option>
             </select>
           </label>
 

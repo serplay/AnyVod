@@ -14,6 +14,9 @@ body{
 	font-family:Inter,system-ui,Arial;
 	color:#e6eef8;
 	background: linear-gradient(180deg, var(--bg-900) 0%, var(--bg-800) 100%);
+	background-attachment: fixed;
+	background-size: cover;
+	min-height: 100vh;
 	-webkit-font-smoothing:antialiased;
 }
 
@@ -501,6 +504,7 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
   padding:16px;
   transition:all 0.3s;
   border:1px solid rgba(255,255,255,0.05);
+  cursor:pointer;
 }
 
 .episode-card:hover{
@@ -514,6 +518,27 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
   position:relative;
   border-radius:8px;
   overflow:hidden;
+}
+
+.episode-play-overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.4);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  transition:opacity 0.3s;
+}
+
+.episode-card:hover .episode-play-overlay{
+  opacity:1;
+}
+
+.play-icon{
+  font-size:48px;
+  color:#fff;
+  text-shadow:2px 2px 8px rgba(0,0,0,0.8);
 }
 
 .episode-image{
@@ -785,6 +810,60 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
   font-weight:700;
   margin:0;
   text-shadow:2px 2px 4px rgba(0,0,0,0.8);
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.episode-info-badge{
+  font-size:18px;
+  color:var(--accent);
+  font-weight:600;
+}
+
+.episode-nav{
+  position:fixed;
+  bottom:80px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:20px;
+  z-index:10002;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.3s ease;
+}
+
+.episode-nav.visible{
+  opacity:1;
+  pointer-events:auto;
+}
+
+.episode-nav-btn{
+  background:rgba(26,26,29,0.95);
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.2);
+  color:#fff;
+  padding:12px 24px;
+  border-radius:8px;
+  font-size:16px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all 0.2s;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.episode-nav-btn:hover:not(:disabled){
+  background:linear-gradient(90deg,var(--accent),#c75f9a);
+  border-color:var(--accent);
+  transform:scale(1.05);
+}
+
+.episode-nav-btn:disabled{
+  opacity:0.3;
+  cursor:not-allowed;
 }
 
 .player-iframe{
