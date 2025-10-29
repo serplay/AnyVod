@@ -49,3 +49,6 @@ app.add_middleware(
 app.include_router(Tmdb.router, prefix="/tmdb")
 app.include_router(vidsrc.router, prefix="/vidsrc")
 
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the AnyVod API"}
