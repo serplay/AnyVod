@@ -7,6 +7,7 @@ import AppIcon from './assets/anyvod_logo.png'
 import MoviePage from './components/MoviePage'
 import PersonPage from './components/PersonPage'
 import PlayerPage from './components/PlayerPage'
+import { Analytics } from '@vercel/analytics/react';
 
 export default function App() {
   const [searchPayload, setSearchPayload] = useState(null)
@@ -50,6 +51,7 @@ export default function App() {
           <Route path="/player/:kind/:id" element={<PlayerPage />} />
           <Route path="/player/:kind/:id/:season/:episode" element={<PlayerPage />} />
         </Routes>
+        <Analytics />
       </main>
     </div>
   )
