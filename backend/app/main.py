@@ -35,7 +35,7 @@ print(f"🌐 CORS Origins: {origins}")
 allow_origin_regex = None
 if origins != ["*"] and any("onrender.com" in o for o in origins):
     # If any origin is a render domain, also allow all render subdomains
-    allow_origin_regex = r"https://.*\.onrender\.com"
+    allow_origin_regex = r"https://.*\.vercel\.com"
 
 app.add_middleware(
     CORSMiddleware,
