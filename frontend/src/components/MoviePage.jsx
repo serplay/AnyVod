@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import moviePlaceholder from '../assets/movie.png'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 
@@ -113,10 +114,16 @@ export default function MoviePage() {
         <div className="hero-overlay">
           <div className="hero-content">
             <div className="hero-poster">
-              {details.poster_path && (
+              {details.poster_path ? (
                 <img 
                   src={`https://image.tmdb.org/t/p/w500${details.poster_path}`} 
                   alt={details.title || details.name} 
+                />
+              ) : (
+                <img 
+                  src={moviePlaceholder} 
+                  alt={details.title || details.name} 
+                  className="placeholder-img"
                 />
               )}
             </div>
@@ -335,9 +342,11 @@ export default function MoviePage() {
                       className="similar-poster"
                     />
                   ) : (
-                    <div className="similar-placeholder">
-                      <span>{(s.title || s.name)?.charAt(0)}</span>
-                    </div>
+                    <img 
+                      src={moviePlaceholder} 
+                      alt={s.title || s.name} 
+                      className="similar-poster placeholder-img"
+                    />
                   )}
                   <div className="similar-info">
                     <h3 className="similar-title">{s.title || s.name}</h3>

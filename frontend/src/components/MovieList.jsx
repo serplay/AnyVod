@@ -1,4 +1,5 @@
 import React, { useRef } from 'react'
+import moviePlaceholder from '../assets/movie.png'
 
 export default function MovieList({ movies = [], onSelect = () => {} }) {
   const handleMove = (e) => {
@@ -36,7 +37,7 @@ export default function MovieList({ movies = [], onSelect = () => {} }) {
             {m.poster_path ? (
               <img src={`https://image.tmdb.org/t/p/w342${m.poster_path}`} alt={m.title} />
             ) : (
-              <div className="poster-placeholder">No Image</div>
+              <img src={moviePlaceholder} alt={m.title || m.name} className="placeholder-img" />
             )}
             <div className="meta">
               <h3>{m.title ? m.title : m.name}</h3>

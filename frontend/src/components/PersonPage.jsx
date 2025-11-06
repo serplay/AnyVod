@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import moviePlaceholder from '../assets/movie.png'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 
@@ -140,11 +141,19 @@ export default function PersonPage() {
                     window.scrollTo(0, 0)
                   }}
                 >
-                  <img 
-                    src={`https://image.tmdb.org/t/p/w342${credit.poster_path}`} 
-                    alt={credit.title || credit.name}
-                    className="credit-poster"
-                  />
+                  {credit.poster_path ? (
+                    <img 
+                      src={`https://image.tmdb.org/t/p/w342${credit.poster_path}`} 
+                      alt={credit.title || credit.name}
+                      className="credit-poster"
+                    />
+                  ) : (
+                    <img 
+                      src={moviePlaceholder} 
+                      alt={credit.title || credit.name}
+                      className="credit-poster placeholder-img"
+                    />
+                  )}
                   <div className="credit-info">
                     <h3 className="credit-title">{credit.title || credit.name}</h3>
                     {credit.character && (
