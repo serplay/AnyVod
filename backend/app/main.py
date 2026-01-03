@@ -32,10 +32,9 @@ if not origins:
 print(f"🌐 CORS Environment: {environment}")
 print(f"🌐 CORS Origins: {origins}")
 
-# Use allow_origin_regex for Render domains if not using wildcard
+
 allow_origin_regex = None
 if origins != ["*"] and any("vercel.com" in o for o in origins):
-    # If any origin is a render domain, also allow all render subdomains
     allow_origin_regex = r"https://.*\.vercel\.app"
 
 app.add_middleware(

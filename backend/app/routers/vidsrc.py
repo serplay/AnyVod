@@ -9,7 +9,7 @@ load_dotenv()
 router = APIRouter()
 
 # Default vidsrc domain; can be overridden with env VIDSRC_EMBED_DOMAIN
-VIDSRC_EMBED_DOMAIN = os.getenv("VIDSRC_EMBED_DOMAIN", "vidsrc.xyz")
+VIDSRC_EMBED_DOMAIN = os.getenv("VIDSRC_EMBED_DOMAIN", "vidsrc-embed.ru")
 
 
 def build_embed_url(kind: str, *, tmdb: Optional[str] = None, imdb: Optional[str] = None, season: Optional[int] = None, episode: Optional[int] = None, ds_lang: Optional[str] = None, sub_url: Optional[str] = None, autoplay: Optional[int] = None, autonext: Optional[int] = None):
