@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import moviePlaceholder from '../assets/movie.png'
 
@@ -24,6 +24,7 @@ function YouTubeEmbed({ videoKey }) {
 export default function MoviePage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const [details, setDetails] = useState(null)
   const [similar, setSimilar] = useState([])
   const [trailerKey, setTrailerKey] = useState(null)
@@ -31,9 +32,8 @@ export default function MoviePage() {
   const [seasonDetails, setSeasonDetails] = useState(null)
   const castContainerRef = React.useRef(null)
 
-  // Determine if TV show based on URL path
-  const currentPath = window.location.pathname
-  const isTv = currentPath.includes('/tv/')
+  // Determine if TV show based on URL path using React Router's location
+  const isTv = location.pathname.startsWith('/tv/')
 
   useEffect(() => {
     fetchDetails()

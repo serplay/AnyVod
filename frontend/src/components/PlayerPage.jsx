@@ -86,7 +86,7 @@ export default function PlayerPage() {
   }
 
   const handleBack = () => {
-    navigate(`/tv/${id}`, { replace: true })
+    navigate(`/${kind}/${id}`, { replace: true })
   }
 
   const goToPreviousEpisode = () => {
