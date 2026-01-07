@@ -33,8 +33,8 @@ def tmdb_get(path, params=None):
         elif type == 'tv':
             if requests.get(f"https://{VIDSRC_EMBED_DOMAIN}/tv/{item.get('id')}").status_code != 200:
                 items[num] = None
-        
-    return [item for item in items if item is not None]
+        content = {"results":[item for item in items if item is not None]}
+    return content
 
 def search_by_id(query: str, source: str):
     return tmdb_get(f"/find/{query}", {"external_id":source})
