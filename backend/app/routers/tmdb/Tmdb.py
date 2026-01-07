@@ -23,18 +23,7 @@ def tmdb_get(path, params=None):
     resp = requests.get(url, params=params, timeout=10)
     if resp.status_code != 200:
         raise HTTPException(status_code=resp.status_code, detail=resp.text)
-    items = resp.json().get('results')
-    for num, item in enumerate(items):
-        type = item.get('media_type')
-        if type == 'movie':
-            if requests.get(f"https://{VIDSRC_EMBED_DOMAIN}/movie/{item.get('id')}").status_code != 200:
-                items[num] = None
-            
-        elif type == 'tv':
-            if requests.get(f"https://{VIDSRC_EMBED_DOMAIN}/tv/{item.get('id')}").status_code != 200:
-                items[num] = None
-        content = {"results":[item for item in items if item is not None]}
-    return content
+    return resp.json()
 
 def search_by_id(query: str, source: str):
     return tmdb_get(f"/find/{query}", {"external_id":source})
