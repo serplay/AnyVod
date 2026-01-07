@@ -50,8 +50,8 @@ export default function MoviePage() {
   async function checkAvailability() {
     try {
       const endpoint = isTv 
-        ? `${API_BASE}/vidsrc/tv/availability/${id}`
-        : `${API_BASE}/vidsrc/movie/availability/${id}`
+        ? `${API_BASE}/vidsrc/tv/availability/${details.id}`
+        : `${API_BASE}/vidsrc/movie/availability/${details.id}`
       const res = await axios.get(endpoint)
       // If request succeeds and returns data, content is available
       setIsAvailable(true)
