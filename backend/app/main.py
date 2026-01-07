@@ -23,6 +23,7 @@ if environment == "development":
 # Always allow vod.losingsanity.com
 origins.append("https://vod.losingsanity.com")
 origins.append("https://vod.losingsanity.xyz")
+origins.append("https://image.tmdb.org")
 
 # If no specific origins set, allow all in production (for Render deployment)
 # You can later set FRONTEND_ORIGIN env var to specific domain for security
