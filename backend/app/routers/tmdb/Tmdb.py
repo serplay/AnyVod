@@ -9,6 +9,7 @@ load_dotenv()
 router = APIRouter()
 
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
+VIDSRC_EMBED_DOMAIN = os.getenv("VIDSRC_EMBED_DOMAIN", "vidsrc-embed.ru")
 TMDB_BASE = "https://api.themoviedb.org/3"
 
 
@@ -22,7 +23,18 @@ def tmdb_get(path, params=None):
     resp = requests.get(url, params=params, timeout=10)
     if resp.status_code != 200:
         raise HTTPException(status_code=resp.status_code, detail=resp.text)
-    return resp.json()
+    items = resp.json().get('results')
+    for num, item in enumerate(items):
+        type = item.get('media_type')
+        if type == 'movie':
+            if not requests.get(f"https://{VIDSRC_EMBED_DOMAIN}/movie/{item.get('id')}").ok:
+                items[num] = None
+            
+        elif type == 'tv':
+            if not requests.get(f"https://{VIDSRC_EMBED_DOMAIN}/tv/{item.get('id')}").ok:
+                items[num] = None
+        
+    return [item for item in items if item is not None]
 
 def search_by_id(query: str, source: str):
     return tmdb_get(f"/find/{query}", {"external_id":source})
