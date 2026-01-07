@@ -79,3 +79,18 @@ def latest_tvshows(page: int = 1):
         raise HTTPException(status_code=resp.status_code, detail=resp.text)
     return resp.json()
 
+@router.get("/movie/availability/{tmdb_id}")
+def movie_availability(tmdb_id: int):
+    url = f"https://{VIDSRC_EMBED_DOMAIN}/movie/{tmdb_id}"
+    resp = requests.get(url, timeout=10)
+    if resp.status_code != 200:
+        raise HTTPException(status_code=resp.status_code, detail=resp.text)
+    return resp.json()  
+
+@router.get("/tv/availability/{tmdb_id}")
+def tv_availability(tmdb_id: int):
+    url = f"https://{VIDSRC_EMBED_DOMAIN}/tv/{tmdb_id}"
+    resp = requests.get(url, timeout=10)
+    if resp.status_code != 200:
+        raise HTTPException(status_code=resp.status_code, detail=resp.text)
+    return resp.json()
