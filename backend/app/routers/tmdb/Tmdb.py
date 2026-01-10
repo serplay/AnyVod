@@ -9,6 +9,7 @@ load_dotenv()
 router = APIRouter()
 
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
+VIDSRC_EMBED_DOMAIN = os.getenv("VIDSRC_EMBED_DOMAIN", "vidsrc-embed.ru")
 TMDB_BASE = "https://api.themoviedb.org/3"
 
 
