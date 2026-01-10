@@ -79,18 +79,90 @@ def latest_tvshows(page: int = 1):
         raise HTTPException(status_code=resp.status_code, detail=resp.text)
     return resp.json()
 
+def check_embed_availability(embed_url: str) -> dict:
+    """
+    Check if video is available by requesting the embed page.
+    Since the page uses JavaScript, we check for common patterns in the HTML
+    that indicate availability or unavailability.
+    """
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Referer": f"https://{VIDSRC_EMBED_DOMAIN}/",
+    }
+    
+    try:
+        resp = requests.get(embed_url, headers=headers, timeout=15, allow_redirects=True)
+        
+        # If we get a non-200 status, it's not available
+        if resp.status_code != 200:
+            return {"available": False, "reason": f"HTTP {resp.status_code}"}
+        
+        content = resp.text.lower()
+        
+        # Check for common error/unavailable indicators
+        unavailable_indicators = [
+            "not found",
+            "no sources",
+            "unavailable",
+            "error 404",
+            "doesn't exist",
+            "does not exist",
+            "no video",
+            "removed",
+            "dmca",
+        ]
+        
+        for indicator in unavailable_indicators:
+            if indicator in content:
+                return {"available": False, "reason": indicator}
+        
+        # Check for positive indicators (video player elements, source scripts, etc.)
+        available_indicators = [
+            "iframe",
+            "player",
+            "video",
+            "source",
+            "embed",
+            "stream",
+        ]
+        
+        has_positive = any(ind in content for ind in available_indicators)
+        
+        # If page loaded successfully and has player-related content, assume available
+        if has_positive:
+            return {"available": True, "embed_url": embed_url}
+        
+        # Default: if we got a 200 response with content, tentatively mark as available
+        if len(content) > 500:
+            return {"available": True, "embed_url": embed_url, "confidence": "low"}
+        
+        return {"available": False, "reason": "empty or minimal response"}
+        
+    except requests.Timeout:
+        return {"available": False, "reason": "timeout"}
+    except requests.RequestException as e:
+        return {"available": False, "reason": str(e)}
+
+
 @router.get("/movie/availability/{tmdb_id}")
 def movie_availability(tmdb_id: int):
-    url = f"https://{VIDSRC_EMBED_DOMAIN}/movie/{tmdb_id}"
-    resp = requests.get(url, timeout=10)
-    if resp.status_code != 200:
-        raise HTTPException(status_code=resp.status_code, detail=resp.text)
-    return resp.json()  
+    embed_url = build_embed_url("movie", tmdb=str(tmdb_id))
+    result = check_embed_availability(embed_url)
+    result["tmdb_id"] = tmdb_id
+    result["type"] = "movie"
+    return result
+
 
 @router.get("/tv/availability/{tmdb_id}")
-def tv_availability(tmdb_id: int):
-    url = f"https://{VIDSRC_EMBED_DOMAIN}/tv/{tmdb_id}"
-    resp = requests.get(url, timeout=10)
-    if resp.status_code != 200:
-        raise HTTPException(status_code=resp.status_code, detail=resp.text)
-    return resp.json()
+def tv_availability(tmdb_id: int, season: Optional[int] = None, episode: Optional[int] = None):
+    embed_url = build_embed_url("tv", tmdb=str(tmdb_id), season=season, episode=episode)
+    result = check_embed_availability(embed_url)
+    result["tmdb_id"] = tmdb_id
+    result["type"] = "tv"
+    if season:
+        result["season"] = season
+    if episode:
+        result["episode"] = episode
+    return result
