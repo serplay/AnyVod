@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 import requests
 from dotenv import load_dotenv
 from typing import Optional
@@ -65,21 +65,19 @@ def embed_tv(tmdb: Optional[str] = None, imdb: Optional[str] = None, ds_lang: Op
 def latest_movies(page: int = 1):
     # proxy JSON list from vidsrc
     url = f"https://{VIDSRC_EMBED_DOMAIN}/movies/latest/page-{page}.json"
-    try:
-        resp = requests.get(url, timeout=10)
-        return resp.json()
-    except Exception:
-        return []
+    resp = requests.get(url, timeout=10)
+    if resp.status_code != 200:
+        raise HTTPException(status_code=resp.status_code, detail=resp.text)
+    return resp.json()
 
 
 @router.get("/latest/tvshows")
 def latest_tvshows(page: int = 1):
     url = f"https://{VIDSRC_EMBED_DOMAIN}/tvshows/latest/page-{page}.json"
-    try:
-        resp = requests.get(url, timeout=10)
-        return resp.json()
-    except Exception:
-        return []
+    resp = requests.get(url, timeout=10)
+    if resp.status_code != 200:
+        raise HTTPException(status_code=resp.status_code, detail=resp.text)
+    return resp.json()
 
 @router.get("/movie/availability/{tmdb_id}")
 def movie_availability(tmdb_id: int):

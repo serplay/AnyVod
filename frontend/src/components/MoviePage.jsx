@@ -30,7 +30,6 @@ export default function MoviePage() {
   const [trailerKey, setTrailerKey] = useState(null)
   const [selectedSeason, setSelectedSeason] = useState(1)
   const [seasonDetails, setSeasonDetails] = useState(null)
-  const [isAvailable, setIsAvailable] = useState(null) // null = loading, true = available, false = not available
   const castContainerRef = React.useRef(null)
 
   // Determine if TV show based on URL path using React Router's location
@@ -38,7 +37,6 @@ export default function MoviePage() {
 
   useEffect(() => {
     fetchDetails()
-    checkAvailability()
   }, [id, isTv])
 
   useEffect(() => {
@@ -46,20 +44,6 @@ export default function MoviePage() {
       fetchSeasonDetails(selectedSeason)
     }
   }, [selectedSeason, details, isTv])
-
-  async function checkAvailability() {
-    try {
-      const endpoint = isTv 
-        ? `${API_BASE}/vidsrc/tv/availability/${details.id}`
-        : `${API_BASE}/vidsrc/movie/availability/${details.id}`
-      const res = await axios.get(endpoint)
-      // If request succeeds and returns data, content is available
-      setIsAvailable(true)
-    } catch (err) {
-      console.error('Availability check failed:', err)
-      setIsAvailable(false)
-    }
-  }
 
   async function fetchDetails() {
     try {
@@ -164,23 +148,13 @@ export default function MoviePage() {
               {/* Overview */}
               <p className="movie-overview">{details.overview}</p>
 
-              {/* Play Button or Not Available */}
-              {isAvailable === null ? (
-                <button className="play-button" disabled>
-                  Checking availability...
-                </button>
-              ) : isAvailable ? (
-                <button 
-                  className="play-button" 
-                  onClick={() => navigate(`/player/${isTv ? 'tv' : 'movie'}/${details.id}`)}
-                >
-                  ▶ Play Now
-                </button>
-              ) : (
-                <div className="not-available-badge">
-                  {isTv ? 'TV Show' : 'Movie'} not available
-                </div>
-              )}
+              {/* Play Button */}
+              <button 
+                className="play-button" 
+                onClick={() => navigate(`/player/${isTv ? 'tv' : 'movie'}/${details.id}`)}
+              >
+                ▶ Play Now
+              </button>
             </div>
           </div>
         </div>
