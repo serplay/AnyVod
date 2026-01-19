@@ -8,8 +8,10 @@ export default function CategoryRow({ title, items = [] }) {
 
   const scroll = (direction) => {
     if (scrollContainerRef.current) {
-      const scrollAmount = direction === 'left' ? -800 : 800
-      scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' })
+      // Responsive scroll amount based on viewport width
+      const viewportWidth = window.innerWidth
+      const scrollAmount = viewportWidth < 480 ? 300 : viewportWidth < 768 ? 500 : 800
+      scrollContainerRef.current.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' })
     }
   }
 

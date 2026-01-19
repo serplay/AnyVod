@@ -30,8 +30,8 @@ body{
 	border: 1px solid rgba(255,255,255,0.03);
 }
 
-header{display:flex;align-items:center;gap:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.02);margin-bottom:12px}
-.logo-container{display:flex;align-items:center;gap:12px;cursor:pointer;transition:opacity 0.2s}
+header{display:flex;align-items:center;gap:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.02);margin-bottom:12px;flex-wrap:wrap}
+.logo-container{display:flex;align-items:center;gap:12px;cursor:pointer;transition:opacity 0.2s;flex-shrink:0}
 .logo-container:hover{opacity:0.8}
 .movie-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-top:12px}
 .movie-card{background:linear-gradient(180deg,var(--card),var(--card-2));padding:10px;border-radius:10px;cursor:pointer;transition:box-shadow .15s ease}
@@ -102,6 +102,7 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 @media (max-width:720px){
 	.app{margin:12px;padding:12px}
 	.details{padding:12px}
+	header h1{font-size:20px}
 }
 
 /* Search styles */
@@ -118,8 +119,26 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 .clear-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:8px;color:var(--muted);cursor:pointer}
 
 @media (max-width:720px){
-  .search-form{flex-direction:column;align-items:stretch}
-  .search-filters{justify-content:space-between}
+  .search-form{flex-direction:column;align-items:stretch;gap:10px}
+  .search-filters{justify-content:space-between;flex-wrap:wrap;gap:8px}
+  .search-input{gap:8px}
+  .search-input input{padding:10px 12px;font-size:15px}
+  .search-btn{padding:10px 14px;font-size:14px}
+  .search-filters label{font-size:11px}
+  .search-filters select,.search-filters input{padding:8px 10px;font-size:14px}
+  .clear-btn{padding:8px 12px;font-size:13px}
+}
+
+@media (max-width:480px){
+  .search{margin-bottom:16px}
+  .search-form{gap:8px}
+  .search-input{flex-direction:row}
+  .search-input input{padding:10px;font-size:16px;flex:1}
+  .search-btn{padding:10px 12px;font-size:13px;white-space:nowrap}
+  .search-filters{gap:6px}
+  .search-filters label{flex:1;min-width:calc(50% - 6px);font-size:11px}
+  .search-filters select,.search-filters input[type="number"]{width:100%;padding:8px;font-size:16px}
+  .clear-btn{flex:1;padding:10px;font-size:13px;min-width:100%}
 }
 
 /* Movie Page Styles */
@@ -754,26 +773,58 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 }
 
 @media (max-width: 768px){
+  .movie-hero{
+    height:auto;
+    min-height:unset;
+  }
+  
   .hero-overlay{
-    padding:20px;
+    position:relative;
+    padding:24px 16px;
+    align-items:flex-start;
+    background:linear-gradient(180deg, rgba(26,26,29,0.95) 0%, rgba(59,28,50,0.9) 100%);
   }
   
   .hero-content{
     flex-direction:column;
     align-items:center;
     text-align:center;
+    gap:20px;
+  }
+  
+  .hero-poster{
+    margin-top:0;
   }
   
   .hero-poster img{
-    width:200px;
+    width:160px;
   }
   
   .movie-title{
-    font-size:28px;
+    font-size:24px;
   }
   
   .movie-overview{
     max-height:none;
+    font-size:14px;
+  }
+  
+  .movie-genres{
+    justify-content:center;
+  }
+  
+  .movie-rating{
+    justify-content:center;
+  }
+  
+  .genre-tag{
+    padding:5px 10px;
+    font-size:12px;
+  }
+  
+  .play-button{
+    width:100%;
+    padding:14px 24px;
   }
   
   .similar-grid{
@@ -1714,6 +1765,570 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
   .search-results-header{
     flex-direction:column;
     align-items:flex-start;
+  }
+}
+
+/* ==========================================
+   MOBILE-FIRST RESPONSIVE ENHANCEMENTS
+   Optimized for modern smartphones
+   ========================================== */
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+  /* Hide scroll arrows on touch devices - use native swipe */
+  .category-arrow,
+  .cast-arrow {
+    display: none !important;
+  }
+  
+  /* Remove slider wrapper padding since no arrows */
+  .category-slider-wrapper {
+    padding: 0;
+  }
+  
+  /* Improve touch scrolling */
+  .category-scroll-container,
+  .cast-scroll-container {
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+  }
+  
+  .category-card {
+    scroll-snap-align: start;
+  }
+  
+  /* Show card overlay always on touch devices */
+  .category-card-overlay {
+    opacity: 1;
+    background: linear-gradient(0deg, rgba(26,26,29,0.9) 0%, transparent 100%);
+  }
+  
+  /* Larger tap targets */
+  .tab-btn,
+  .season-btn,
+  .clear-btn,
+  .search-btn,
+  .pagination-btn,
+  .pagination-number {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Remove hover states - use active states */
+  .category-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .category-card:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+  
+  .movie-card:hover {
+    box-shadow: none;
+  }
+  
+  .similar-card:hover,
+  .person-credit-card:hover,
+  .cast-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .similar-card:active,
+  .person-credit-card:active,
+  .cast-card:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+}
+
+/* Small phones (320px - 374px) */
+@media (max-width: 374px) {
+  .app {
+    margin: 8px;
+    padding: 12px;
+  }
+  
+  header h1 {
+    font-size: 20px;
+  }
+  
+  .logo-container img {
+    height: 32px !important;
+  }
+  
+  .hero-banner-home {
+    height: 50vh;
+    min-height: 320px;
+  }
+  
+  .hero-banner-overlay {
+    padding: 20px 15px;
+  }
+  
+  .hero-banner-title {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  
+  .hero-banner-meta {
+    font-size: 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .hero-banner-overview {
+    font-size: 13px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .hero-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+  
+  .category-title {
+    font-size: 18px;
+    padding-left: 8px;
+  }
+  
+  .category-card {
+    width: 120px;
+  }
+  
+  .category-card img {
+    height: 180px;
+  }
+  
+  .category-scroll-container {
+    gap: 8px;
+    padding: 6px 8px;
+  }
+  
+  .categories-container {
+    padding: 16px 8px;
+  }
+  
+  .category-row {
+    margin-bottom: 32px;
+  }
+  
+  /* Movie Page small phones */
+  .movie-hero {
+    height: 50vh;
+    min-height: 350px;
+  }
+  
+  .hero-poster img {
+    width: 140px;
+  }
+  
+  .movie-title {
+    font-size: 22px;
+  }
+  
+  .movie-overview {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  
+  .play-button {
+    padding: 12px 24px;
+    font-size: 14px;
+    width: 100%;
+  }
+  
+  .movie-content {
+    padding: 20px 12px 40px 12px;
+  }
+  
+  .section-title {
+    font-size: 20px;
+  }
+  
+  /* Episode cards small phones */
+  .episode-card {
+    padding: 12px;
+  }
+  
+  .episode-title {
+    font-size: 15px;
+  }
+  
+  .episode-overview {
+    font-size: 13px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  /* Similar grid small phones */
+  .similar-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .similar-title {
+    font-size: 12px;
+  }
+  
+  /* Person page small phones */
+  .person-profile-img,
+  .person-profile-placeholder {
+    width: 180px;
+    height: 270px;
+  }
+  
+  .person-name {
+    font-size: 28px;
+  }
+  
+  .person-credits-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  /* Search small phones - removed, handled in main media queries */
+  
+  /* Pagination small phones */
+  .pagination {
+    gap: 4px;
+  }
+  
+  .pagination-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  
+  .pagination-number {
+    padding: 8px 10px;
+    min-width: 32px;
+    font-size: 12px;
+  }
+}
+
+/* Standard mobile phones (375px - 480px) */
+@media (max-width: 480px) {
+  .app {
+    margin: 10px;
+    padding: 14px;
+    border-radius: 8px;
+  }
+  
+  header {
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  header h1 {
+    font-size: 22px;
+  }
+  
+  /* Search handled in main media queries above */
+  
+  /* Movie grid for search results */
+  .movie-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .movie-card {
+    padding: 8px;
+  }
+  
+  .meta {
+    font-size: 12px;
+    padding-top: 6px;
+  }
+  
+  /* Player Page mobile */
+  .player-header {
+    padding: 0 16px;
+    height: 60px;
+  }
+  
+  .player-back-btn {
+    font-size: 24px;
+    padding: 8px;
+  }
+  
+  .player-title {
+    font-size: 16px;
+  }
+  
+  .episode-info-badge {
+    font-size: 14px;
+  }
+  
+  .episode-nav {
+    bottom: 20px;
+    gap: 12px;
+    width: calc(100% - 32px);
+    justify-content: center;
+  }
+  
+  .episode-nav-btn {
+    padding: 10px 16px;
+    font-size: 14px;
+    flex: 1;
+    justify-content: center;
+  }
+  
+  /* Trailer embed */
+  .trailer-embed {
+    border-radius: 8px;
+  }
+  
+  /* Cast section */
+  .cast-card {
+    width: 100px;
+  }
+  
+  .cast-photo,
+  .cast-photo-placeholder {
+    width: 100px;
+    height: 150px;
+  }
+  
+  .cast-name {
+    font-size: 12px;
+  }
+  
+  .cast-character {
+    font-size: 11px;
+  }
+  
+  .cast-scroll-container {
+    height: 220px;
+    gap: 12px;
+    padding: 8px;
+  }
+  
+  /* Season/Episode section */
+  .season-selector {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+  }
+  
+  .season-btn {
+    flex-shrink: 0;
+    padding: 10px 18px;
+  }
+  
+  .episodes-container {
+    padding: 16px;
+    border-radius: 10px;
+  }
+  
+  .episode-card {
+    border-radius: 8px;
+  }
+  
+  .episode-meta {
+    font-size: 12px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+}
+
+/* Medium phones to small tablets (481px - 767px) */
+@media (min-width: 481px) and (max-width: 767px) {
+  .category-card {
+    width: 160px;
+  }
+  
+  .category-card img {
+    height: 240px;
+  }
+  
+  .category-scroll-container {
+    gap: 14px;
+  }
+  
+  .movie-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .similar-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .person-credits-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Landscape mode on phones */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hero-banner-home {
+    height: 100vh;
+    min-height: unset;
+  }
+  
+  .hero-banner-overlay {
+    padding: 20px 40px;
+  }
+  
+  .hero-banner-content {
+    max-width: 50%;
+  }
+  
+  .hero-banner-title {
+    font-size: 24px;
+  }
+  
+  .hero-banner-overview {
+    display: none;
+  }
+  
+  .movie-hero {
+    height: 100vh;
+    min-height: unset;
+  }
+  
+  .hero-content {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+  }
+  
+  .hero-poster img {
+    width: 150px;
+  }
+  
+  .movie-title {
+    font-size: 24px;
+  }
+  
+  .movie-overview {
+    display: none;
+  }
+  
+  /* Player in landscape */
+  .player-header {
+    height: 50px;
+  }
+  
+  .episode-nav {
+    bottom: 10px;
+  }
+  
+  .episode-nav-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+
+/* Safe area insets for notched phones (iPhone X+, etc.) */
+@supports (padding: max(0px)) {
+  .app {
+    padding-left: max(14px, env(safe-area-inset-left));
+    padding-right: max(14px, env(safe-area-inset-right));
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+  
+  .player-page {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  .player-header {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .episode-nav {
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+    bottom: 0;
+  }
+  
+  .categories-container {
+    padding-left: max(10px, env(safe-area-inset-left));
+    padding-right: max(10px, env(safe-area-inset-right));
+  }
+  
+  .hero-banner-overlay {
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+  }
+}
+
+/* Prevent body scroll when player is open */
+body.player-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
+/* Improve text rendering on mobile */
+@media (max-width: 768px) {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Prevent horizontal scroll */
+  .app,
+  .home-page,
+  .movie-page,
+  .person-page {
+    overflow-x: hidden;
+  }
+  
+  /* Better focus states for accessibility */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  
+  /* Reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Fix iOS input zoom issue */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  select,
+  textarea,
+  input {
+    font-size: 16px !important;
+  }
+}
+
+/* Improved scrollbar for category rows on mobile */
+@media (max-width: 768px) {
+  .category-scroll-container {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .category-scroll-container::-webkit-scrollbar {
+    display: none;
   }
 }
 
