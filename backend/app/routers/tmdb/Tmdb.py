@@ -100,26 +100,117 @@ def search_movies(
             return
         case "yt":
             return
+    
+    # Handle person search
+    if type == 'person':
+        results = tmdb_get('/search/person', params)
+        results['results'] = sort_results(results.get('results', []), sort_by)
+        return results
         
-    # - no type: fallback to /search/multi
+    # Movie search
     if type == 'movie':
         if year:
             params['year'] = year
-        return tmdb_get('/search/movie', params)
+        results = tmdb_get('/search/movie', params)
+        filtered = filter_by_rating(results.get('results', []), min_rating)
+        if genre:
+            filtered = [r for r in filtered if genre in r.get('genre_ids', [])]
+        results['results'] = sort_results(filtered, sort_by)
+        return results
+    
+    # TV search
     elif type == 'tv':
+        results = tmdb_get('/search/tv', params)
+        filtered = results.get('results', [])
         if year:
-            # the discover endpoint expects different params; include query via with_text_query is not supported
-            # so we'll call /search/tv and filter by year client-side
-            results = tmdb_get('/search/tv', params)
-            if year:
-                # filter results client-side by first_air_date starting with the year
-                results['results'] = [r for r in results.get('results', []) if r.get('first_air_date', '').startswith(str(year))]
-            return results
-        else:
-            return tmdb_get('/search/tv', params)
+            filtered = [r for r in filtered if r.get('first_air_date', '').startswith(str(year))]
+        filtered = filter_by_rating(filtered, min_rating)
+        if genre:
+            filtered = [r for r in filtered if genre in r.get('genre_ids', [])]
+        results['results'] = sort_results(filtered, sort_by)
+        return results
+    
+    # Multi search (all)
     else:
-        # combined multi search
-        return tmdb_get('/search/multi', params)
+        results = tmdb_get('/search/multi', params)
+        filtered = results.get('results', [])
+        filtered = filter_by_rating(filtered, min_rating)
+        if genre:
+            filtered = [r for r in filtered if genre in r.get('genre_ids', [])]
+        results['results'] = sort_results(filtered, sort_by)
+        return results
+
+
+@router.get("/discover/movie")
+def discover_movies(
+    page: int = 1,
+    sort_by: str = 'popularity.desc',
+    min_rating: Optional[float] = None,
+    max_rating: Optional[float] = None,
+    year: Optional[int] = None,
+    genre: Optional[int] = None,
+    with_genres: Optional[str] = None
+):
+    """
+    Discover movies with advanced filtering (no search query needed).
+    Uses TMDB's /discover/movie endpoint.
+    """
+    params = {"page": page, "sort_by": sort_by}
+    
+    if min_rating:
+        params['vote_average.gte'] = min_rating
+    if max_rating:
+        params['vote_average.lte'] = max_rating
+    if year:
+        params['primary_release_year'] = year
+    if genre:
+        params['with_genres'] = genre
+    elif with_genres:
+        params['with_genres'] = with_genres
+        
+    return tmdb_get('/discover/movie', params)
+
+
+@router.get("/discover/tv")
+def discover_tv(
+    page: int = 1,
+    sort_by: str = 'popularity.desc',
+    min_rating: Optional[float] = None,
+    max_rating: Optional[float] = None,
+    year: Optional[int] = None,
+    genre: Optional[int] = None,
+    with_genres: Optional[str] = None
+):
+    """
+    Discover TV shows with advanced filtering.
+    Uses TMDB's /discover/tv endpoint.
+    """
+    params = {"page": page, "sort_by": sort_by}
+    
+    if min_rating:
+        params['vote_average.gte'] = min_rating
+    if max_rating:
+        params['vote_average.lte'] = max_rating
+    if year:
+        params['first_air_date_year'] = year
+    if genre:
+        params['with_genres'] = genre
+    elif with_genres:
+        params['with_genres'] = with_genres
+        
+    return tmdb_get('/discover/tv', params)
+
+
+@router.get("/genres/movie")
+def movie_genres():
+    """Get list of movie genres"""
+    return tmdb_get('/genre/movie/list')
+
+
+@router.get("/genres/tv")
+def tv_genres():
+    """Get list of TV genres"""
+    return tmdb_get('/genre/tv/list')
 
 
 @router.get("/popular")
