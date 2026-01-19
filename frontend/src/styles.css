@@ -119,8 +119,26 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 .clear-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:8px;color:var(--muted);cursor:pointer}
 
 @media (max-width:720px){
-  .search-form{flex-direction:column;align-items:stretch}
-  .search-filters{justify-content:space-between}
+  .search-form{flex-direction:column;align-items:stretch;gap:10px}
+  .search-filters{justify-content:space-between;flex-wrap:wrap;gap:8px}
+  .search-input{gap:8px}
+  .search-input input{padding:10px 12px;font-size:15px}
+  .search-btn{padding:10px 14px;font-size:14px}
+  .search-filters label{font-size:11px}
+  .search-filters select,.search-filters input{padding:8px 10px;font-size:14px}
+  .clear-btn{padding:8px 12px;font-size:13px}
+}
+
+@media (max-width:480px){
+  .search{margin-bottom:16px}
+  .search-form{gap:8px}
+  .search-input{flex-direction:row}
+  .search-input input{padding:10px;font-size:16px;flex:1}
+  .search-btn{padding:10px 12px;font-size:13px;white-space:nowrap}
+  .search-filters{gap:6px}
+  .search-filters label{flex:1;min-width:calc(50% - 6px);font-size:11px}
+  .search-filters select,.search-filters input[type="number"]{width:100%;padding:8px;font-size:16px}
+  .clear-btn{flex:1;padding:10px;font-size:13px;min-width:100%}
 }
 
 /* Movie Page Styles */
@@ -755,26 +773,58 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 }
 
 @media (max-width: 768px){
+  .movie-hero{
+    height:auto;
+    min-height:unset;
+  }
+  
   .hero-overlay{
-    padding:20px;
+    position:relative;
+    padding:24px 16px;
+    align-items:flex-start;
+    background:linear-gradient(180deg, rgba(26,26,29,0.95) 0%, rgba(59,28,50,0.9) 100%);
   }
   
   .hero-content{
     flex-direction:column;
     align-items:center;
     text-align:center;
+    gap:20px;
+  }
+  
+  .hero-poster{
+    margin-top:0;
   }
   
   .hero-poster img{
-    width:200px;
+    width:160px;
   }
   
   .movie-title{
-    font-size:28px;
+    font-size:24px;
   }
   
   .movie-overview{
     max-height:none;
+    font-size:14px;
+  }
+  
+  .movie-genres{
+    justify-content:center;
+  }
+  
+  .movie-rating{
+    justify-content:center;
+  }
+  
+  .genre-tag{
+    padding:5px 10px;
+    font-size:12px;
+  }
+  
+  .play-button{
+    width:100%;
+    padding:14px 24px;
   }
   
   .similar-grid{
@@ -1946,32 +1996,7 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
     gap: 12px;
   }
   
-  /* Search small phones */
-  .search-input input {
-    padding: 12px;
-    font-size: 16px; /* Prevents iOS zoom on focus */
-  }
-  
-  .search-btn {
-    padding: 12px 16px;
-    font-size: 14px;
-  }
-  
-  .search-filters {
-    flex-direction: column;
-    gap: 12px;
-  }
-  
-  .search-filters label {
-    width: 100%;
-  }
-  
-  .search-filters select,
-  .search-filters input {
-    width: 100%;
-    padding: 10px;
-    font-size: 16px;
-  }
+  /* Search small phones - removed, handled in main media queries */
   
   /* Pagination small phones */
   .pagination {
@@ -2009,53 +2034,7 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
     font-size: 22px;
   }
   
-  /* Search improvements */
-  .search {
-    margin-bottom: 20px;
-  }
-  
-  .search-input {
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .search-input input {
-    font-size: 16px; /* Prevents iOS zoom */
-    padding: 14px;
-    border-radius: 8px;
-  }
-  
-  .search-btn {
-    width: 100%;
-    padding: 14px;
-  }
-  
-  .search-filters {
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-  }
-  
-  .search-filters label {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  
-  .search-filters select,
-  .search-filters input[type="number"] {
-    flex: 1;
-    padding: 12px;
-    font-size: 16px;
-    min-height: 44px;
-  }
-  
-  .clear-btn {
-    width: 100%;
-    padding: 12px;
-    margin-top: 4px;
-  }
+  /* Search handled in main media queries above */
   
   /* Movie grid for search results */
   .movie-grid {
