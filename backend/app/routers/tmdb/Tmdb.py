@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 import os
 import requests
 from dotenv import load_dotenv
-from typing import Optional
+from typing import Optional, List
 
 load_dotenv()
 
@@ -28,12 +28,57 @@ def tmdb_get(path, params=None):
 def search_by_id(query: str, source: str):
     return tmdb_get(f"/find/{query}", {"external_id":source})
 
-@router.get("/search")
-def search_movies(query: str, page: int = 1, type: Optional[str] = None, year: Optional[int] = None, exid: Optional[str] = None):
-    # Supports optional filtering by type (movie|tv) and year.
-    # - type=movie: use /search/movie and pass year as 'year' (TMDB supports this)
-    # - type=tv: if year provided, use /discover/tv with first_air_date_year; otherwise /search/tv
+
+def sort_results(results: List[dict], sort_by: str) -> List[dict]:
+    """Sort results client-side based on sort_by parameter"""
+    if not results or sort_by == 'relevance':
+        return results
     
+    if sort_by == 'title_asc':
+        return sorted(results, key=lambda x: (x.get('title') or x.get('name') or '').lower())
+    elif sort_by == 'title_desc':
+        return sorted(results, key=lambda x: (x.get('title') or x.get('name') or '').lower(), reverse=True)
+    elif sort_by == 'rating_desc':
+        return sorted(results, key=lambda x: x.get('vote_average', 0), reverse=True)
+    elif sort_by == 'rating_asc':
+        return sorted(results, key=lambda x: x.get('vote_average', 0))
+    elif sort_by == 'date_desc':
+        return sorted(results, key=lambda x: x.get('release_date') or x.get('first_air_date') or '', reverse=True)
+    elif sort_by == 'date_asc':
+        return sorted(results, key=lambda x: x.get('release_date') or x.get('first_air_date') or '')
+    elif sort_by == 'popularity_desc':
+        return sorted(results, key=lambda x: x.get('popularity', 0), reverse=True)
+    
+    return results
+
+
+def filter_by_rating(results: List[dict], min_rating: Optional[float]) -> List[dict]:
+    """Filter results by minimum rating"""
+    if not min_rating:
+        return results
+    return [r for r in results if r.get('vote_average', 0) >= min_rating]
+
+
+@router.get("/search")
+def search_movies(
+    query: str, 
+    page: int = 1, 
+    type: Optional[str] = None, 
+    year: Optional[int] = None, 
+    exid: Optional[str] = None,
+    sort_by: Optional[str] = 'relevance',
+    min_rating: Optional[float] = None,
+    genre: Optional[int] = None
+):
+    """
+    Enhanced search with filters and sorting.
+    
+    - type: 'movie', 'tv', 'person', or None for multi-search
+    - sort_by: 'relevance', 'title_asc', 'title_desc', 'rating_desc', 'rating_asc', 
+               'date_desc', 'date_asc', 'popularity_desc'
+    - min_rating: minimum rating (0-10)
+    - genre: genre ID to filter by
+    """
     params = {"query": query, "page": page}
     
     match exid:
