@@ -10,7 +10,14 @@ export default function SearchResults({ searchPayload, onClear }) {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalResults, setTotalResults] = useState(0)
+  const [isPersonSearch, setIsPersonSearch] = useState(false)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (searchPayload?.query) {
+      setPage(1) // Reset to page 1 when search payload changes
+    }
+  }, [searchPayload])
 
   useEffect(() => {
     if (searchPayload?.query) {
@@ -22,21 +29,33 @@ export default function SearchResults({ searchPayload, onClear }) {
     try {
       const { query, filters } = searchPayload
       const params = { query, page: p }
+      
       if (filters) {
         if (filters.type) params.type = filters.type
         if (filters.year) params.year = filters.year
+        if (filters.sortBy) params.sort_by = filters.sortBy
+        if (filters.minRating) params.min_rating = filters.minRating
+        if (filters.genre) params.genre = filters.genre
       }
+      
+      setIsPersonSearch(filters?.type === 'person')
+      
       const res = await axios.get(`${API_BASE}/tmdb/search`, { params })
       setResults(res.data.results || [])
       setTotalPages(res.data.total_pages || 1)
       setTotalResults(res.data.total_results || 0)
     } catch (err) {
       console.error('Search failed:', err)
-      alert('Search failed')
     }
   }
 
   function onCardSelect(item) {
+    // Handle person results
+    if (item.media_type === 'person' || isPersonSearch) {
+      navigate(`/person/${item.id}`)
+      return
+    }
+    
     // Determine if TV show based on media_type or presence of first_air_date (TV) vs release_date (movie)
     const isTv = item.media_type === 'tv' || (item.first_air_date && !item.release_date)
     if (isTv) {
