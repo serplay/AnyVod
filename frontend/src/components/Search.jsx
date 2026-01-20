@@ -6,7 +6,6 @@ const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 export default function Search({ onSearch = () => {}, onClear = () => {} }) {
   const [q, setQ] = useState('')
   const [type, setType] = useState('All')
-  const [type, setType] = useState('All')
   const [year, setYear] = useState('')
   const [sortBy, setSortBy] = useState('Default')
   const [minRating, setMinRating] = useState('All')
@@ -129,7 +128,6 @@ export default function Search({ onSearch = () => {}, onClear = () => {} }) {
             aria-label="Search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search movies, TV shows, or people..."
             placeholder="Search movies, TV shows, or people..."
           />
           <button className="search-btn" type="submit">Search</button>
