@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
@@ -7,16 +7,30 @@ export default function Search({ onSearch = () => {}, onClear = () => {} }) {
   const [q, setQ] = useState('')
   const [type, setType] = useState('All')
   const [year, setYear] = useState('')
-  const [sortBy, setSortBy] = useState('relevance')
-  const [minRating, setMinRating] = useState('')
-  const [genre, setGenre] = useState('')
+  const [sortBy, setSortBy] = useState('Default')
+  const [minRating, setMinRating] = useState('All')
+  const [selectedGenres, setSelectedGenres] = useState([])
   const [genres, setGenres] = useState([])
   const [showFilters, setShowFilters] = useState(false)
+  
+  // Dropdown states
+  const [activeDropdown, setActiveDropdown] = useState(null)
 
   // Fetch genres when type changes
   useEffect(() => {
     fetchGenres()
   }, [type])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (!e.target.closest('.filter-dropdown')) {
+        setActiveDropdown(null)
+      }
+    }
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [])
 
   async function fetchGenres() {
     try {
@@ -24,7 +38,6 @@ export default function Search({ onSearch = () => {}, onClear = () => {} }) {
         setGenres([])
         return
       }
-      // Fetch movie genres by default, or TV genres if type is tv
       const endpoint = type === 'tv' 
         ? `${API_BASE}/tmdb/genres/tv` 
         : `${API_BASE}/tmdb/genres/movie`
@@ -37,7 +50,7 @@ export default function Search({ onSearch = () => {}, onClear = () => {} }) {
   }
 
   function submit(e) {
-    e.preventDefault()
+    if (e) e.preventDefault()
     const query = q.trim()
     if (!query) return
     
@@ -48,9 +61,10 @@ export default function Search({ onSearch = () => {}, onClear = () => {} }) {
       filters: { 
         type: type === 'All' ? undefined : type.toLowerCase(),
         year: year ? Number(year) : undefined,
-        sortBy,
-        minRating: minRating ? Number(minRating) : undefined,
-        genre: genre ? Number(genre) : undefined
+        sortBy: sortBy === 'Default' ? 'relevance' : sortBy,
+        minRating: minRating !== 'All' ? Number(minRating) : undefined,
+        genre: selectedGenres.length === 1 ? selectedGenres[0] : undefined,
+        genres: selectedGenres.length > 1 ? selectedGenres : undefined
       } 
     })
   }
@@ -59,35 +73,51 @@ export default function Search({ onSearch = () => {}, onClear = () => {} }) {
     setQ('')
     setYear('')
     setType('All')
-    setSortBy('relevance')
-    setMinRating('')
-    setGenre('')
+    setSortBy('Default')
+    setMinRating('All')
+    setSelectedGenres([])
     document.title = 'AnyVod'
     onClear()
   }
 
-  // Generate rating options (1-10 stars)
-  const ratingOptions = [
-    { value: '', label: 'Any' },
-    { value: '9', label: '9+ ⭐' },
-    { value: '8', label: '8+ ⭐' },
-    { value: '7', label: '7+ ⭐' },
-    { value: '6', label: '6+ ⭐' },
-    { value: '5', label: '5+ ⭐' },
-  ]
+  function toggleGenre(genreId) {
+    setSelectedGenres(prev => 
+      prev.includes(genreId) 
+        ? prev.filter(id => id !== genreId)
+        : [...prev, genreId]
+    )
+  }
 
+  function toggleDropdown(name) {
+    setActiveDropdown(activeDropdown === name ? null : name)
+  }
+
+  function selectOption(setter, value) {
+    setter(value)
+    setActiveDropdown(null)
+  }
+
+  const typeOptions = ['All', 'Movies', 'TV Shows']
+  const ratingOptions = ['All', '9+', '8+', '7+', '6+', '5+']
   const sortOptions = [
-    { value: 'relevance', label: 'Relevance' },
-    { value: 'popularity_desc', label: 'Most Popular' },
-    { value: 'rating_desc', label: 'Rating: High to Low' },
-    { value: 'rating_asc', label: 'Rating: Low to High' },
-    { value: 'title_asc', label: 'Title: A-Z' },
-    { value: 'title_desc', label: 'Title: Z-A' },
-    { value: 'date_desc', label: 'Newest First' },
-    { value: 'date_asc', label: 'Oldest First' },
+    { value: 'Default', label: 'Default' },
+    { value: 'popularity_desc', label: 'Popular' },
+    { value: 'rating_desc', label: 'Top Rated' },
+    { value: 'title_asc', label: 'A-Z' },
+    { value: 'title_desc', label: 'Z-A' },
+    { value: 'date_desc', label: 'Newest' },
+    { value: 'date_asc', label: 'Oldest' },
   ]
 
-  const hasActiveFilters = type !== 'All' || year || sortBy !== 'relevance' || minRating || genre
+  const hasActiveFilters = type !== 'All' || year || sortBy !== 'Default' || minRating !== 'All' || selectedGenres.length > 0
+
+  // Helper to get display value for type
+  const getTypeDisplay = () => {
+    if (type === 'movie') return 'Movies'
+    if (type === 'tv') return 'TV Shows'
+    if (type === 'person') return 'People'
+    return type
+  }
 
   return (
     <div className="search">
@@ -100,85 +130,173 @@ export default function Search({ onSearch = () => {}, onClear = () => {} }) {
             placeholder="Search movies, TV shows, or people..."
           />
           <button className="search-btn" type="submit">Search</button>
-        </div>
-
-        <div className="search-controls">
           <button 
             type="button" 
             className={`filter-toggle-btn ${showFilters ? 'active' : ''} ${hasActiveFilters ? 'has-filters' : ''}`}
             onClick={() => setShowFilters(!showFilters)}
           >
-            <span className="filter-icon">⚙</span>
-            Filters
-            {hasActiveFilters && <span className="filter-badge">●</span>}
+            Filter
+            {hasActiveFilters && <span className="filter-count">{
+              (type !== 'All' ? 1 : 0) + 
+              (year ? 1 : 0) + 
+              (sortBy !== 'Default' ? 1 : 0) + 
+              (minRating !== 'All' ? 1 : 0) + 
+              selectedGenres.length
+            }</span>}
           </button>
-          
-          {hasActiveFilters && (
-            <button type="button" className="clear-btn" onClick={clear}>
-              ✕ Clear All
-            </button>
-          )}
         </div>
 
         {showFilters && (
           <div className="search-filters-panel">
-            <div className="filter-row">
-              <label className="filter-item">
-                <span className="filter-label">Type</span>
-                <select value={type} onChange={(e) => { setType(e.target.value); setGenre(''); }}>
-                  <option value="All">🎬 All</option>
-                  <option value="movie">🎥 Movies</option>
-                  <option value="tv">📺 TV Shows</option>
-                  <option value="person">⭐ People</option>
-                </select>
-              </label>
+            <div className="filter-section">
+              <span className="filter-section-title">Filter</span>
+              <div className="filter-pills">
+                {/* Type Filter */}
+                <div className="filter-dropdown">
+                  <button 
+                    type="button" 
+                    className="filter-pill"
+                    onClick={(e) => { e.stopPropagation(); toggleDropdown('type'); }}
+                  >
+                    <span className="pill-label">Type</span>
+                    <span className="pill-value">{getTypeDisplay()}</span>
+                  </button>
+                  {activeDropdown === 'type' && (
+                    <div className="dropdown-menu">
+                      {typeOptions.map(opt => (
+                        <button 
+                          key={opt} 
+                          type="button"
+                          className={`dropdown-item ${(opt === 'Movies' && type === 'movie') || (opt === 'TV Shows' && type === 'tv') || (opt === 'People' && type === 'person') || opt === type ? 'active' : ''}`}
+                          onClick={() => {
+                            const val = opt === 'Movies' ? 'movie' : opt === 'TV Shows' ? 'tv' : opt === 'People' ? 'person' : 'All'
+                            selectOption(setType, val)
+                            setSelectedGenres([])
+                          }}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
-              <label className="filter-item">
-                <span className="filter-label">Sort By</span>
-                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                  {sortOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-              </label>
+                {/* Rating Filter */}
+                <div className="filter-dropdown">
+                  <button 
+                    type="button" 
+                    className="filter-pill"
+                    onClick={(e) => { e.stopPropagation(); toggleDropdown('rating'); }}
+                  >
+                    <span className="pill-label">Score</span>
+                    <span className="pill-value">{minRating}</span>
+                  </button>
+                  {activeDropdown === 'rating' && (
+                    <div className="dropdown-menu">
+                      {ratingOptions.map(opt => (
+                        <button 
+                          key={opt} 
+                          type="button"
+                          className={`dropdown-item ${minRating === opt ? 'active' : ''}`}
+                          onClick={() => selectOption(setMinRating, opt)}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Sort Filter */}
+                <div className="filter-dropdown">
+                  <button 
+                    type="button" 
+                    className="filter-pill"
+                    onClick={(e) => { e.stopPropagation(); toggleDropdown('sort'); }}
+                  >
+                    <span className="pill-label">Sort</span>
+                    <span className="pill-value">{sortOptions.find(o => o.value === sortBy)?.label || 'Default'}</span>
+                  </button>
+                  {activeDropdown === 'sort' && (
+                    <div className="dropdown-menu">
+                      {sortOptions.map(opt => (
+                        <button 
+                          key={opt.value} 
+                          type="button"
+                          className={`dropdown-item ${sortBy === opt.value ? 'active' : ''}`}
+                          onClick={() => selectOption(setSortBy, opt.value)}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Year Filter */}
+                <div className="filter-dropdown">
+                  <button 
+                    type="button" 
+                    className="filter-pill"
+                    onClick={(e) => { e.stopPropagation(); toggleDropdown('year'); }}
+                  >
+                    <span className="pill-label">Year</span>
+                    <span className="pill-value">{year || 'All'}</span>
+                  </button>
+                  {activeDropdown === 'year' && (
+                    <div className="dropdown-menu dropdown-menu-input">
+                      <input
+                        type="number"
+                        value={year}
+                        onChange={(e) => setYear(e.target.value)}
+                        placeholder="Enter year"
+                        min="1900"
+                        max="2100"
+                        autoFocus
+                      />
+                      <button 
+                        type="button" 
+                        className="dropdown-item"
+                        onClick={() => { setYear(''); setActiveDropdown(null); }}
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
-            <div className="filter-row">
-              <label className="filter-item">
-                <span className="filter-label">Year</span>
-                <input
-                  type="number"
-                  value={year}
-                  onChange={(e) => setYear(e.target.value)}
-                  placeholder="e.g. 2024"
-                  min="1900"
-                  max="2100"
-                />
-              </label>
-
-              <label className="filter-item">
-                <span className="filter-label">Min Rating</span>
-                <select value={minRating} onChange={(e) => setMinRating(e.target.value)}>
-                  {ratingOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
+            {/* Genre Tags */}
             {type !== 'person' && genres.length > 0 && (
-              <div className="filter-row">
-                <label className="filter-item filter-item-full">
-                  <span className="filter-label">Genre</span>
-                  <select value={genre} onChange={(e) => setGenre(e.target.value)}>
-                    <option value="">All Genres</option>
-                    {genres.map(g => (
-                      <option key={g.id} value={g.id}>{g.name}</option>
-                    ))}
-                  </select>
-                </label>
+              <div className="filter-section">
+                <span className="filter-section-title">Genre</span>
+                <div className="genre-tags">
+                  {genres.map(g => (
+                    <button
+                      key={g.id}
+                      type="button"
+                      className={`genre-tag ${selectedGenres.includes(g.id) ? 'active' : ''}`}
+                      onClick={() => toggleGenre(g.id)}
+                    >
+                      {g.name}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
+
+            {/* Filter Action Button */}
+            <div className="filter-actions">
+              <button type="submit" className="filter-apply-btn">
+                Filter
+              </button>
+              {hasActiveFilters && (
+                <button type="button" className="filter-clear-btn" onClick={clear}>
+                  Clear All
+                </button>
+              )}
+            </div>
           </div>
         )}
       </form>

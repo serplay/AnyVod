@@ -106,7 +106,7 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 }
 
 /* Search styles */
-.search{margin-bottom:24px}
+.search{margin-bottom:32px}
 .search-form{display:flex;flex-direction:column;gap:12px}
 .search-input{display:flex;gap:8px}
 .search-input input{flex:1;padding:12px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:#e6eef8;outline:none;font-size:15px;transition:border-color 0.2s, background 0.2s}
@@ -119,38 +119,77 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 /* Search Controls Row */
 .search-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 
-.filter-toggle-btn{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);padding:8px 14px;border-radius:8px;color:var(--muted);cursor:pointer;transition:all 0.2s;font-size:14px}
+.filter-toggle-btn{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);padding:10px 18px;border-radius:8px;color:#e6eef8;cursor:pointer;transition:all 0.2s;font-size:14px;font-weight:600}
 .filter-toggle-btn:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15)}
 .filter-toggle-btn.active{background:rgba(166,77,121,0.15);border-color:var(--accent);color:#fff}
-.filter-toggle-btn.has-filters .filter-badge{color:var(--accent);margin-left:4px}
-.filter-icon{font-size:14px}
+.filter-count{background:var(--accent);color:#fff;font-size:11px;padding:2px 6px;border-radius:10px;margin-left:4px}
 
-.clear-btn{background:transparent;border:1px solid rgba(255,255,255,0.08);padding:8px 14px;border-radius:8px;color:var(--muted);cursor:pointer;transition:all 0.2s;font-size:13px}
-.clear-btn:hover{background:rgba(255,100,100,0.1);border-color:rgba(255,100,100,0.3);color:#ff6b6b}
-
-/* Search Filters Panel */
-.search-filters-panel{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;animation:slideDown 0.2s ease-out}
+/* Search Filters Panel - New Style */
+.search-filters-panel{background:rgba(30,25,35,0.95);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px;margin-top:8px;display:flex;flex-direction:column;gap:20px;animation:slideDown 0.2s ease-out}
 
 @keyframes slideDown{
   from{opacity:0;transform:translateY(-8px)}
   to{opacity:1;transform:translateY(0)}
 }
 
-.filter-row{display:flex;gap:12px;flex-wrap:wrap}
+.filter-section{display:flex;flex-direction:column;gap:12px}
+.filter-section-title{font-size:14px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
 
+/* Filter Pills Row */
+.filter-pills{display:flex;flex-wrap:wrap;gap:10px}
+
+/* Filter Dropdown */
+.filter-dropdown{position:relative}
+
+.filter-pill{display:flex;align-items:center;gap:8px;background:rgba(45,35,50,0.9);border:1px solid rgba(255,255,255,0.08);padding:10px 16px;border-radius:8px;cursor:pointer;transition:all 0.2s;white-space:nowrap}
+.filter-pill:hover{background:rgba(60,45,65,0.9);border-color:rgba(255,255,255,0.12)}
+
+.pill-label{color:#999;font-size:13px;font-weight:500}
+.pill-value{color:var(--accent);font-size:13px;font-weight:600}
+
+.dropdown-menu{position:absolute;top:calc(100% + 6px);left:0;background:rgba(35,30,40,0.98);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px;min-width:120px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,0.4);animation:fadeIn 0.15s ease-out}
+
+.dropdown-menu-input{padding:10px;display:flex;flex-direction:column;gap:8px}
+.dropdown-menu-input input{padding:10px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#e6eef8;font-size:14px;outline:none;width:120px}
+.dropdown-menu-input input:focus{border-color:var(--accent)}
+
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(-4px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.dropdown-item{display:block;width:100%;text-align:left;padding:10px 14px;border:none;background:transparent;color:#e6eef8;font-size:13px;cursor:pointer;border-radius:6px;transition:background 0.15s}
+.dropdown-item:hover{background:rgba(255,255,255,0.08)}
+.dropdown-item.active{background:rgba(166,77,121,0.2);color:var(--accent)}
+
+/* Genre Tags */
+.genre-tags{display:flex;flex-wrap:wrap;gap:8px}
+
+.genre-tag{padding:8px 14px;border-radius:6px;background:rgba(45,35,50,0.9);border:1px solid rgba(255,255,255,0.08);color:#c8d6e8;font-size:13px;cursor:pointer;transition:all 0.2s;white-space:nowrap}
+.genre-tag:hover{background:rgba(60,45,65,0.9);border-color:rgba(255,255,255,0.15)}
+.genre-tag.active{background:rgba(166,77,121,0.25);border-color:var(--accent);color:var(--accent)}
+
+/* Filter Actions */
+.filter-actions{display:flex;gap:12px;padding-top:8px}
+
+.filter-apply-btn{background:linear-gradient(90deg, var(--accent), #c75f9a);border:none;padding:12px 28px;border-radius:8px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;transition:all 0.2s}
+.filter-apply-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(166,77,121,0.4)}
+
+.filter-clear-btn{background:transparent;border:1px solid rgba(255,255,255,0.1);padding:12px 20px;border-radius:8px;color:var(--muted);font-size:14px;cursor:pointer;transition:all 0.2s}
+.filter-clear-btn:hover{background:rgba(255,100,100,0.1);border-color:rgba(255,100,100,0.3);color:#ff6b6b}
+
+/* Legacy classes for backwards compatibility */
+.clear-btn{background:transparent;border:1px solid rgba(255,255,255,0.08);padding:8px 14px;border-radius:8px;color:var(--muted);cursor:pointer;transition:all 0.2s;font-size:13px}
+.clear-btn:hover{background:rgba(255,100,100,0.1);border-color:rgba(255,100,100,0.3);color:#ff6b6b}
+
+.filter-row{display:flex;gap:12px;flex-wrap:wrap}
 .filter-item{display:flex;flex-direction:column;gap:6px;flex:1;min-width:140px}
 .filter-item-full{flex:1 1 100%}
-
 .filter-label{font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);font-weight:600}
+.filter-item select,.filter-item input{padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:#e6eef8;font-size:14px;outline:none;transition:border-color 0.2s}
+.filter-item select:focus,.filter-item input:focus{border-color:var(--accent)}
 
-.filter-item select,
-.filter-item input{padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:#e6eef8;font-size:14px;outline:none;transition:border-color 0.2s}
-.filter-item select:focus,
-.filter-item input:focus{border-color:var(--accent)}
-.filter-item select{cursor:pointer}
-.filter-item input::placeholder{color:rgba(159,176,200,0.4)}
-
-/* Legacy search-filters class (backwards compatibility) */
+/* Legacy search-filters class */
 .search-filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .search-filters label{display:flex;flex-direction:column;font-size:12px;color:var(--muted)}
 .search-filters select,.search-filters input{padding:6px 8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:rgba(255,255,255,0.01);color:var(--muted)}
@@ -158,13 +197,15 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 @media (max-width:720px){
   .search-form{gap:10px}
   .search-controls{gap:8px}
-  .filter-toggle-btn{padding:8px 12px;font-size:13px}
-  .search-filters-panel{padding:14px;gap:10px}
-  .filter-row{gap:10px}
-  .filter-item{min-width:calc(50% - 6px)}
-  .filter-item select,
-  .filter-item input{padding:10px;font-size:16px}
-  .filter-label{font-size:10px}
+  .filter-toggle-btn{padding:10px 16px;font-size:13px}
+  .search-filters-panel{padding:16px;gap:16px}
+  .filter-pills{gap:8px}
+  .filter-pill{padding:8px 12px}
+  .pill-label,.pill-value{font-size:12px}
+  .genre-tags{gap:6px}
+  .genre-tag{padding:7px 12px;font-size:12px}
+  .dropdown-menu{min-width:100px}
+  .dropdown-item{padding:8px 12px;font-size:12px}
 }
 
 @media (max-width:480px){
@@ -173,14 +214,17 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
   .search-input{gap:8px}
   .search-input input{padding:12px;font-size:16px}
   .search-btn{padding:12px 16px;font-size:14px}
-  .search-controls{width:100%;justify-content:space-between}
+  .search-controls{width:100%}
   .filter-toggle-btn{flex:1;justify-content:center}
-  .clear-btn{flex:1;justify-content:center;text-align:center}
-  .search-filters-panel{padding:12px;gap:10px}
-  .filter-row{flex-direction:column;gap:10px}
-  .filter-item{min-width:100%}
-  .filter-item select,
-  .filter-item input{padding:12px;font-size:16px}
+  .search-filters-panel{padding:14px;gap:14px}
+  .filter-pills{gap:6px}
+  .filter-pill{padding:8px 10px;flex:1;min-width:calc(50% - 4px);justify-content:center}
+  .pill-label{font-size:11px}
+  .pill-value{font-size:11px}
+  .genre-tags{gap:6px}
+  .genre-tag{padding:6px 10px;font-size:11px}
+  .filter-actions{flex-direction:column;gap:8px}
+  .filter-apply-btn,.filter-clear-btn{width:100%}
 }
 
 /* Movie Page Styles */
