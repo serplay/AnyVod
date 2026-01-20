@@ -121,9 +121,6 @@ export default function SearchResults({ searchPayload, onClear }) {
       <div className="search-results-header">
         <h2>Search Results for "{searchPayload?.query}"</h2>
         <p className="search-results-count">{totalResults.toLocaleString()} results found</p>
-        <button className="clear-search-btn" onClick={onClear}>
-          ✕ Clear Search
-        </button>
       </div>
       
       <MovieList movies={results} onSelect={onCardSelect} />
