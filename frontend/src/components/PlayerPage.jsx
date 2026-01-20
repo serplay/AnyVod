@@ -309,6 +309,37 @@ export default function PlayerPage() {
             </div>
           </div>
         )}
+
+        {/* Mobile Episode Section - shows below video on mobile */}
+        <div className="mobile-episode-section">
+          <div className="mobile-section-header">
+            <span className="mobile-section-title">Episodes</span>
+            <div className="mobile-episode-search">
+              <span>🔍</span>
+              <input
+                type="text"
+                placeholder="Search..."
+                value={episodeSearch}
+                onChange={(e) => setEpisodeSearch(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="mobile-episode-grid">
+            {filteredEpisodes.map((ep) => (
+              <div
+                key={ep.episode_number}
+                className={`mobile-episode-card ${currentEpisode === ep.episode_number ? 'active' : ''}`}
+                onClick={() => selectEpisode(ep.episode_number)}
+              >
+                <div className="ep-num">{ep.episode_number}</div>
+                <div className="ep-name">{ep.name || `Episode ${ep.episode_number}`}</div>
+                {currentEpisode === ep.episode_number && (
+                  <div className="ep-playing">▶ Playing</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
       </main>
     </div>
   )
