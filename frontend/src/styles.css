@@ -114,6 +114,8 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 .search-input input::placeholder{color:rgba(159,176,200,0.5)}
 .search-btn{background:linear-gradient(90deg, var(--accent), #c75f9a);border:none;padding:12px 20px;border-radius:10px;color:#fff;font-weight:700;cursor:pointer;transition:transform 0.2s, box-shadow 0.2s}
 .search-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(166,77,121,0.4)}
+.search-btn{background:linear-gradient(90deg, var(--accent), #c75f9a);border:none;padding:12px 20px;border-radius:10px;color:#fff;font-weight:700;cursor:pointer;transition:transform 0.2s, box-shadow 0.2s}
+.search-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(166,77,121,0.4)}
 .search-btn:active{transform:translateY(1px)}
 
 /* Search Controls Row */
