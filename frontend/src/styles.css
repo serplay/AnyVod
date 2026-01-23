@@ -863,7 +863,7 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 @media (max-width: 768px){
   .movie-hero{
     height:auto;
-    min-height:unset;
+    min-height:400px;
   }
   
   .hero-overlay{
@@ -882,10 +882,16 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
   
   .hero-poster{
     margin-top:0;
+    min-width:160px;
   }
   
   .hero-poster img{
     width:160px;
+  }
+  
+  .poster-skeleton{
+    width:160px !important;
+    height:240px !important;
   }
   
   .movie-title{
@@ -2017,6 +2023,8 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
   position:relative;
   border-radius:8px;
   overflow:hidden;
+  /* Prevent CLS by reserving space */
+  aspect-ratio:2/3;
 }
 
 .category-card:hover{
@@ -2027,10 +2035,11 @@ footer{display:flex;gap:12px;align-items:center;justify-content:center;margin-to
 
 .category-card img{
   width:100%;
-  height:300px;
+  height:100%;
   object-fit:cover;
   display:block;
   border-radius:8px;
+  background:rgba(255,255,255,0.05);
 }
 
 .category-poster-placeholder{
@@ -2880,3 +2889,152 @@ body.player-open {
   }
 }
 
+/* ================================
+   CLS Prevention & Skeleton Loading
+   ================================ */
+
+/* Skeleton animation */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+.skeleton-pulse {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+/* Hero Banner - Fixed dimensions to prevent CLS */
+.hero-banner-home {
+  /* Ensure min-height is always set even before content loads */
+  contain: layout style;
+}
+
+.hero-banner-skeleton {
+  background: linear-gradient(135deg, var(--bg-900) 0%, var(--bg-800) 100%);
+}
+
+.hero-banner-loading {
+  background: linear-gradient(90deg, rgba(26,26,29,0.95) 0%, rgba(59,28,50,0.7) 50%, rgba(26,26,29,0.9) 100%);
+}
+
+.hero-banner-loading .skeleton-title {
+  width: 60%;
+  height: 56px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.hero-banner-loading .skeleton-meta {
+  width: 40%;
+  height: 24px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 6px;
+  margin-bottom: 20px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  animation-delay: 0.1s;
+}
+
+.hero-banner-loading .skeleton-overview {
+  width: 90%;
+  height: 80px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 6px;
+  margin-bottom: 24px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  animation-delay: 0.2s;
+}
+
+.hero-banner-loading .skeleton-buttons {
+  width: 250px;
+  height: 48px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 6px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  animation-delay: 0.3s;
+}
+
+/* Movie Page Hero - Fixed dimensions to prevent CLS */
+.movie-hero {
+  /* Use contain to prevent layout recalculation */
+  contain: layout style;
+}
+
+.movie-hero-skeleton {
+  background: linear-gradient(135deg, var(--bg-900) 0%, var(--bg-800) 100%);
+}
+
+.poster-skeleton {
+  background: rgba(255,255,255,0.08);
+  border-radius: 12px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+/* Hero poster with explicit aspect ratio to prevent CLS */
+.hero-poster {
+  /* Reserve space for the poster image */
+  min-width: 280px;
+  aspect-ratio: 2/3;
+}
+
+.hero-poster img {
+  /* Prevent layout shift when image loads */
+  aspect-ratio: 2/3;
+  object-fit: cover;
+}
+
+/* Movie card images - prevent CLS on category rows */
+.movie-card img {
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  background: rgba(255,255,255,0.05);
+}
+
+/* Episode images - prevent CLS */
+.episode-image-container {
+  aspect-ratio: 16/9;
+  background: rgba(255,255,255,0.05);
+  overflow: hidden;
+}
+
+.episode-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Trailer embed - prevent CLS */
+.trailer-embed {
+  aspect-ratio: 16/9;
+  width: 100%;
+  max-width: 800px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.trailer-embed iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Cast card images - prevent CLS */
+.cast-card img {
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  background: rgba(255,255,255,0.05);
+}
+
+/* Content visibility optimization for below-the-fold content */
+.categories-container {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 2000px;
+}
+
+/* Individual category rows */
+.category-row {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 280px;
+}

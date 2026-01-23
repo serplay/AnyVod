@@ -119,18 +119,16 @@ export default function MoviePage() {
     })
   }
 
-  if (!details) return <div className="details">Loading...</div>
-
-  const rating = details.vote_average ? details.vote_average.toFixed(1) : 'N/A'
-  const voteCount = details.vote_count || 0
+  const rating = details?.vote_average ? details.vote_average.toFixed(1) : 'N/A'
+  const voteCount = details?.vote_count || 0
 
   return (
     <div className="movie-page">
-      {/* Hero Banner */}
+      {/* Hero Banner with fixed dimensions to prevent CLS */}
       <div 
-        className="movie-hero" 
+        className={`movie-hero ${!details ? 'movie-hero-skeleton' : ''}`}
         style={{ 
-          backgroundImage: details.backdrop_path 
+          backgroundImage: details?.backdrop_path 
             ? `url(https://image.tmdb.org/t/p/original${details.backdrop_path})` 
             : 'none' 
         }}
@@ -138,59 +136,80 @@ export default function MoviePage() {
         <div className="hero-overlay">
           <div className="hero-content">
             <div className="hero-poster">
-              {details.poster_path ? (
-                <img 
-                  src={`https://image.tmdb.org/t/p/w500${details.poster_path}`} 
-                  alt={details.title || details.name} 
-                />
+              {details ? (
+                details.poster_path ? (
+                  <img 
+                    src={`https://image.tmdb.org/t/p/w500${details.poster_path}`} 
+                    alt={details.title || details.name}
+                    width="280"
+                    height="420"
+                    loading="eager"
+                  />
+                ) : (
+                  <img 
+                    src={moviePlaceholder} 
+                    alt={details.title || details.name} 
+                    className="placeholder-img"
+                    width="280"
+                    height="420"
+                  />
+                )
               ) : (
-                <img 
-                  src={moviePlaceholder} 
-                  alt={details.title || details.name} 
-                  className="placeholder-img"
-                />
+                <div className="poster-skeleton" style={{ width: 280, height: 420 }}></div>
               )}
             </div>
             
             <div className="hero-info">
-              <h1 className="movie-title">{details.title || details.name}</h1>
-              
-              {/* Rating */}
-              <div className="movie-rating">
-                <span className="rating-star">⭐</span>
-                <span className="rating-value">{rating}</span>
-                <span className="rating-count">({voteCount} votes)</span>
-              </div>
+              {details ? (
+                <>
+                  <h1 className="movie-title">{details.title || details.name}</h1>
+                  
+                  {/* Rating */}
+                  <div className="movie-rating">
+                    <span className="rating-star">⭐</span>
+                    <span className="rating-value">{rating}</span>
+                    <span className="rating-count">({voteCount} votes)</span>
+                  </div>
 
-              {/* Genres */}
-              <div className="movie-genres">
-                {details.genres?.map(g => (
-                  <span key={g.id} className="genre-tag">{g.name}</span>
-                ))}
-              </div>
+                  {/* Genres */}
+                  <div className="movie-genres">
+                    {details.genres?.map(g => (
+                      <span key={g.id} className="genre-tag">{g.name}</span>
+                    ))}
+                  </div>
 
-              {/* Overview */}
-              <p className="movie-overview">{details.overview}</p>
+                  {/* Overview */}
+                  <p className="movie-overview">{details.overview}</p>
 
-              {/* Play Button with Availability Check */}
-              <div className="play-section">
-                {checkingAvailability ? (
-                  <button className="play-button checking" disabled>
-                    <span className="spinner"></span> Checking...
-                  </button>
-                ) : availability?.available ? (
-                  <button 
-                    className="play-button" 
-                    onClick={() => navigate(`/player/${isTv ? 'tv' : 'movie'}/${details.id}`)}
-                  >
-                    ▶ Play Now
-                  </button>
-                ) : (
-                  <button className="play-button unavailable" disabled>
-                    ✗ Not Available
-                  </button>
-                )}
-              </div>
+                  {/* Play Button with Availability Check */}
+                  <div className="play-section">
+                    {checkingAvailability ? (
+                      <button className="play-button checking" disabled>
+                        <span className="spinner"></span> Checking...
+                      </button>
+                    ) : availability?.available ? (
+                      <button 
+                        className="play-button" 
+                        onClick={() => navigate(`/player/${isTv ? 'tv' : 'movie'}/${details.id}`)}
+                      >
+                        ▶ Play Now
+                      </button>
+                    ) : (
+                      <button className="play-button unavailable" disabled>
+                        ✗ Not Available
+                      </button>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="skeleton-title" style={{ width: '60%', height: 40, background: 'rgba(255,255,255,0.08)', borderRadius: 8, marginBottom: 16 }}></div>
+                  <div className="skeleton-meta" style={{ width: '40%', height: 24, background: 'rgba(255,255,255,0.06)', borderRadius: 6, marginBottom: 16 }}></div>
+                  <div className="skeleton-genres" style={{ width: '50%', height: 32, background: 'rgba(255,255,255,0.05)', borderRadius: 6, marginBottom: 16 }}></div>
+                  <div className="skeleton-overview" style={{ width: '90%', height: 80, background: 'rgba(255,255,255,0.05)', borderRadius: 6, marginBottom: 24 }}></div>
+                  <div className="skeleton-button" style={{ width: 160, height: 48, background: 'rgba(255,255,255,0.08)', borderRadius: 6 }}></div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -207,7 +226,7 @@ export default function MoviePage() {
         )}
 
         {/* Seasons & Episodes Section (TV Shows Only) */}
-        {isTv && details.number_of_seasons > 0 && (
+        {isTv && details?.number_of_seasons > 0 && (
           <div className="section seasons-section">
             <h2 className="section-title">Seasons & Episodes</h2>
             
@@ -282,7 +301,7 @@ export default function MoviePage() {
         )}
 
         {/* Cast Section */}
-        {details.credits?.cast && details.credits.cast.length > 0 && (
+        {details?.credits?.cast && details.credits.cast.length > 0 && (
           <div className="section cast-section">
             <h2 className="section-title">Cast</h2>
             <div className="cast-slider-wrapper">

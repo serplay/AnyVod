@@ -45,9 +45,18 @@ export default function CategoryRow({ title, items = [] }) {
                 <img
                   src={`https://image.tmdb.org/t/p/w342${item.poster_path}`}
                   alt={item.title || item.name}
+                  width="160"
+                  height="240"
+                  loading="lazy"
                 />
               ) : (
-                <img src={moviePlaceholder} alt={item.title || item.name} className="placeholder-img" />
+                <img 
+                  src={moviePlaceholder} 
+                  alt={item.title || item.name} 
+                  className="placeholder-img"
+                  width="160"
+                  height="240"
+                />
               )}
               <div className="category-card-overlay">
                 <h4>{item.title || item.name}</h4>

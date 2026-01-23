@@ -71,10 +71,13 @@ export default function Home() {
 
   return (
     <div className="home-page">
-      {hero && (
-        <div className="hero-banner-home" style={{
-          backgroundImage: `url(https://image.tmdb.org/t/p/original${hero.backdrop_path})`
-        }}>
+      {/* Hero banner with fixed dimensions to prevent CLS */}
+      <div className={`hero-banner-home ${!hero ? 'hero-banner-skeleton' : ''}`} style={{
+        backgroundImage: hero?.backdrop_path 
+          ? `url(https://image.tmdb.org/t/p/original${hero.backdrop_path})` 
+          : 'none'
+      }}>
+        {hero ? (
           <div className="hero-banner-overlay">
             <div className="hero-banner-content">
               <h1 className="hero-banner-title">{hero.title || hero.name}</h1>
@@ -104,8 +107,17 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="hero-banner-overlay hero-banner-loading">
+            <div className="hero-banner-content">
+              <div className="skeleton-title"></div>
+              <div className="skeleton-meta"></div>
+              <div className="skeleton-overview"></div>
+              <div className="skeleton-buttons"></div>
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className="categories-container">
         <CategoryRow title="Trending Now" items={trending} />
