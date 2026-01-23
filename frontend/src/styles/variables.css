@@ -1,0 +1,32 @@
+/* ================================
+   CSS Variables & Base Styles
+   ================================ */
+
+:root {
+  --bg-900: #1A1A1D; /* deep dark gray */
+  --bg-800: #3B1C32; /* dark purple */
+  --card: #3B1C32; /* dark purple for cards */
+  --card-2: #6A1E55; /* medium purple */
+  --muted: #d4a5c0; /* light purple-pink */
+  --accent: #A64D79; /* rose-purple accent */
+  --accent-2: #A64D79; /* rose-purple for CTAs */
+  --glass: rgba(166,77,121,0.03);
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, Arial;
+  color: #e6eef8;
+  background: linear-gradient(180deg, var(--bg-900) 0%, var(--bg-800) 100%);
+  background-attachment: fixed;
+  background-size: cover;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Prevent body scroll when player is open */
+body.player-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}

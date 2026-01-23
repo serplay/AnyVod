@@ -1,0 +1,235 @@
+/* ================================
+   Netflix-like Home Page
+   ================================ */
+
+.home-page {
+  margin: -20px;
+  padding: 0;
+}
+
+/* Hero Banner */
+.hero-banner-home {
+  width: 100%;
+  height: 70vh;
+  min-height: 500px;
+  max-height: 800px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  margin-bottom: 40px;
+  contain: layout style;
+}
+
+.hero-banner-skeleton {
+  background: linear-gradient(135deg, var(--bg-900) 0%, var(--bg-800) 100%);
+}
+
+.hero-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(26,26,29,0.95) 0%, rgba(59,28,50,0.7) 50%, transparent 100%),
+             linear-gradient(0deg, rgba(26,26,29,0.98) 0%, rgba(26,26,29,0.3) 40%, transparent 60%);
+  display: flex;
+  align-items: flex-end;
+  padding: 60px;
+}
+
+.hero-banner-content {
+  max-width: 600px;
+  color: #fff;
+}
+
+.hero-banner-title {
+  font-size: 56px;
+  font-weight: 900;
+  margin: 0 0 16px 0;
+  line-height: 1.1;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+}
+
+.hero-banner-meta {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.hero-banner-rating {
+  color: #ffd700;
+  font-weight: 700;
+}
+
+.hero-banner-year {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.hero-banner-genres {
+  color: var(--muted);
+}
+
+.hero-banner-overview {
+  font-size: 18px;
+  line-height: 1.6;
+  color: #e6eef8;
+  margin-bottom: 24px;
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+}
+
+.hero-banner-buttons {
+  display: flex;
+  gap: 16px;
+}
+
+.hero-btn {
+  padding: 14px 32px;
+  border-radius: 6px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.hero-btn-play {
+  background: linear-gradient(90deg, var(--accent), #c75f9a);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(166,77,121,0.4);
+}
+
+.hero-btn-play:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(166,77,121,0.6);
+}
+
+.hero-btn-info {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.3);
+  backdrop-filter: blur(10px);
+}
+
+.hero-btn-info:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+/* Hero Banner Loading Skeleton */
+.hero-banner-loading {
+  background: linear-gradient(90deg, rgba(26,26,29,0.95) 0%, rgba(59,28,50,0.7) 50%, rgba(26,26,29,0.9) 100%);
+}
+
+.hero-banner-loading .skeleton-title {
+  width: 60%;
+  height: 56px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.hero-banner-loading .skeleton-meta {
+  width: 40%;
+  height: 24px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 6px;
+  margin-bottom: 20px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  animation-delay: 0.1s;
+}
+
+.hero-banner-loading .skeleton-overview {
+  width: 90%;
+  height: 80px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 6px;
+  margin-bottom: 24px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  animation-delay: 0.2s;
+}
+
+.hero-banner-loading .skeleton-buttons {
+  width: 250px;
+  height: 48px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 6px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  animation-delay: 0.3s;
+}
+
+/* Categories Container */
+.categories-container {
+  padding: 20px 40px 60px 40px;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 2000px;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+
+.pagination-btn {
+  padding: 12px 24px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--card), var(--card-2));
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--card-2), var(--accent));
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(166,77,121,0.3);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-numbers {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.pagination-number {
+  padding: 10px 16px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--muted);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 44px;
+  text-align: center;
+}
+
+.pagination-number:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+.pagination-number.active {
+  background: linear-gradient(90deg, var(--accent), #c75f9a);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(166,77,121,0.4);
+}
+
+.pagination-ellipsis {
+  color: var(--muted);
+  padding: 0 8px;
+  font-weight: 600;
+}

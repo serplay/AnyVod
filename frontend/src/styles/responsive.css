@@ -1,0 +1,650 @@
+/* ==========================================
+   RESPONSIVE STYLES
+   Mobile-first optimizations
+   ========================================== */
+
+/* Responsive: player wrap */
+@media (max-width: 980px) {
+  .player-wrap {
+    position: relative;
+    left: 0;
+    transform: none;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .player-wrap {
+    aspect-ratio: 4/3;
+  }
+}
+
+/* Basic responsive tweaks */
+@media (max-width: 720px) {
+  .app {
+    margin: 12px;
+    padding: 12px;
+  }
+  
+  .details {
+    padding: 12px;
+  }
+  
+  header h1 {
+    font-size: 20px;
+  }
+  
+  .search-form {
+    gap: 10px;
+  }
+  
+  .search-controls {
+    gap: 8px;
+  }
+  
+  .filter-toggle-btn {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+  
+  .search-filters-panel {
+    padding: 16px;
+    gap: 16px;
+  }
+  
+  .filter-pills {
+    gap: 8px;
+  }
+  
+  .filter-pill {
+    padding: 8px 12px;
+  }
+  
+  .pill-label, .pill-value {
+    font-size: 12px;
+  }
+  
+  .genre-tags {
+    gap: 6px;
+  }
+  
+  .genre-tag {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+  
+  .dropdown-menu {
+    min-width: 100px;
+  }
+  
+  .dropdown-item {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search {
+    margin-bottom: 16px;
+  }
+  
+  .search-form {
+    gap: 8px;
+  }
+  
+  .search-input {
+    gap: 8px;
+  }
+  
+  .search-input input {
+    padding: 12px;
+    font-size: 16px;
+  }
+  
+  .search-btn {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+  
+  .search-controls {
+    width: 100%;
+  }
+  
+  .filter-toggle-btn {
+    flex: 1;
+    justify-content: center;
+  }
+  
+  .search-filters-panel {
+    padding: 14px;
+    gap: 14px;
+  }
+  
+  .filter-pills {
+    gap: 6px;
+  }
+  
+  .filter-pill {
+    padding: 8px 10px;
+    flex: 1;
+    min-width: calc(50% - 4px);
+    justify-content: center;
+  }
+  
+  .pill-label {
+    font-size: 11px;
+  }
+  
+  .pill-value {
+    font-size: 11px;
+  }
+  
+  .genre-tags {
+    gap: 6px;
+  }
+  
+  .genre-tag {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+  
+  .filter-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .filter-apply-btn, .filter-clear-btn {
+    width: 100%;
+  }
+}
+
+/* Movie Page Responsive */
+@media (max-width: 1024px) {
+  .hero-content {
+    gap: 24px;
+    padding: 30px;
+  }
+  
+  .hero-poster img {
+    width: 220px;
+  }
+  
+  .movie-title {
+    font-size: 36px;
+  }
+  
+  .movie-content {
+    padding: 30px 20px 60px 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .movie-hero {
+    height: auto;
+    min-height: 400px;
+  }
+  
+  .hero-overlay {
+    position: relative;
+    padding: 24px 16px;
+    align-items: flex-start;
+    background: linear-gradient(180deg, rgba(26,26,29,0.95) 0%, rgba(59,28,50,0.9) 100%);
+  }
+  
+  .hero-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+  }
+  
+  .hero-poster {
+    margin-top: 0;
+    min-width: 160px;
+  }
+  
+  .hero-poster img {
+    width: 160px;
+  }
+  
+  .poster-skeleton {
+    width: 160px !important;
+    height: 240px !important;
+  }
+  
+  .movie-title {
+    font-size: 24px;
+  }
+  
+  .movie-overview {
+    max-height: none;
+    font-size: 14px;
+  }
+  
+  .movie-genres {
+    justify-content: center;
+  }
+  
+  .movie-rating {
+    justify-content: center;
+  }
+  
+  .genre-tag {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+  
+  .play-button {
+    width: 100%;
+    padding: 14px 24px;
+  }
+  
+  .similar-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+  }
+  
+  .episode-card {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .episode-image-container {
+    width: 100%;
+  }
+  
+  .episodes-container {
+    padding: 20px;
+  }
+  
+  .season-selector {
+    gap: 8px;
+  }
+  
+  .season-btn {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+}
+
+/* Player Page Responsive */
+@media (max-width: 900px) {
+  .player-page-tv {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  
+  .episode-sidebar {
+    display: none;
+  }
+  
+  .sidebar-expand-btn {
+    display: none;
+  }
+  
+  .player-main {
+    flex: none;
+    overflow: visible;
+  }
+  
+  .player-video-container {
+    flex: none;
+    aspect-ratio: 16/9;
+    min-height: auto;
+  }
+  
+  /* Mobile episode list */
+  .mobile-episode-section {
+    display: block;
+    background: #16161a;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  
+  .mobile-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  
+  .mobile-section-title {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  .mobile-episode-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #0d0d0f;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 6px 10px;
+    width: 140px;
+  }
+  
+  .mobile-episode-search input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 12px;
+    outline: none;
+    width: 100%;
+  }
+  
+  .mobile-episode-search input::placeholder {
+    color: rgba(255,255,255,0.4);
+  }
+  
+  .mobile-episode-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+    padding: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  
+  .mobile-episode-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  
+  .mobile-episode-card:hover {
+    background: rgba(255,255,255,0.08);
+  }
+  
+  .mobile-episode-card.active {
+    background: rgba(166,77,121,0.2);
+    border-color: var(--accent);
+  }
+  
+  .mobile-episode-card .ep-num {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  
+  .mobile-episode-card.active .ep-num {
+    color: var(--accent);
+  }
+  
+  .mobile-episode-card .ep-name {
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .mobile-episode-card .ep-playing {
+    color: var(--accent);
+    font-size: 10px;
+    margin-top: 4px;
+  }
+  
+  /* Season tabs mobile */
+  .season-selector {
+    padding: 12px;
+  }
+  
+  .season-tabs {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+  }
+  
+  .season-tab {
+    padding: 8px 16px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+}
+
+/* Desktop: hide mobile episode section */
+@media (min-width: 901px) {
+  .mobile-episode-section {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .player-controls-bar {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .player-controls-center {
+    justify-content: center;
+  }
+  
+  .player-top-bar {
+    padding: 10px 12px;
+  }
+  
+  .player-show-title {
+    font-size: 14px;
+  }
+  
+  .control-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+  
+  .player-back-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+  
+  .mobile-episode-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 10px;
+  }
+  
+  .mobile-episode-card {
+    padding: 10px 8px;
+  }
+  
+  .mobile-episode-card .ep-num {
+    font-size: 16px;
+  }
+  
+  .mobile-episode-card .ep-name {
+    font-size: 10px;
+  }
+}
+
+/* Person Page Responsive */
+@media (max-width: 1024px) {
+  .person-hero-content {
+    padding: 40px 30px;
+    gap: 30px;
+  }
+  
+  .person-profile-img,
+  .person-profile-placeholder {
+    width: 260px;
+    height: 390px;
+  }
+  
+  .person-name {
+    font-size: 44px;
+  }
+  
+  .person-content {
+    padding: 50px 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .person-hero-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 30px 20px;
+  }
+  
+  .person-profile-img,
+  .person-profile-placeholder {
+    width: 240px;
+    height: 360px;
+  }
+  
+  .person-name {
+    font-size: 36px;
+  }
+  
+  .person-meta {
+    justify-content: center;
+  }
+  
+  .person-bio-preview {
+    max-width: 100%;
+  }
+  
+  .person-content {
+    padding: 40px 20px;
+  }
+  
+  .person-credits-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+  }
+  
+  .person-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Home Page Responsive */
+@media (max-width: 1024px) {
+  .hero-banner-overlay {
+    padding: 40px;
+  }
+  
+  .hero-banner-title {
+    font-size: 44px;
+  }
+  
+  .categories-container {
+    padding: 20px;
+  }
+  
+  .category-card {
+    width: 180px;
+  }
+  
+  .category-card img {
+    height: 270px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-banner-home {
+    height: 60vh;
+    min-height: 400px;
+  }
+  
+  .hero-banner-overlay {
+    padding: 30px 20px;
+  }
+  
+  .hero-banner-title {
+    font-size: 32px;
+  }
+  
+  .hero-banner-overview {
+    font-size: 16px;
+  }
+  
+  .hero-btn {
+    padding: 12px 24px;
+    font-size: 16px;
+  }
+  
+  .categories-container {
+    padding: 20px 10px;
+  }
+  
+  .category-slider-wrapper {
+    padding: 0 30px;
+  }
+  
+  .category-card {
+    width: 150px;
+  }
+  
+  .category-card img {
+    height: 225px;
+  }
+  
+  .category-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 36px;
+  }
+  
+  .pagination {
+    gap: 4px;
+  }
+  
+  .pagination-btn {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+  
+  .pagination-number {
+    padding: 8px 12px;
+    min-width: 36px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-banner-title {
+    font-size: 24px;
+  }
+  
+  .hero-banner-meta {
+    font-size: 14px;
+    gap: 12px;
+  }
+  
+  .hero-banner-overview {
+    font-size: 14px;
+  }
+  
+  .hero-banner-buttons {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .hero-btn {
+    width: 100%;
+  }
+  
+  .category-title {
+    font-size: 20px;
+  }
+  
+  .search-results-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -1,0 +1,452 @@
+/* ============================================
+   Player Page - HiAnime-inspired layout
+   ============================================ */
+
+/* Player wrap (legacy) */
+.player {
+  margin-top: 12px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.player-wrap-container {
+  overflow: visible;
+  position: relative;
+}
+
+.player-wrap {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140%;
+  max-width: 1400px;
+  aspect-ratio: 16/9;
+}
+
+.player-wrap iframe {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+}
+
+/* Base player page */
+.player-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #0d0d0f;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+/* ---- Movie Player Layout ---- */
+.player-page-movie {
+  display: flex;
+  flex-direction: column;
+}
+
+.player-header-movie {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  background: linear-gradient(180deg, rgba(13,13,15,1) 0%, rgba(13,13,15,0.9) 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.player-title-movie {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.player-main-movie {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.player-main-movie .player-iframe {
+  width: 100%;
+  height: 100%;
+  max-width: 1400px;
+  aspect-ratio: 16/9;
+  border-radius: 8px;
+  border: none;
+}
+
+/* ---- TV Show Player Layout ---- */
+.player-page-tv {
+  display: flex;
+  flex-direction: row;
+}
+
+/* Episode Sidebar */
+.episode-sidebar {
+  width: 280px;
+  min-width: 280px;
+  height: 100vh;
+  background: #16161a;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.episode-sidebar.collapsed {
+  width: 0;
+  min-width: 0;
+  border-right: none;
+}
+
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: #1a1a1e;
+}
+
+.sidebar-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.sidebar-label {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-collapse-btn {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.sidebar-collapse-btn:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.sidebar-expand-btn {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  width: 24px;
+  height: 60px;
+  border-radius: 0 6px 6px 0;
+  cursor: pointer;
+  font-size: 10px;
+  z-index: 10000;
+  transition: width 0.2s;
+}
+
+.sidebar-expand-btn:hover {
+  width: 30px;
+}
+
+.episode-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #0d0d0f;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+.search-icon {
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+.episode-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 13px;
+  outline: none;
+}
+
+.episode-search-input::placeholder {
+  color: rgba(255,255,255,0.4);
+}
+
+/* Episode List */
+.episode-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.episode-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.episode-list::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.02);
+}
+
+.episode-list::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 3px;
+}
+
+.episode-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+.episode-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border-left: 3px solid transparent;
+}
+
+.episode-item:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.episode-item.active {
+  background: linear-gradient(90deg, rgba(166,77,121,0.2) 0%, rgba(166,77,121,0.05) 100%);
+  border-left-color: var(--accent);
+}
+
+.episode-number {
+  color: rgba(255,255,255,0.5);
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 24px;
+}
+
+.episode-item.active .episode-number {
+  color: var(--accent);
+}
+
+.episode-name {
+  flex: 1;
+  color: #e0e0e0;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.episode-item.active .episode-name {
+  color: #fff;
+  font-weight: 500;
+}
+
+.episode-playing-icon {
+  color: var(--accent);
+  font-size: 12px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Main Content Area */
+.player-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Top Bar */
+.player-top-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  background: #0d0d0f;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.player-back-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.player-back-btn:hover {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.2);
+  transform: scale(1.05);
+}
+
+.player-show-title {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Video Container */
+.player-video-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  min-height: 0;
+}
+
+.player-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.player-loading {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* Player Controls Bar */
+.player-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #16161a;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.player-controls-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.now-watching {
+  color: #fff;
+  font-size: 14px;
+}
+
+.now-watching strong {
+  color: var(--accent);
+}
+
+.server-hint {
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+}
+
+.player-controls-center {
+  display: flex;
+  gap: 12px;
+}
+
+.control-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.control-btn:hover:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.control-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Season Selector in Player */
+.player-page .season-selector {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #1a1a1e;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  flex-wrap: wrap;
+}
+
+.season-label {
+  color: rgba(255,255,255,0.7);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.season-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.season-tab {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.season-tab:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.2);
+}
+
+.season-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+}

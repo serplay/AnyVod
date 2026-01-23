@@ -1,0 +1,113 @@
+/* ================================
+   Movie Grid & Card Styles
+   ================================ */
+
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+  --card-width: 160px;
+}
+
+.movie-card {
+  background: linear-gradient(180deg, var(--card), var(--card-2));
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: box-shadow .15s ease;
+  perspective: 1000px;
+}
+
+.movie-card:hover {
+  box-shadow: 0 12px 30px rgba(6,12,26,0.6);
+}
+
+.movie-card-inner {
+  transform-style: preserve-3d;
+  transition: transform 180ms cubic-bezier(.2,.8,.2,1);
+  border-radius: 8px;
+}
+
+.movie-card img {
+  width: 100%;
+  border-radius: 8px;
+  display: block;
+  transform: translateZ(0);
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  background: rgba(255,255,255,0.05);
+}
+
+.placeholder-img {
+  opacity: 0.7;
+  filter: grayscale(0.3);
+}
+
+.meta {
+  padding-top: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Similar Movies Grid */
+.similar-row {
+  overflow: visible;
+}
+
+.similar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 24px;
+}
+
+.similar-card {
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+  border-radius: 10px;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--card), var(--card-2));
+}
+
+.similar-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(6,12,26,0.8);
+}
+
+.similar-poster {
+  width: 100%;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  display: block;
+}
+
+.similar-placeholder {
+  width: 100%;
+  aspect-ratio: 2/3;
+  background: linear-gradient(135deg, var(--card), var(--card-2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.similar-info {
+  padding: 12px;
+}
+
+.similar-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 6px 0;
+  color: #e6eef8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.similar-rating {
+  font-size: 13px;
+  color: var(--accent-2);
+}

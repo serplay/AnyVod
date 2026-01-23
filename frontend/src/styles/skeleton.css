@@ -1,0 +1,13 @@
+/* ================================
+   Skeleton Loading & CLS Prevention
+   ================================ */
+
+/* Skeleton animation */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+.skeleton-pulse {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
