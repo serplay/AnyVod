@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import CategoryRow from './CategoryRow'
+import { getTMDBImageUrl } from './OptimizedImage'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 
@@ -74,7 +75,7 @@ export default function Home() {
       {/* Hero banner with fixed dimensions to prevent CLS */}
       <div className={`hero-banner-home ${!hero ? 'hero-banner-skeleton' : ''}`} style={{
         backgroundImage: hero?.backdrop_path 
-          ? `url(https://image.tmdb.org/t/p/original${hero.backdrop_path})` 
+          ? `url(${getTMDBImageUrl(hero.backdrop_path, 'backdrop', 'large')})` 
           : 'none'
       }}>
         {hero ? (

@@ -1,0 +1,47 @@
+/* ================================
+   Optimized Image Component Styles
+   ================================ */
+
+.optimized-image-wrapper {
+  background: linear-gradient(135deg, var(--card), var(--card-2));
+  border-radius: inherit;
+}
+
+.optimized-image-wrapper img {
+  border-radius: inherit;
+}
+
+.optimized-image-placeholder {
+  border-radius: inherit;
+  animation: imagePlaceholderPulse 2s ease-in-out infinite;
+}
+
+@keyframes imagePlaceholderPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.8; }
+}
+
+/* Poster specific styles */
+.poster-image {
+  aspect-ratio: 2/3;
+}
+
+/* Backdrop specific styles */
+.backdrop-image {
+  aspect-ratio: 16/9;
+}
+
+/* Profile specific styles */
+.profile-image {
+  aspect-ratio: 2/3;
+}
+
+/* Still (episode) specific styles */
+.still-image {
+  aspect-ratio: 16/9;
+}
+
+/* Loading state for native lazy images */
+img[loading="lazy"] {
+  background: linear-gradient(135deg, var(--card), var(--card-2));
+}

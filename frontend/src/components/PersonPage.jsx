@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import moviePlaceholder from '../assets/movie.png'
+import { ProfileImage, PosterImage } from './OptimizedImage'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 
@@ -59,9 +60,10 @@ export default function PersonPage() {
         <div className="person-hero-content">
           <div className="person-profile-container">
             {person.profile_path ? (
-              <img 
-                src={`https://image.tmdb.org/t/p/h632${person.profile_path}`} 
+              <ProfileImage
+                path={person.profile_path}
                 alt={person.name}
+                size="large"
                 className="person-profile-img"
               />
             ) : (
@@ -141,19 +143,13 @@ export default function PersonPage() {
                     window.scrollTo(0, 0)
                   }}
                 >
-                  {credit.poster_path ? (
-                    <img 
-                      src={`https://image.tmdb.org/t/p/w342${credit.poster_path}`} 
-                      alt={credit.title || credit.name}
-                      className="credit-poster"
-                    />
-                  ) : (
-                    <img 
-                      src={moviePlaceholder} 
-                      alt={credit.title || credit.name}
-                      className="credit-poster placeholder-img"
-                    />
-                  )}
+                  <PosterImage
+                    path={credit.poster_path}
+                    alt={credit.title || credit.name}
+                    size="medium"
+                    className="credit-poster"
+                    placeholder={moviePlaceholder}
+                  />
                   <div className="credit-info">
                     <h3 className="credit-title">{credit.title || credit.name}</h3>
                     {credit.character && (

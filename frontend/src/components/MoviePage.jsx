@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
+import { PosterImage, ProfileImage, StillImage, getTMDBImageUrl } from './OptimizedImage'
 import moviePlaceholder from '../assets/movie.png'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
@@ -129,7 +130,7 @@ export default function MoviePage() {
         className={`movie-hero ${!details ? 'movie-hero-skeleton' : ''}`}
         style={{ 
           backgroundImage: details?.backdrop_path 
-            ? `url(https://image.tmdb.org/t/p/original${details.backdrop_path})` 
+            ? `url(${getTMDBImageUrl(details.backdrop_path, 'backdrop', 'large')})` 
             : 'none' 
         }}
       >
@@ -138,12 +139,12 @@ export default function MoviePage() {
             <div className="hero-poster">
               {details ? (
                 details.poster_path ? (
-                  <img 
-                    src={`https://image.tmdb.org/t/p/w500${details.poster_path}`} 
+                  <PosterImage
+                    path={details.poster_path}
                     alt={details.title || details.name}
-                    width="280"
-                    height="420"
-                    loading="eager"
+                    size="large"
+                    priority={true}
+                    style={{ width: 280, height: 420, borderRadius: 12 }}
                   />
                 ) : (
                   <img 
@@ -259,10 +260,11 @@ export default function MoviePage() {
                     >
                       <div className="episode-image-container">
                         {episode.still_path ? (
-                          <img
-                            src={`https://image.tmdb.org/t/p/w300${episode.still_path}`}
+                          <StillImage
+                            path={episode.still_path}
                             alt={episode.name}
-                            className="episode-image"
+                            size="medium"
+                            style={{ width: '100%', height: '100%' }}
                           />
                         ) : (
                           <div className="episode-placeholder">
@@ -324,10 +326,12 @@ export default function MoviePage() {
                       className="cast-card"
                     >
                       {c.profile_path ? (
-                        <img 
-                          src={`https://image.tmdb.org/t/p/w185${c.profile_path}`} 
-                          alt={c.name} 
+                        <ProfileImage
+                          path={c.profile_path}
+                          alt={c.name}
+                          size="medium"
                           className="cast-photo"
+                          style={{ width: 140, height: 210, borderRadius: 10 }}
                         />
                       ) : (
                         <div className="cast-photo-placeholder">
@@ -346,10 +350,12 @@ export default function MoviePage() {
                       className="cast-card"
                     >
                       {c.profile_path ? (
-                        <img 
-                          src={`https://image.tmdb.org/t/p/w185${c.profile_path}`} 
-                          alt={c.name} 
+                        <ProfileImage
+                          path={c.profile_path}
+                          alt={c.name}
+                          size="medium"
                           className="cast-photo"
+                          style={{ width: 140, height: 210, borderRadius: 10 }}
                         />
                       ) : (
                         <div className="cast-photo-placeholder">
@@ -391,9 +397,10 @@ export default function MoviePage() {
                   }}
                 >
                   {s.poster_path ? (
-                    <img 
-                      src={`https://image.tmdb.org/t/p/w342${s.poster_path}`} 
-                      alt={s.title || s.name} 
+                    <PosterImage
+                      path={s.poster_path}
+                      alt={s.title || s.name}
+                      size="medium"
                       className="similar-poster"
                     />
                   ) : (

@@ -19,6 +19,7 @@
 @import './person-page.css';
 @import './home.css';
 @import './category-row.css';
+@import './optimized-image.css';
 
 /* Utilities */
 @import './skeleton.css';

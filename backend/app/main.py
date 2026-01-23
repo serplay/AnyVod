@@ -30,10 +30,6 @@ origins.append("https://image.tmdb.org")
 if not origins:
     origins = ["*"]
 
-print(f"🌐 CORS Environment: {environment}")
-print(f"🌐 CORS Origins: {origins}")
-
-
 allow_origin_regex = None
 if origins != ["*"] and any("vercel.com" in o for o in origins):
     allow_origin_regex = r"https://.*\.vercel\.app"

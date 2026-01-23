@@ -111,7 +111,7 @@
   background: rgba(26,26,29,0.9);
   border: 2px solid rgba(166,77,121,0.3);
   color: #fff;
-  font-size: 48px;
+  font-size: 46px;
   font-weight: 300;
   width: 50px;
   height: 50px;
@@ -126,6 +126,8 @@
   backdrop-filter: blur(10px);
   line-height: 1;
   padding: 0;
+  padding-bottom: 4px;
+  text-align: center;
 }
 
 .category-slider-wrapper:hover .category-arrow {
@@ -139,9 +141,9 @@
 }
 
 .category-arrow-left {
-  left: 0;
+  left: 10px;
 }
 
 .category-arrow-right {
-  right: 0;
+  right: 10px;
 }

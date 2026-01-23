@@ -1,5 +1,6 @@
 import React, { useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { PosterImage } from './OptimizedImage'
 import moviePlaceholder from '../assets/movie.png'
 
 export default function CategoryRow({ title, items = [] }) {
@@ -42,12 +43,11 @@ export default function CategoryRow({ title, items = [] }) {
               onClick={() => handleCardClick(item)}
             >
               {item.poster_path ? (
-                <img
-                  src={`https://image.tmdb.org/t/p/w342${item.poster_path}`}
+                <PosterImage
+                  path={item.poster_path}
                   alt={item.title || item.name}
-                  width="160"
-                  height="240"
-                  loading="lazy"
+                  size="medium"
+                  style={{ width: '100%', height: '100%' }}
                 />
               ) : (
                 <img 

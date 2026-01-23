@@ -1,4 +1,5 @@
 import React, { useRef } from 'react'
+import { PosterImage } from './OptimizedImage'
 import moviePlaceholder from '../assets/movie.png'
 
 export default function MovieList({ movies = [], onSelect = () => {} }) {
@@ -35,7 +36,12 @@ export default function MovieList({ movies = [], onSelect = () => {} }) {
         >
           <div className="movie-card-inner">
             {m.poster_path ? (
-              <img src={`https://image.tmdb.org/t/p/w342${m.poster_path}`} alt={m.title} />
+              <PosterImage
+                path={m.poster_path}
+                alt={m.title || m.name}
+                size="medium"
+                style={{ borderRadius: '8px' }}
+              />
             ) : (
               <img src={moviePlaceholder} alt={m.title || m.name} className="placeholder-img" />
             )}
