@@ -143,13 +143,20 @@ export default function PersonPage() {
                     window.scrollTo(0, 0)
                   }}
                 >
-                  <PosterImage
-                    path={credit.poster_path}
-                    alt={credit.title || credit.name}
-                    size="medium"
-                    className="credit-poster"
-                    placeholder={moviePlaceholder}
-                  />
+                  {credit.poster_path ? (
+                    <PosterImage
+                      path={credit.poster_path}
+                      alt={credit.title || credit.name}
+                      size="medium"
+                      className="credit-poster"
+                    />
+                  ) : (
+                    <img 
+                      src={moviePlaceholder} 
+                      alt={credit.title || credit.name}
+                      className="credit-poster placeholder-img"
+                    />
+                  )}
                   <div className="credit-info">
                     <h3 className="credit-title">{credit.title || credit.name}</h3>
                     {credit.character && (

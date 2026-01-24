@@ -79,7 +79,7 @@ export default function Home() {
           : 'none'
       }}>
         {hero ? (
-          <div className="hero-banner-overlay">
+          <div className="hero-banner-overlay" itemtype="https://schema.org/Movie">
             <div className="hero-banner-content">
               <h1 className="hero-banner-title">{hero.title || hero.name}</h1>
               <div className="hero-banner-meta">

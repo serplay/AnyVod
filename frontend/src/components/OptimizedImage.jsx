@@ -38,7 +38,7 @@ export function getTMDBImageUrl(path, type = 'poster', size = 'medium') {
   if (!path) return null
   const sizeConfig = TMDB_SIZES[type] || TMDB_SIZES.poster
   const sizeValue = sizeConfig[size] || sizeConfig.medium
-  return `https://image.tmdb.org/t/p/${sizeValue}${path}`
+  return `https://image.tmdb.org/t/p/${sizeValue}${path}.webp`
 }
 
 /**
@@ -51,7 +51,7 @@ export function getTMDBSrcSet(path, type = 'poster') {
     .filter(([key]) => key !== 'original')
     .map(([, value]) => {
       const width = parseInt(value.replace(/\D/g, '')) || 500
-      return `https://image.tmdb.org/t/p/${value}${path} ${width}w`
+      return `https://image.tmdb.org/t/p/${value}${path}.webp ${width}w`
     })
   return sizes.join(', ')
 }
@@ -112,7 +112,7 @@ const OptimizedImage = memo(function OptimizedImage({
         })
       },
       {
-        rootMargin: '200px', // Start loading 200px before entering viewport
+        rootMargin: '200px 800px', // 200px vertical, 800px horizontal for category rows
         threshold: 0.01
       }
     )
