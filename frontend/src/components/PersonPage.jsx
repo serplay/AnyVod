@@ -60,7 +60,7 @@ export default function PersonPage() {
           <div className="person-profile-container">
             {person.profile_path ? (
               <img 
-                src={`https://image.tmdb.org/t/p/h632${person.profile_path}`} 
+                src={`https://image.tmdb.org/t/p/h632${person.profile_path}.webp`} 
                 alt={person.name}
                 className="person-profile-img"
               />
@@ -143,9 +143,10 @@ export default function PersonPage() {
                 >
                   {credit.poster_path ? (
                     <img 
-                      src={`https://image.tmdb.org/t/p/w342${credit.poster_path}`} 
+                      src={`https://image.tmdb.org/t/p/w342${credit.poster_path}.webp`} 
                       alt={credit.title || credit.name}
                       className="credit-poster"
+                      loading="lazy"
                     />
                   ) : (
                     <img 

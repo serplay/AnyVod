@@ -129,7 +129,7 @@ export default function MoviePage() {
         className={`movie-hero ${!details ? 'movie-hero-skeleton' : ''}`}
         style={{ 
           backgroundImage: details?.backdrop_path 
-            ? `url(https://image.tmdb.org/t/p/original${details.backdrop_path})` 
+            ? `url(https://image.tmdb.org/t/p/w1280${details.backdrop_path}.webp)` 
             : 'none' 
         }}
       >
@@ -139,7 +139,7 @@ export default function MoviePage() {
               {details ? (
                 details.poster_path ? (
                   <img 
-                    src={`https://image.tmdb.org/t/p/w500${details.poster_path}`} 
+                    src={`https://image.tmdb.org/t/p/w500${details.poster_path}.webp`} 
                     alt={details.title || details.name}
                     width="280"
                     height="420"
@@ -260,9 +260,10 @@ export default function MoviePage() {
                       <div className="episode-image-container">
                         {episode.still_path ? (
                           <img
-                            src={`https://image.tmdb.org/t/p/w300${episode.still_path}`}
+                            src={`https://image.tmdb.org/t/p/w300${episode.still_path}.webp`}
                             alt={episode.name}
                             className="episode-image"
+                            loading="lazy"
                           />
                         ) : (
                           <div className="episode-placeholder">
@@ -325,9 +326,10 @@ export default function MoviePage() {
                     >
                       {c.profile_path ? (
                         <img 
-                          src={`https://image.tmdb.org/t/p/w185${c.profile_path}`} 
+                          src={`https://image.tmdb.org/t/p/w185${c.profile_path}.webp`} 
                           alt={c.name} 
                           className="cast-photo"
+                          loading="lazy"
                         />
                       ) : (
                         <div className="cast-photo-placeholder">
@@ -347,9 +349,10 @@ export default function MoviePage() {
                     >
                       {c.profile_path ? (
                         <img 
-                          src={`https://image.tmdb.org/t/p/w185${c.profile_path}`} 
+                          src={`https://image.tmdb.org/t/p/w185${c.profile_path}.webp`} 
                           alt={c.name} 
                           className="cast-photo"
+                          loading="lazy"
                         />
                       ) : (
                         <div className="cast-photo-placeholder">
@@ -392,9 +395,10 @@ export default function MoviePage() {
                 >
                   {s.poster_path ? (
                     <img 
-                      src={`https://image.tmdb.org/t/p/w342${s.poster_path}`} 
+                      src={`https://image.tmdb.org/t/p/w342${s.poster_path}.webp`} 
                       alt={s.title || s.name} 
                       className="similar-poster"
+                      loading="lazy"
                     />
                   ) : (
                     <img 

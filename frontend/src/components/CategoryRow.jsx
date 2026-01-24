@@ -44,7 +44,7 @@ export default function CategoryRow({ title, items = [] }) {
             >
               {item.poster_path ? (
                 <img
-                  src={`https://image.tmdb.org/t/p/w342${item.poster_path}`}
+                  src={`https://image.tmdb.org/t/p/w342${item.poster_path}.webp`}
                   alt={item.title || item.name}
                   width="160"
                   height="240"

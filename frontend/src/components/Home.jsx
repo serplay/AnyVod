@@ -74,7 +74,7 @@ export default function Home() {
       {/* Hero banner with fixed dimensions to prevent CLS */}
       <div className={`hero-banner-home ${!hero ? 'hero-banner-skeleton' : ''}`} style={{
         backgroundImage: hero?.backdrop_path 
-          ? `url(https://image.tmdb.org/t/p/original${hero.backdrop_path})` 
+          ? `url(https://image.tmdb.org/t/p/w1280${hero.backdrop_path}.webp)` 
           : 'none'
       }}>
         {hero ? (

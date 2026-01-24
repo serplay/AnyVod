@@ -36,7 +36,7 @@ export default function MovieList({ movies = [], onSelect = () => {} }) {
         >
           <div className="movie-card-inner">
             {m.poster_path ? (
-              <img src={`https://image.tmdb.org/t/p/w342${m.poster_path}`} alt={m.title} />
+              <img src={`https://image.tmdb.org/t/p/w342${m.poster_path}.webp`} alt={m.title} loading="lazy" />
             ) : (
               <img src={moviePlaceholder} alt={m.title || m.name} className="placeholder-img" />
             )}
