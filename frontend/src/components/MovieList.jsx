@@ -32,6 +32,7 @@ export default function MovieList({ movies = [], onSelect = () => {} }) {
           onClick={() => onSelect(m)}
           onMouseMove={handleMove}
           onMouseLeave={handleLeave}
+          itemtype="https://schema.org/Movie"
         >
           <div className="movie-card-inner">
             {m.poster_path ? (

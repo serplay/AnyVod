@@ -40,6 +40,7 @@ export default function CategoryRow({ title, items = [] }) {
               key={item.id}
               className="category-card"
               onClick={() => handleCardClick(item)}
+              itemtype="https://schema.org/Movie"
             >
               {item.poster_path ? (
                 <img
