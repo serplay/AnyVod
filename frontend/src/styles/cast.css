@@ -76,21 +76,23 @@
   background: rgba(26,26,29,0.9);
   border: 2px solid rgba(166,77,121,0.3);
   color: #fff;
-  font-size: 48px;
+  font-size: 46px;
   font-weight: 300;
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 10;
+  z-index: 100;
   opacity: 0;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
   line-height: 1;
   padding: 0;
+  padding-bottom: 4px;
+  text-align: center;
 }
 
 .cast-slider-wrapper:hover .cast-arrow {
@@ -98,21 +100,17 @@
 }
 
 .cast-arrow:hover {
-  background: rgba(166,77,121,0.2);
+  background: rgba(166,77,121,0.3);
   border-color: var(--accent);
   transform: translateY(-50%) scale(1.1);
 }
 
-.cast-arrow:active {
-  transform: translateY(-50%) scale(0.95);
-}
-
 .cast-arrow-left {
-  left: -30px;
+  left: 10px;
 }
 
 .cast-arrow-right {
-  right: -30px;
+  right: 10px;
 }
 
 .cast-card {
