@@ -342,30 +342,7 @@ export default function MoviePage() {
                       <div className="cast-character">{c.character}</div>
                     </Link>
                   ))}
-                  {/* Duplicate for loop */}
-                  {details.credits.cast.slice(0, 30).map(c => (
-                    <Link 
-                      key={`dup-${c.id}`} 
-                      to={`/person/${c.id}`} 
-                      className="cast-card"
-                    >
-                      {c.profile_path ? (
-                        <ProfileImage
-                          path={c.profile_path}
-                          alt={c.name}
-                          size="medium"
-                          className="cast-photo"
-                          style={{ width: 140, height: 210, borderRadius: 10 }}
-                        />
-                      ) : (
-                        <div className="cast-photo-placeholder">
-                          <span>{c.name.charAt(0)}</span>
-                        </div>
-                      )}
-                      <div className="cast-name">{c.name}</div>
-                      <div className="cast-character">{c.character}</div>
-                    </Link>
-                  ))}
+
                 </div>
               </div>
               <button 

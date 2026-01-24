@@ -7,30 +7,7 @@
   color: inherit;
 }
 
-/* Cast marquee (legacy) */
-.cast-marquee {
-  overflow: visible;
-  position: relative;
-  padding: 8px 0;
-  height: 170px;
-}
-
-.cast-track {
-  position: absolute;
-  left: 0;
-  top: 0;
-  display: flex;
-  gap: 14px;
-  animation: scrollLeft 40s linear infinite;
-  white-space: nowrap;
-}
-
-@keyframes scrollLeft {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-/* Cast Horizontal Scroll with Animation */
+/* Cast Horizontal Scroll */
 .cast-slider-wrapper {
   position: relative;
 }
@@ -51,22 +28,10 @@
   display: none;
 }
 
-.cast-scroll-container:hover .cast-track {
-  animation-play-state: paused;
-}
-
 .cast-scroll-container .cast-track {
   display: flex;
   gap: 20px;
-  animation: scrollCast 60s linear infinite;
-  will-change: transform;
   align-items: center;
-  position: static;
-}
-
-@keyframes scrollCast {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
 }
 
 .cast-arrow {
