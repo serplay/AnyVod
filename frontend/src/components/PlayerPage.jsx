@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import VideoSchema from './VideoSchema'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 
@@ -149,6 +150,9 @@ export default function PlayerPage() {
     )
   }) || []
 
+  // Get current episode data for structured data
+  const currentEpisodeData = seasonData?.episodes?.find(ep => ep.episode_number === currentEpisode)
+
   // Generate season tabs
   const seasonTabs = tvDetails?.number_of_seasons 
     ? Array.from({ length: tvDetails.number_of_seasons }, (_, i) => i + 1)
@@ -158,6 +162,15 @@ export default function PlayerPage() {
   if (kind === 'movie') {
     return (
       <div className="player-page player-page-movie">
+        {/* Video Structured Data for SEO */}
+        <VideoSchema
+          name={movieTitle}
+          description={`Watch ${movieTitle} online`}
+          thumbnailUrl={posterPath ? `https://image.tmdb.org/t/p/w500${posterPath}` : null}
+          embedUrl={embed?.embed_url || window.location.href}
+          type="movie"
+        />
+        
         <div className="player-header-movie">
           <button className="player-back-btn" onClick={handleBack} title="Back">
             ✕
@@ -184,6 +197,19 @@ export default function PlayerPage() {
   // TV Show layout with sidebar
   return (
     <div className={`player-page player-page-tv ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      {/* Video Structured Data for SEO */}
+      <VideoSchema
+        name={currentEpisodeData ? `${movieTitle} - S${currentSeason}E${currentEpisode}: ${currentEpisodeData.name}` : movieTitle}
+        description={currentEpisodeData?.overview || `Watch ${movieTitle} Season ${currentSeason} Episode ${currentEpisode}`}
+        thumbnailUrl={posterPath ? `https://image.tmdb.org/t/p/w500${posterPath}` : null}
+        embedUrl={embed?.embed_url || window.location.href}
+        type="tv"
+        seasonNumber={currentSeason}
+        episodeNumber={currentEpisode}
+        seriesName={movieTitle}
+        duration={currentEpisodeData?.runtime}
+      />
+      
       {/* Episode Sidebar */}
       <aside className={`episode-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-header">

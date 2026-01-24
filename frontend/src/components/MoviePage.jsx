@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import { PosterImage, ProfileImage, StillImage, getTMDBImageUrl } from './OptimizedImage'
+import VideoSchema from './VideoSchema'
 import moviePlaceholder from '../assets/movie.png'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
@@ -125,6 +126,24 @@ export default function MoviePage() {
 
   return (
     <div className="movie-page">
+      {/* Video Structured Data for SEO */}
+      {details && (
+        <VideoSchema
+          name={details.title || details.name}
+          description={details.overview}
+          thumbnailUrl={details.backdrop_path 
+            ? `https://image.tmdb.org/t/p/w1280${details.backdrop_path}` 
+            : details.poster_path 
+              ? `https://image.tmdb.org/t/p/w500${details.poster_path}`
+              : null
+          }
+          uploadDate={details.release_date || details.first_air_date}
+          duration={details.runtime || (details.episode_run_time?.[0])}
+          embedUrl={`${window.location.origin}/play/${isTv ? 'tv' : 'movie'}/${id}`}
+          type={isTv ? 'tv' : 'movie'}
+        />
+      )}
+      
       {/* Hero Banner with fixed dimensions to prevent CLS */}
       <div 
         className={`movie-hero ${!details ? 'movie-hero-skeleton' : ''}`}
