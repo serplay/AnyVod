@@ -7,10 +7,38 @@
 
 <url>
   <loc>https://vod.losingsanity.com/</loc>
-  <lastmod>2026-01-23T07:43:00+00:00</lastmod>
+  <lastmod>2026-01-26T00:00:00+00:00</lastmod>
   <changefreq>daily</changefreq>
   <priority>1.0</priority>
 </url>
 
+<!-- Movie pages - Popular/Trending -->
+<url>
+  <loc>https://vod.losingsanity.com/movie/693134</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://vod.losingsanity.com/movie/1064028</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://vod.losingsanity.com/movie/939243</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.8</priority>
+</url>
+
+<!-- TV Show pages - Popular -->
+<url>
+  <loc>https://vod.losingsanity.com/tv/1399</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.8</priority>
+</url>
+<url>
+  <loc>https://vod.losingsanity.com/tv/94997</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.8</priority>
+</url>
 
 </urlset>
