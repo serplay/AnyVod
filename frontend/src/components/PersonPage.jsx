@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import moviePlaceholder from '../assets/movie.png'
 import { ProfileImage, PosterImage } from './OptimizedImage'
+import ScrollToTop from './ScrollTop'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 
@@ -13,19 +14,18 @@ export default function PersonPage() {
   const [credits, setCredits] = useState(null)
 
   useEffect(() => {
+    async function fetchPerson() {
+      try {
+        const res = await axios.get(`${API_BASE}/tmdb/person/${id}`)
+        setPerson(res.data)
+        const creditsRes = await axios.get(`${API_BASE}/tmdb/person/${id}/combined_credits`)
+        setCredits(creditsRes.data)
+      } catch (err) {
+        console.error(err)
+      }
+    }
     fetchPerson()
   }, [id])
-
-  async function fetchPerson() {
-    try {
-      const res = await axios.get(`${API_BASE}/tmdb/person/${id}`)
-      setPerson(res.data)
-      const creditsRes = await axios.get(`${API_BASE}/tmdb/person/${id}/combined_credits`)
-      setCredits(creditsRes.data)
-    } catch (err) {
-      console.error(err)
-    }
-  }
 
   if (!person) return <div className="person-loading">Loading...</div>
 

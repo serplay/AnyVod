@@ -1,4 +1,3 @@
-import React, { useRef } from 'react'
 import { PosterImage } from './OptimizedImage'
 import moviePlaceholder from '../assets/movie.png'
 

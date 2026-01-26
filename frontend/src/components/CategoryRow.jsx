@@ -30,7 +30,6 @@ export default function CategoryRow({ title, items = [] }) {
       // Calculate current visible range based on scroll position
       const cardWidth = 170 // approximate card width including gap
       const currentScrollLeft = container.scrollLeft
-      const currentLastVisible = Math.floor((currentScrollLeft + container.clientWidth) / cardWidth)
       
       if (direction === 'right') {
         // Preload the next 4 images beyond what will be visible after scroll

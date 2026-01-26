@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import { PosterImage, ProfileImage, StillImage, getTMDBImageUrl } from './OptimizedImage'
@@ -39,39 +39,7 @@ export default function MoviePage() {
   // Determine if TV show based on URL path using React Router's location
   const isTv = location.pathname.startsWith('/tv/')
 
-  useEffect(() => {
-    fetchDetails()
-  }, [id, isTv])
-
-  useEffect(() => {
-    if (isTv && details && selectedSeason) {
-      fetchSeasonDetails(selectedSeason)
-    }
-  }, [selectedSeason, details, isTv])
-
-  useEffect(() => {
-    if (details && id) {
-      checkAvailability()
-    }
-  }, [details, id, isTv])
-
-  async function checkAvailability() {
-    setCheckingAvailability(true)
-    try {
-      const endpoint = isTv 
-        ? `${API_BASE}/vidsrc/tv/availability/${id}`
-        : `${API_BASE}/vidsrc/movie/availability/${id}`
-      const res = await axios.get(endpoint)
-      setAvailability(res.data)
-    } catch (err) {
-      console.error('Failed to check availability:', err)
-      setAvailability({ available: false, reason: 'check failed' })
-    } finally {
-      setCheckingAvailability(false)
-    }
-  }
-
-  async function fetchDetails() {
+  const fetchDetails = useCallback(async () => {
     try {
       // Fetch based on route type
       const endpoint = isTv ? `${API_BASE}/tmdb/tv/${id}` : `${API_BASE}/tmdb/movie/${id}`
@@ -99,9 +67,35 @@ export default function MoviePage() {
     } catch (err) {
       console.error('Failed to fetch details:', err)
     }
-  }
+  }, [id, isTv])
 
-  async function fetchSeasonDetails(seasonNumber) {
+  const checkAvailability = useCallback(async () => {
+    setCheckingAvailability(true)
+    try {
+      const endpoint = isTv 
+        ? `${API_BASE}/vidsrc/tv/availability/${id}`
+        : `${API_BASE}/vidsrc/movie/availability/${id}`
+      const res = await axios.get(endpoint)
+      setAvailability(res.data)
+    } catch (err) {
+      console.error('Failed to check availability:', err)
+      setAvailability({ available: false, reason: 'check failed' })
+    } finally {
+      setCheckingAvailability(false)
+    }
+  }, [id, isTv])
+
+  useEffect(() => {
+    fetchDetails()
+  }, [fetchDetails])
+
+  useEffect(() => {
+    if (isTv && details && selectedSeason) {
+      fetchSeasonDetails(selectedSeason)
+    }
+  }, [selectedSeason, details, isTv, fetchSeasonDetails])
+
+  const fetchSeasonDetails = useCallback(async (seasonNumber) => {
     if (!isTv || !details) return
     try {
       const res = await axios.get(`${API_BASE}/tmdb/tv/${id}/season/${seasonNumber}`)
@@ -109,7 +103,13 @@ export default function MoviePage() {
     } catch (err) {
       console.error('Failed to fetch season details:', err)
     }
-  }
+  }, [isTv, details, id])
+
+  useEffect(() => {
+    if (details && id) {
+      checkAvailability()
+    }
+  }, [details, id, checkAvailability])
 
   // Arrow scroll handlers
   const scrollCast = (direction) => {

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
+import { useState } from 'react'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 import Search from './components/Search'
 import Home from './components/Home'
 import SearchResults from './components/SearchResults'
@@ -7,18 +7,9 @@ import AppIcon from './assets/anyvod_logo.png'
 import MoviePage from './components/MoviePage'
 import PersonPage from './components/PersonPage'
 import PlayerPage from './components/PlayerPage'
-import { Analytics } from '@vercel/analytics/react';
+import { Analytics } from '@vercel/analytics/react'
+import ScrollToTop from './components/ScrollTop'
 
-// Scroll to top on route change
-function ScrollToTop() {
-  const { pathname } = useLocation()
-  
-  useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [pathname])
-  
-  return null
-}
 
 export default function App() {
   const [searchPayload, setSearchPayload] = useState(null)

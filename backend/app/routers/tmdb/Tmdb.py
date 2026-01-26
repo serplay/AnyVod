@@ -100,45 +100,45 @@ def search_movies(
             return
         case "yt":
             return
-    
-    # Handle person search
-    if type == 'person':
-        results = tmdb_get('/search/person', params)
-        results['results'] = sort_results(results.get('results', []), sort_by)
-        return results
+    if sort_by is not None:
+        # Handle person search
+        if type == 'person':
+            results = tmdb_get('/search/person', params)
+            results['results'] = sort_results(results.get('results', []), sort_by)
+            return results
+            
+        # Movie search
+        if type == 'movie':
+            if year:
+                params['year'] = year
+            results = tmdb_get('/search/movie', params)
+            filtered = filter_by_rating(results.get('results', []), min_rating)
+            if genre:
+                filtered = [r for r in filtered if genre in r.get('genre_ids', [])]
+            results['results'] = sort_results(filtered, sort_by)
+            return results
         
-    # Movie search
-    if type == 'movie':
-        if year:
-            params['year'] = year
-        results = tmdb_get('/search/movie', params)
-        filtered = filter_by_rating(results.get('results', []), min_rating)
-        if genre:
-            filtered = [r for r in filtered if genre in r.get('genre_ids', [])]
-        results['results'] = sort_results(filtered, sort_by)
-        return results
-    
-    # TV search
-    elif type == 'tv':
-        results = tmdb_get('/search/tv', params)
-        filtered = results.get('results', [])
-        if year:
-            filtered = [r for r in filtered if r.get('first_air_date', '').startswith(str(year))]
-        filtered = filter_by_rating(filtered, min_rating)
-        if genre:
-            filtered = [r for r in filtered if genre in r.get('genre_ids', [])]
-        results['results'] = sort_results(filtered, sort_by)
-        return results
-    
-    # Multi search (all)
-    else:
-        results = tmdb_get('/search/multi', params)
-        filtered = results.get('results', [])
-        filtered = filter_by_rating(filtered, min_rating)
-        if genre:
-            filtered = [r for r in filtered if genre in r.get('genre_ids', [])]
-        results['results'] = sort_results(filtered, sort_by)
-        return results
+        # TV search
+        elif type == 'tv':
+            results = tmdb_get('/search/tv', params)
+            filtered = results.get('results', [])
+            if year:
+                filtered = [r for r in filtered if r.get('first_air_date', '').startswith(str(year))]
+            filtered = filter_by_rating(filtered, min_rating)
+            if genre:
+                filtered = [r for r in filtered if genre in r.get('genre_ids', [])]
+            results['results'] = sort_results(filtered, sort_by)
+            return results
+        
+        # Multi search (all)
+        else:
+            results = tmdb_get('/search/multi', params)
+            filtered = results.get('results', [])
+            filtered = filter_by_rating(filtered, min_rating)
+            if genre:
+                filtered = [r for r in filtered if genre in r.get('genre_ids', [])]
+            results['results'] = sort_results(filtered, sort_by)
+            return results
 
 
 @router.get("/discover/movie")
