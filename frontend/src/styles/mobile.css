@@ -155,8 +155,13 @@
     min-height: 350px;
   }
   
-  .hero-poster img {
-    width: 140px;
+  .hero-poster,
+  .hero-poster img,
+  .hero-poster .optimized-image-wrapper {
+    width: 140px !important;
+    height: 210px !important;
+    min-width: 140px;
+    min-height: 210px;
   }
   
   .movie-title {
@@ -211,10 +216,14 @@
   }
   
   /* Person page small phones */
+  .person-profile-container,
   .person-profile-img,
-  .person-profile-placeholder {
-    width: 180px;
-    height: 270px;
+  .person-profile-placeholder,
+  .person-profile-container .optimized-image-wrapper {
+    width: 180px !important;
+    height: 270px !important;
+    min-width: 180px;
+    min-height: 270px;
   }
   
   .person-name {
@@ -417,8 +426,13 @@
     text-align: left;
   }
   
-  .hero-poster img {
-    width: 150px;
+  .hero-poster,
+  .hero-poster img,
+  .hero-poster .optimized-image-wrapper {
+    width: 150px !important;
+    height: 225px !important;
+    min-width: 150px;
+    min-height: 225px;
   }
   
   .movie-title {

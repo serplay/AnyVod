@@ -43,6 +43,58 @@ footer {
   margin-top: 20px;
 }
 
+/* App Footer */
+.app-footer {
+  margin-top: 40px;
+  padding: 24px 20px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  background: linear-gradient(180deg, transparent, rgba(0,0,0,0.2));
+}
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.footer-text {
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.footer-icons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  color: var(--muted);
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.footer-icon:hover {
+  background: linear-gradient(135deg, var(--accent), #c75f9a);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(166,77,121,0.4);
+}
+
+.footer-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
 /* Details overlay */
 .details-overlay {
   position: fixed;

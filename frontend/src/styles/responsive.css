@@ -166,8 +166,13 @@
     padding: 30px;
   }
   
-  .hero-poster img {
-    width: 220px;
+  .hero-poster,
+  .hero-poster img,
+  .hero-poster .optimized-image-wrapper {
+    width: 220px !important;
+    height: 330px !important;
+    min-width: 220px;
+    min-height: 330px;
   }
   
   .movie-title {
@@ -202,10 +207,14 @@
   .hero-poster {
     margin-top: 0;
     min-width: 160px;
+    width: 160px;
+    height: 240px;
   }
   
-  .hero-poster img {
-    width: 160px;
+  .hero-poster img,
+  .hero-poster .optimized-image-wrapper {
+    width: 160px !important;
+    height: 240px !important;
   }
   
   .poster-skeleton {
@@ -484,10 +493,14 @@
     gap: 30px;
   }
   
+  .person-profile-container,
   .person-profile-img,
-  .person-profile-placeholder {
-    width: 260px;
-    height: 390px;
+  .person-profile-placeholder,
+  .person-profile-container .optimized-image-wrapper {
+    width: 260px !important;
+    height: 390px !important;
+    min-width: 260px;
+    min-height: 390px;
   }
   
   .person-name {
@@ -507,10 +520,14 @@
     padding: 30px 20px;
   }
   
+  .person-profile-container,
   .person-profile-img,
-  .person-profile-placeholder {
-    width: 240px;
-    height: 360px;
+  .person-profile-placeholder,
+  .person-profile-container .optimized-image-wrapper {
+    width: 240px !important;
+    height: 360px !important;
+    min-width: 240px;
+    min-height: 360px;
   }
   
   .person-name {

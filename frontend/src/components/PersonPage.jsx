@@ -65,6 +65,7 @@ export default function PersonPage() {
                 alt={person.name}
                 size="large"
                 className="person-profile-img"
+                style={{ width: 320, height: 480 }}
               />
             ) : (
               <div className="person-profile-placeholder">

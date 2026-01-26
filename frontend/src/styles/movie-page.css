@@ -46,12 +46,17 @@
 
 .hero-poster {
   flex-shrink: 0;
+  width: 280px;
+  height: 420px;
   min-width: 280px;
-  aspect-ratio: 2/3;
+  min-height: 420px;
+  contain: layout style;
 }
 
-.hero-poster img {
-  width: 280px;
+.hero-poster img,
+.hero-poster .optimized-image-wrapper {
+  width: 280px !important;
+  height: 420px !important;
   border-radius: 12px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.8);
   aspect-ratio: 2/3;
@@ -67,12 +72,14 @@
 .hero-info {
   flex: 1;
   max-width: 700px;
+  min-height: 350px; /* Prevent layout shift during loading */
 }
 
 .movie-title {
   font-size: 48px;
   font-weight: 800;
   margin: 0 0 16px 0;
+  min-height: 58px; /* Reserve space for title */
   color: #fff;
   text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
 }
