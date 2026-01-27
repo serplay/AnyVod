@@ -85,16 +85,6 @@ export default function MoviePage() {
     }
   }, [id, isTv])
 
-  useEffect(() => {
-    fetchDetails()
-  }, [fetchDetails])
-
-  useEffect(() => {
-    if (isTv && details && selectedSeason) {
-      fetchSeasonDetails(selectedSeason)
-    }
-  }, [selectedSeason, details, isTv, fetchSeasonDetails])
-
   const fetchSeasonDetails = useCallback(async (seasonNumber) => {
     if (!isTv || !details) return
     try {
@@ -104,6 +94,16 @@ export default function MoviePage() {
       console.error('Failed to fetch season details:', err)
     }
   }, [isTv, details, id])
+
+  useEffect(() => {
+    fetchDetails()
+  }, [fetchDetails])
+
+  useEffect(() => {
+    if (isTv && details && selectedSeason) {
+      fetchSeasonDetails(selectedSeason)
+    }
+  }, [selectedSeason, details, isTv, fetchSeasonDetails])
 
   useEffect(() => {
     if (details && id) {
