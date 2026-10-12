@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router'
 import { PosterImage, ProfileImage, StillImage } from '../components/OptimizedImage'
 import TrailerFacade from '../components/TrailerFacade'
 import VideoSchema from '../components/VideoSchema'
+import Seo from '../components/Seo'
 import { ErrorState, Loading } from '../components/states'
 import NotFound from './NotFound'
 import moviePlaceholder from '../assets/movie.png'
@@ -16,10 +17,13 @@ import {
   itemPath,
   parseNonNegativeInt,
   pickTrailerKey,
+  formatYear,
   releaseDate,
   seasonsOf,
+  tmdbImage,
   tmdbImageFor,
 } from '../lib/media'
+import { truncate } from '../lib/seo'
 
 /** Rendered widths (movie-card.css, episodes.css, responsive.css, mobile.css). */
 const SIMILAR_CARD_SIZES = '(max-width: 480px) 50vw, 220px'
@@ -85,8 +89,18 @@ function MoviePage({ kind, id }: { kind: MediaKind; id: number }) {
   // Dynamic value passed as a custom property; b2.css applies it as the background.
   const heroStyle = backdrop ? ({ '--hero-bg': `url(${JSON.stringify(backdrop)})` } as CSSProperties) : undefined
 
+  const year = formatYear(details ? releaseDate(details) : undefined)
+  const seoTitle = details ? (year ? `${title} (${year})` : title) : isTv ? 'TV Show' : 'Movie'
+
   return (
     <div className="movie-page">
+      <Seo
+        title={seoTitle}
+        description={truncate(details?.overview) || undefined}
+        path={`/${kind}/${id}`}
+        image={tmdbImage(details?.poster_path ?? details?.backdrop_path, 'w780')}
+        type={isTv ? 'video.tv_show' : 'video.movie'}
+      />
       {/* Video Structured Data for SEO */}
       {details ? (
         <VideoSchema

@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "sitemap": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/gen-sitemap.ts",
+    "prebuild": "npm run sitemap",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",

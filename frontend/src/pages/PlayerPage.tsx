@@ -2,11 +2,13 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import VideoSchema from '../components/VideoSchema'
+import Seo from '../components/Seo'
+import { truncate } from '../lib/seo'
 import { ErrorState } from '../components/states'
 import NotFound from './NotFound'
 import { seasonQueryOptions, useDetails, useEmbed, useSeason } from '../api/hooks'
 import type { EmbedResponse, MediaKind } from '../api/types'
-import { displayTitle, isMediaKind, parseNonNegativeInt, seasonsOf, tmdbImageFor } from '../lib/media'
+import { displayTitle, isMediaKind, parseNonNegativeInt, seasonsOf, tmdbImage, tmdbImageFor } from '../lib/media'
 
 const DEFAULT_SEASON = 1
 const DEFAULT_EPISODE = 1
@@ -78,6 +80,14 @@ function MoviePlayer({ id }: { id: number }) {
 
   return (
     <div className="player-page player-page-movie">
+      {/* Thin page: canonicalised to the detail page (robots.txt also disallows /player/). */}
+      <Seo
+        title={movieTitle ? `Watch ${movieTitle}` : 'Watch movie'}
+        description={truncate(details?.overview) || undefined}
+        path={`/movie/${id}`}
+        image={tmdbImage(details?.poster_path ?? details?.backdrop_path, 'w780')}
+        type="video.movie"
+      />
       {/* Video Structured Data for SEO */}
       <VideoSchema
         name={movieTitle}
@@ -188,6 +198,13 @@ function TvPlayer({ id, season: currentSeason, episode: currentEpisode }: { id: 
 
   return (
     <div className={`player-page player-page-tv ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      <Seo
+        title={`Watch ${movieTitle || 'TV show'} S${currentSeason}E${currentEpisode}`}
+        description={truncate(currentEpisodeData?.overview || tvDetails?.overview) || undefined}
+        path={`/tv/${id}`}
+        image={tmdbImage(tvDetails?.poster_path ?? tvDetails?.backdrop_path, 'w780')}
+        type="video.tv_show"
+      />
       {/* Video Structured Data for SEO */}
       <VideoSchema
         name={
