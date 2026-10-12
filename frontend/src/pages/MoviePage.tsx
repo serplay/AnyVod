@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react'
+import { useId, useRef, useState, type CSSProperties } from 'react'
 import { useParams, Link, useNavigate } from 'react-router'
 import { PosterImage, ProfileImage, StillImage } from '../components/OptimizedImage'
+import TrailerFacade from '../components/TrailerFacade'
 import VideoSchema from '../components/VideoSchema'
 import { ErrorState, Loading } from '../components/states'
 import NotFound from './NotFound'
@@ -19,23 +20,10 @@ import {
   seasonsOf,
   tmdbImageFor,
 } from '../lib/media'
-import { onActivateKey } from '../lib/a11y'
 
-function YouTubeEmbed({ videoKey }: { videoKey: string | undefined }) {
-  if (!videoKey) return null
-  const src = `https://www.youtube.com/embed/${videoKey}?autoplay=0&rel=0`
-  return (
-    <div className="trailer-embed">
-      <iframe
-        src={src}
-        title="trailer"
-        frameBorder={0}
-        allowFullScreen
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-      />
-    </div>
-  )
-}
+/** Rendered widths (movie-card.css, episodes.css, responsive.css, mobile.css). */
+const SIMILAR_CARD_SIZES = '(max-width: 480px) 50vw, 220px'
+const EPISODE_STILL_SIZES = '(max-width: 768px) 100vw, 300px'
 
 /** Route entry: validates the id and remounts the page per title so per-title state resets. */
 export default function MoviePageRoute({ kind }: { kind: MediaKind }) {
@@ -53,6 +41,8 @@ function MoviePage({ kind, id }: { kind: MediaKind; id: number }) {
   const { data: similarData } = useSimilar(kind, id)
   const availabilityQuery = useAvailability(kind, id)
   const castContainerRef = useRef<HTMLDivElement>(null)
+  const castListId = useId()
+  const availabilityReasonId = useId()
 
   const seasons = isTv ? seasonsOf(details) : []
   const defaultSeason = (seasons.find((s) => s.season_number > 0) ?? seasons[0])?.season_number ?? null
@@ -66,6 +56,9 @@ function MoviePage({ kind, id }: { kind: MediaKind; id: number }) {
   const checkingAvailability = availabilityQuery.isPending
   // A failed availability check is treated as "not available".
   const available = availabilityQuery.data?.available === true
+  const unavailableReason = availabilityQuery.error
+    ? "We couldn't check whether this title is available. Please try again later."
+    : availabilityQuery.data?.reason || 'This title is not available to stream right now.'
 
   if (detailsQuery.error) {
     if (detailsQuery.error instanceof ApiError && detailsQuery.error.status === 404) {
@@ -73,28 +66,29 @@ function MoviePage({ kind, id }: { kind: MediaKind; id: number }) {
     }
     return (
       <div className="movie-page">
-        <ErrorState error={detailsQuery.error} onRetry={() => void detailsQuery.refetch()} />
+        <ErrorState error={detailsQuery.error} onRetry={() => void detailsQuery.refetch()} headingLevel="h1" />
       </div>
     )
   }
 
-  // Arrow scroll handlers
   const scrollCast = (direction: 'left' | 'right') => {
-    castContainerRef.current?.scrollBy({
-      left: direction === 'left' ? -600 : 600,
-      behavior: 'smooth',
-    })
+    const container = castContainerRef.current
+    if (!container) return
+    const amount = Math.max(200, container.clientWidth * 0.8)
+    container.scrollBy({ left: direction === 'left' ? -amount : amount, behavior: 'smooth' })
   }
 
   const rating = formatRating(details?.vote_average || undefined) ?? 'N/A'
-  const voteCount = details?.vote_count || 0
+  const voteCount = details?.vote_count ?? 0
   const title = details ? displayTitle(details) : ''
   const backdrop = tmdbImageFor(details?.backdrop_path, 'backdrop', 'large')
+  // Dynamic value passed as a custom property; b2.css applies it as the background.
+  const heroStyle = backdrop ? ({ '--hero-bg': `url(${JSON.stringify(backdrop)})` } as CSSProperties) : undefined
 
   return (
     <div className="movie-page">
       {/* Video Structured Data for SEO */}
-      {details && (
+      {details ? (
         <VideoSchema
           name={title}
           description={details.overview}
@@ -102,17 +96,14 @@ function MoviePage({ kind, id }: { kind: MediaKind; id: number }) {
             tmdbImageFor(details.backdrop_path, 'backdrop', 'large') ?? tmdbImageFor(details.poster_path, 'poster', 'large')
           }
           uploadDate={releaseDate(details)}
-          duration={details.runtime || details.episode_run_time?.[0]}
+          duration={details.runtime ?? details.episode_run_time?.[0]}
           embedUrl={`${window.location.origin}/player/${kind}/${id}`}
           type={kind}
         />
-      )}
+      ) : null}
 
       {/* Hero Banner with fixed dimensions to prevent CLS */}
-      <div
-        className={`movie-hero ${!details ? 'movie-hero-skeleton' : ''}`}
-        style={{ backgroundImage: backdrop ? `url(${backdrop})` : 'none' }}
-      >
+      <div className={`movie-hero ${!details ? 'movie-hero-skeleton' : ''}`} style={heroStyle}>
         <div className="hero-overlay">
           <div className="hero-content">
             <div className="hero-poster">
@@ -122,14 +113,15 @@ function MoviePage({ kind, id }: { kind: MediaKind; id: number }) {
                     path={details.poster_path}
                     alt={title}
                     size="large"
-                    priority={true}
-                    style={{ width: 280, height: 420, borderRadius: 12 }}
+                    sizes="280px"
+                    priority
+                    className="oi-hero-poster"
                   />
                 ) : (
                   <img src={moviePlaceholder} alt={title} className="placeholder-img" width="280" height="420" />
                 )
               ) : (
-                <div className="poster-skeleton" style={{ width: 280, height: 420 }}></div>
+                <div className="poster-skeleton poster-skeleton-hero"></div>
               )}
             </div>
 
@@ -140,7 +132,9 @@ function MoviePage({ kind, id }: { kind: MediaKind; id: number }) {
 
                   {/* Rating */}
                   <div className="movie-rating">
-                    <span className="rating-star">⭐</span>
+                    <span className="rating-star" aria-hidden="true">
+                      ⭐
+                    </span>
                     <span className="rating-value">{rating}</span>
                     <span className="rating-count">({voteCount} votes)</span>
                   </div>
@@ -165,23 +159,29 @@ function MoviePage({ kind, id }: { kind: MediaKind; id: number }) {
                       </button>
                     ) : available ? (
                       <button className="play-button" onClick={() => navigate(`/player/${kind}/${details.id}`)}>
-                        ▶ Play Now
+                        <span aria-hidden="true">▶</span> Play Now
                       </button>
                     ) : (
-                      <button className="play-button unavailable" disabled>
-                        ✗ Not Available
-                      </button>
+                      <>
+                        <button className="play-button unavailable" disabled aria-describedby={availabilityReasonId}>
+                          <span aria-hidden="true">✗</span> Not Available
+                        </button>
+                        <p className="availability-reason" id={availabilityReasonId}>
+                          {unavailableReason}
+                        </p>
+                      </>
                     )}
                   </div>
                 </>
               ) : (
-                <>
-                  <div className="skeleton-title" style={{ width: '60%', height: 40, background: 'rgba(255,255,255,0.08)', borderRadius: 8, marginBottom: 16 }}></div>
-                  <div className="skeleton-meta" style={{ width: '40%', height: 24, background: 'rgba(255,255,255,0.06)', borderRadius: 6, marginBottom: 16 }}></div>
-                  <div className="skeleton-genres" style={{ width: '50%', height: 32, background: 'rgba(255,255,255,0.05)', borderRadius: 6, marginBottom: 16 }}></div>
-                  <div className="skeleton-overview" style={{ width: '90%', height: 80, background: 'rgba(255,255,255,0.05)', borderRadius: 6, marginBottom: 24 }}></div>
-                  <div className="skeleton-button" style={{ width: 160, height: 48, background: 'rgba(255,255,255,0.08)', borderRadius: 6 }}></div>
-                </>
+                <div role="status">
+                  <h1 className="visually-hidden">Loading {isTv ? 'show' : 'movie'}…</h1>
+                  <div className="movie-skeleton skeleton-title"></div>
+                  <div className="movie-skeleton skeleton-meta"></div>
+                  <div className="movie-skeleton skeleton-genres"></div>
+                  <div className="movie-skeleton skeleton-overview"></div>
+                  <div className="movie-skeleton skeleton-button"></div>
+                </div>
               )}
             </div>
           </div>
@@ -191,15 +191,15 @@ function MoviePage({ kind, id }: { kind: MediaKind; id: number }) {
       {/* Content Section */}
       <div className="movie-content">
         {/* Trailer Section */}
-        {trailerKey && (
+        {trailerKey ? (
           <div className="section trailer-section">
             <h2 className="section-title">Trailer</h2>
-            <YouTubeEmbed videoKey={trailerKey} />
+            <TrailerFacade key={trailerKey} videoKey={trailerKey} title={title} />
           </div>
-        )}
+        ) : null}
 
         {/* Seasons & Episodes Section (TV Shows Only) */}
-        {isTv && seasons.length > 0 && details && (
+        {isTv && seasons.length > 0 && details ? (
           <div className="section seasons-section">
             <h2 className="section-title">Seasons & Episodes</h2>
 
@@ -222,90 +222,83 @@ function MoviePage({ kind, id }: { kind: MediaKind; id: number }) {
               <ErrorState error={seasonQuery.error} onRetry={() => void seasonQuery.refetch()} />
             ) : seasonQuery.isPending ? (
               <Loading label="Loading episodes…" />
-            ) : (
-              seasonDetails?.episodes && (
-                <div className="episodes-container">
-                  <div className="season-info">
-                    <h3>{seasonDetails.name}</h3>
-                    {seasonDetails.overview && <p className="season-overview">{seasonDetails.overview}</p>}
-                  </div>
-                  <div className="episodes-grid">
-                    {seasonDetails.episodes.map((episode) => {
-                      const play = () => navigate(`/player/tv/${details.id}/${selectedSeason}/${episode.episode_number}`)
-                      return (
-                        <div
-                          key={episode.id}
-                          className="episode-card"
-                          role="button"
-                          tabIndex={0}
-                          onClick={play}
-                          onKeyDown={onActivateKey(play)}
-                        >
-                          <div className="episode-image-container">
-                            {episode.still_path ? (
-                              <StillImage
-                                path={episode.still_path}
-                                alt={episode.name}
-                                size="medium"
-                                style={{ width: '100%', height: '100%' }}
-                              />
-                            ) : (
-                              <div className="episode-placeholder">
-                                <span>E{episode.episode_number}</span>
-                              </div>
-                            )}
-                            <div className="episode-number-badge">Episode {episode.episode_number}</div>
-                            <div className="episode-play-overlay">
-                              <span className="play-icon">▶</span>
-                            </div>
-                          </div>
-                          <div className="episode-info">
-                            <h4 className="episode-title">{episode.name}</h4>
-                            <div className="episode-meta">
-                              {!!episode.runtime && <span>{episode.runtime}min</span>}
-                              {episode.vote_average > 0 && (
-                                <span className="episode-rating">⭐ {formatRating(episode.vote_average)}</span>
-                              )}
-                            </div>
-                            {episode.overview && (
-                              <p className="episode-overview">
-                                {episode.overview.length > 150 ? episode.overview.slice(0, 150) + '...' : episode.overview}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
+            ) : seasonDetails?.episodes ? (
+              <div className="episodes-container">
+                <div className="season-info">
+                  <h3>{seasonDetails.name}</h3>
+                  {seasonDetails.overview ? <p className="season-overview">{seasonDetails.overview}</p> : null}
                 </div>
-              )
-            )}
+                <div className="episodes-grid">
+                  {seasonDetails.episodes.map((episode) => (
+                    <Link
+                      key={episode.id}
+                      to={`/player/tv/${details.id}/${selectedSeason}/${episode.episode_number}`}
+                      className="episode-card"
+                    >
+                      <div className="episode-image-container">
+                        {episode.still_path ? (
+                          <StillImage
+                            path={episode.still_path}
+                            alt=""
+                            size="medium"
+                            sizes={EPISODE_STILL_SIZES}
+                            className="oi-fill"
+                          />
+                        ) : (
+                          <div className="episode-placeholder" aria-hidden="true">
+                            <span>E{episode.episode_number}</span>
+                          </div>
+                        )}
+                        <div className="episode-number-badge">Episode {episode.episode_number}</div>
+                        <div className="episode-play-overlay" aria-hidden="true">
+                          <span className="play-icon">▶</span>
+                        </div>
+                      </div>
+                      <div className="episode-info">
+                        <h4 className="episode-title">{episode.name}</h4>
+                        <div className="episode-meta">
+                          {episode.runtime != null && episode.runtime > 0 ? <span>{episode.runtime}min</span> : null}
+                          {episode.vote_average > 0 ? (
+                            <span className="episode-rating">⭐ {formatRating(episode.vote_average)}</span>
+                          ) : null}
+                        </div>
+                        {episode.overview ? (
+                          <p className="episode-overview">
+                            {episode.overview.length > 150 ? episode.overview.slice(0, 150) + '...' : episode.overview}
+                          </p>
+                        ) : null}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
-        )}
+        ) : null}
 
         {/* Cast Section */}
-        {details?.credits?.cast && details.credits.cast.length > 0 && (
+        {details?.credits?.cast != null && details.credits.cast.length > 0 ? (
           <div className="section cast-section">
             <h2 className="section-title">Cast</h2>
             <div className="cast-slider-wrapper">
-              <button className="cast-arrow cast-arrow-left" onClick={() => scrollCast('left')} aria-label="Scroll left">
-                ‹
+              <button
+                type="button"
+                className="cast-arrow cast-arrow-left"
+                onClick={() => scrollCast('left')}
+                aria-label="Scroll cast left"
+                aria-controls={castListId}
+              >
+                <span aria-hidden="true">‹</span>
               </button>
-              <div className="cast-scroll-container" ref={castContainerRef}>
+              <div className="cast-scroll-container" ref={castContainerRef} id={castListId}>
                 <div className="cast-track">
                   {details.credits.cast.slice(0, 30).map((c) => (
                     <Link key={c.id} to={`/person/${c.id}`} className="cast-card">
                       {c.profile_path ? (
-                        <ProfileImage
-                          path={c.profile_path}
-                          alt={c.name}
-                          size="medium"
-                          className="cast-photo"
-                          style={{ width: 140, height: 210, borderRadius: 10 }}
-                        />
+                        <ProfileImage path={c.profile_path} alt="" size="medium" sizes="140px" className="cast-photo" />
                       ) : (
-                        <div className="cast-photo-placeholder">
-                          <span>{c.name.charAt(0)}</span>
+                        <div className="cast-photo-placeholder" aria-hidden="true">
+                          <span>{c.name?.charAt(0)}</span>
                         </div>
                       )}
                       <div className="cast-name">{c.name}</div>
@@ -314,15 +307,21 @@ function MoviePage({ kind, id }: { kind: MediaKind; id: number }) {
                   ))}
                 </div>
               </div>
-              <button className="cast-arrow cast-arrow-right" onClick={() => scrollCast('right')} aria-label="Scroll right">
-                ›
+              <button
+                type="button"
+                className="cast-arrow cast-arrow-right"
+                onClick={() => scrollCast('right')}
+                aria-label="Scroll cast right"
+                aria-controls={castListId}
+              >
+                <span aria-hidden="true">›</span>
               </button>
             </div>
           </div>
-        )}
+        ) : null}
 
         {/* Similar Movies Section */}
-        {similar.length > 0 && (
+        {similar.length > 0 ? (
           <div className="section similar-section">
             <h2 className="section-title">Similar {isTv ? 'Shows' : 'Movies'}</h2>
             <div className="similar-grid">
@@ -330,33 +329,31 @@ function MoviePage({ kind, id }: { kind: MediaKind; id: number }) {
                 // Similar results are always the same kind as the page.
                 const item = { ...s, media_type: s.media_type ?? kind }
                 const name = displayTitle(s)
-                const open = () => navigate(itemPath(item))
                 return (
-                  <div
-                    key={itemKey(item)}
-                    className="similar-card"
-                    role="button"
-                    tabIndex={0}
-                    onClick={open}
-                    onKeyDown={onActivateKey(open)}
-                  >
+                  <Link key={itemKey(item)} to={itemPath(item)} className="similar-card">
                     {s.poster_path ? (
-                      <PosterImage path={s.poster_path} alt={name} size="medium" className="similar-poster" />
+                      <PosterImage
+                        path={s.poster_path}
+                        alt=""
+                        size="medium"
+                        sizes={SIMILAR_CARD_SIZES}
+                        className="similar-poster"
+                      />
                     ) : (
-                      <img src={moviePlaceholder} alt={name} className="similar-poster placeholder-img" />
+                      <img src={moviePlaceholder} alt="" className="similar-poster placeholder-img" loading="lazy" />
                     )}
                     <div className="similar-info">
                       <h3 className="similar-title">{name}</h3>
-                      {!!s.vote_average && s.vote_average > 0 && (
+                      {s.vote_average != null && s.vote_average > 0 ? (
                         <div className="similar-rating">⭐ {formatRating(s.vote_average)}</div>
-                      )}
+                      ) : null}
                     </div>
-                  </div>
+                  </Link>
                 )
               })}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   )

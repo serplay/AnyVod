@@ -38,7 +38,7 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   render(): ReactNode {
     if (this.state.hasError) {
-      return <ErrorState error={this.state.error} onRetry={this.reset} />
+      return <ErrorState error={this.state.error} onRetry={this.reset} headingLevel="h1" />
     }
     return this.props.children
   }

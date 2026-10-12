@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEvent } from 'react'
+import { useState, useEffect, useId, useRef, type FormEvent, type KeyboardEvent, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { useGenres } from '../api/hooks'
 import type { SearchSort, SearchType } from '../api/types'
@@ -8,9 +8,19 @@ type TypeOption = 'All' | SearchType
 type SortOption = 'Default' | SearchSort
 type DropdownName = 'type' | 'rating' | 'sort' | 'year'
 
-const typeOptions = ['All', 'Movies', 'TV Shows'] as const
-const ratingOptions = ['All', '9+', '8+', '7+', '6+', '5+'] as const
-const sortOptions: ReadonlyArray<{ value: SortOption; label: string }> = [
+interface Option<T extends string> {
+  value: T
+  label: string
+}
+
+const typeOptions: ReadonlyArray<Option<TypeOption>> = [
+  { value: 'All', label: 'All' },
+  { value: 'movie', label: 'Movies' },
+  { value: 'tv', label: 'TV Shows' },
+  { value: 'person', label: 'People' },
+]
+const ratingOptions: ReadonlyArray<Option<string>> = ['All', '9+', '8+', '7+', '6+', '5+'].map((v) => ({ value: v, label: v }))
+const sortOptions: ReadonlyArray<Option<SortOption>> = [
   { value: 'Default', label: 'Default' },
   { value: 'popularity_desc', label: 'Popular' },
   { value: 'rating_desc', label: 'Top Rated' },
@@ -20,18 +30,135 @@ const sortOptions: ReadonlyArray<{ value: SortOption; label: string }> = [
   { value: 'date_asc', label: 'Oldest' },
 ]
 
-function optionToType(opt: string): TypeOption {
-  if (opt === 'Movies') return 'movie'
-  if (opt === 'TV Shows') return 'tv'
-  if (opt === 'People') return 'person'
-  return 'All'
+function labelOf<T extends string>(options: ReadonlyArray<Option<T>>, value: T): string {
+  return options.find((o) => o.value === value)?.label ?? value
 }
 
-function typeLabel(type: TypeOption): string {
-  if (type === 'movie') return 'Movies'
-  if (type === 'tv') return 'TV Shows'
-  if (type === 'person') return 'People'
-  return type
+interface FilterDropdownProps {
+  label: string
+  valueLabel: string
+  open: boolean
+  onToggle: () => void
+  onClose: () => void
+  /** `listbox` for option lists, `dialog` for free-form content (the year input). */
+  popup: 'listbox' | 'dialog'
+  menuClassName?: string
+  children: (ids: { popupId: string; close: () => void }) => ReactNode
+}
+
+/**
+ * A filter pill with a popup. Escape closes it and returns focus to the pill;
+ * clicking outside closes it (the listener only exists while it's open).
+ * Listbox popups get arrow-key / Home / End navigation between options.
+ */
+function FilterDropdown({ label, valueLabel, open, onToggle, onClose, popup, menuClassName = '', children }: FilterDropdownProps) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const popupRef = useRef<HTMLDivElement>(null)
+  const popupId = useId()
+
+  const close = () => {
+    onClose()
+    triggerRef.current?.focus()
+  }
+
+  // Close on outside pointer down; subscribed only while open, removed on close/unmount.
+  useEffect(() => {
+    if (!open) return
+    const handlePointerDown = (e: Event) => {
+      if (e.target instanceof Node && containerRef.current?.contains(e.target)) return
+      onClose()
+    }
+    document.addEventListener('pointerdown', handlePointerDown)
+    return () => document.removeEventListener('pointerdown', handlePointerDown)
+  }, [open, onClose])
+
+  // Move focus into a listbox when it opens: the selected option, else the first.
+  useEffect(() => {
+    if (!open || popup !== 'listbox') return
+    const el = popupRef.current
+    const target = el?.querySelector<HTMLElement>('[aria-selected="true"]') ?? el?.querySelector<HTMLElement>('[role="option"]')
+    target?.focus()
+  }, [open, popup])
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Escape' && open) {
+      e.preventDefault()
+      e.stopPropagation()
+      close()
+      return
+    }
+    if (!open || popup !== 'listbox') return
+    const options = Array.from(popupRef.current?.querySelectorAll<HTMLElement>('[role="option"]') ?? [])
+    if (options.length === 0) return
+    const index = options.indexOf(document.activeElement as HTMLElement)
+    let next: number | undefined
+    if (e.key === 'ArrowDown') next = index < 0 ? 0 : Math.min(options.length - 1, index + 1)
+    else if (e.key === 'ArrowUp') next = index < 0 ? options.length - 1 : Math.max(0, index - 1)
+    else if (e.key === 'Home') next = 0
+    else if (e.key === 'End') next = options.length - 1
+    else if (e.key === 'Tab') onClose()
+    if (next !== undefined) {
+      e.preventDefault()
+      options[next]?.focus()
+    }
+  }
+
+  return (
+    // Keyboard handling for the trigger + popup as one widget.
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+    <div className="filter-dropdown" ref={containerRef} onKeyDown={handleKeyDown}>
+      <button
+        ref={triggerRef}
+        type="button"
+        className="filter-pill"
+        aria-haspopup={popup}
+        aria-expanded={open}
+        aria-controls={open ? popupId : undefined}
+        onClick={onToggle}
+      >
+        <span className="pill-label">{label}</span>
+        <span className="pill-value">{valueLabel}</span>
+      </button>
+      {open ? (
+        <div
+          ref={popupRef}
+          id={popupId}
+          className={`dropdown-menu ${menuClassName}`.trim()}
+          role={popup}
+          aria-label={label}
+        >
+          {children({ popupId, close })}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+interface ListboxOptionsProps<T extends string> {
+  options: ReadonlyArray<Option<T>>
+  selected: T
+  onSelect: (value: T) => void
+}
+
+function ListboxOptions<T extends string>({ options, selected, onSelect }: ListboxOptionsProps<T>) {
+  return (
+    <>
+      {options.map((opt) => (
+        <button
+          key={opt.value}
+          type="button"
+          role="option"
+          aria-selected={opt.value === selected}
+          tabIndex={opt.value === selected ? 0 : -1}
+          className={`dropdown-item ${opt.value === selected ? 'active' : ''}`}
+          onClick={() => onSelect(opt.value)}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </>
+  )
 }
 
 /**
@@ -42,6 +169,7 @@ export default function Search() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const initial = parseSearchParams(searchParams)
+  const yearInputId = useId()
 
   const [q, setQ] = useState(initial?.query ?? '')
   const [type, setType] = useState<TypeOption>(initial?.type ?? 'All')
@@ -52,23 +180,10 @@ export default function Search() {
   )
   const [selectedGenres, setSelectedGenres] = useState<number[]>(initial?.genres ?? [])
   const [showFilters, setShowFilters] = useState(false)
-
-  // Dropdown states
   const [activeDropdown, setActiveDropdown] = useState<DropdownName | null>(null)
 
   const genresQuery = useGenres(type === 'person' ? null : type === 'tv' ? 'tv' : 'movie')
   const genres = type === 'person' ? [] : (genresQuery.data?.genres ?? [])
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (!(e.target instanceof Element) || !e.target.closest('.filter-dropdown')) {
-        setActiveDropdown(null)
-      }
-    }
-    document.addEventListener('click', handleClickOutside)
-    return () => document.removeEventListener('click', handleClickOutside)
-  }, [])
 
   function submit(e?: FormEvent) {
     e?.preventDefault()
@@ -104,17 +219,20 @@ export default function Search() {
     setSelectedGenres((prev) => (prev.includes(genreId) ? prev.filter((id) => id !== genreId) : [...prev, genreId]))
   }
 
-  function toggleDropdown(name: DropdownName) {
-    setActiveDropdown(activeDropdown === name ? null : name)
-  }
+  const closeDropdown = () => setActiveDropdown(null)
+  const dropdownProps = (name: DropdownName) => ({
+    open: activeDropdown === name,
+    onToggle: () => setActiveDropdown(activeDropdown === name ? null : name),
+    onClose: closeDropdown,
+  })
 
-  function selectOption<T>(setter: (value: T) => void, value: T) {
-    setter(value)
-    setActiveDropdown(null)
-  }
-
-  const hasActiveFilters =
-    type !== 'All' || !!year || sortBy !== 'Default' || minRating !== 'All' || selectedGenres.length > 0
+  const activeFilterCount =
+    (type !== 'All' ? 1 : 0) +
+    (year ? 1 : 0) +
+    (sortBy !== 'Default' ? 1 : 0) +
+    (minRating !== 'All' ? 1 : 0) +
+    selectedGenres.length
+  const hasActiveFilters = activeFilterCount > 0
 
   return (
     <div className="search">
@@ -136,135 +254,70 @@ export default function Search() {
             aria-expanded={showFilters}
           >
             Filter
-            {hasActiveFilters && (
-              <span className="filter-count">
-                {(type !== 'All' ? 1 : 0) +
-                  (year ? 1 : 0) +
-                  (sortBy !== 'Default' ? 1 : 0) +
-                  (minRating !== 'All' ? 1 : 0) +
-                  selectedGenres.length}
-              </span>
-            )}
+            {hasActiveFilters ? <span className="filter-count">{activeFilterCount}</span> : null}
           </button>
         </div>
 
-        {showFilters && (
+        {showFilters ? (
           <div className="search-filters-panel">
             <div className="filter-section">
               <span className="filter-section-title">Filter</span>
               <div className="filter-pills">
-                {/* Type Filter */}
-                <div className="filter-dropdown">
-                  <button
-                    type="button"
-                    className="filter-pill"
-                    aria-expanded={activeDropdown === 'type'}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      toggleDropdown('type')
-                    }}
-                  >
-                    <span className="pill-label">Type</span>
-                    <span className="pill-value">{typeLabel(type)}</span>
-                  </button>
-                  {activeDropdown === 'type' && (
-                    <div className="dropdown-menu">
-                      {typeOptions.map((opt) => (
-                        <button
-                          key={opt}
-                          type="button"
-                          className={`dropdown-item ${optionToType(opt) === type ? 'active' : ''}`}
-                          onClick={() => {
-                            selectOption(setType, optionToType(opt))
-                            setSelectedGenres([])
-                          }}
-                        >
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
+                <FilterDropdown label="Type" valueLabel={labelOf(typeOptions, type)} popup="listbox" {...dropdownProps('type')}>
+                  {({ close }) => (
+                    <ListboxOptions
+                      options={typeOptions}
+                      selected={type}
+                      onSelect={(value) => {
+                        setType(value)
+                        setSelectedGenres([])
+                        close()
+                      }}
+                    />
                   )}
-                </div>
+                </FilterDropdown>
 
-                {/* Rating Filter */}
-                <div className="filter-dropdown">
-                  <button
-                    type="button"
-                    className="filter-pill"
-                    aria-expanded={activeDropdown === 'rating'}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      toggleDropdown('rating')
-                    }}
-                  >
-                    <span className="pill-label">Score</span>
-                    <span className="pill-value">{minRating}</span>
-                  </button>
-                  {activeDropdown === 'rating' && (
-                    <div className="dropdown-menu">
-                      {ratingOptions.map((opt) => (
-                        <button
-                          key={opt}
-                          type="button"
-                          className={`dropdown-item ${minRating === opt ? 'active' : ''}`}
-                          onClick={() => selectOption<string>(setMinRating, opt)}
-                        >
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
+                <FilterDropdown label="Score" valueLabel={minRating} popup="listbox" {...dropdownProps('rating')}>
+                  {({ close }) => (
+                    <ListboxOptions
+                      options={ratingOptions}
+                      selected={minRating}
+                      onSelect={(value) => {
+                        setMinRating(value)
+                        close()
+                      }}
+                    />
                   )}
-                </div>
+                </FilterDropdown>
 
-                {/* Sort Filter */}
-                <div className="filter-dropdown">
-                  <button
-                    type="button"
-                    className="filter-pill"
-                    aria-expanded={activeDropdown === 'sort'}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      toggleDropdown('sort')
-                    }}
-                  >
-                    <span className="pill-label">Sort</span>
-                    <span className="pill-value">{sortOptions.find((o) => o.value === sortBy)?.label || 'Default'}</span>
-                  </button>
-                  {activeDropdown === 'sort' && (
-                    <div className="dropdown-menu">
-                      {sortOptions.map((opt) => (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          className={`dropdown-item ${sortBy === opt.value ? 'active' : ''}`}
-                          onClick={() => selectOption(setSortBy, opt.value)}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
+                <FilterDropdown label="Sort" valueLabel={labelOf(sortOptions, sortBy)} popup="listbox" {...dropdownProps('sort')}>
+                  {({ close }) => (
+                    <ListboxOptions
+                      options={sortOptions}
+                      selected={sortBy}
+                      onSelect={(value) => {
+                        setSortBy(value)
+                        close()
+                      }}
+                    />
                   )}
-                </div>
+                </FilterDropdown>
 
-                {/* Year Filter */}
-                <div className="filter-dropdown">
-                  <button
-                    type="button"
-                    className="filter-pill"
-                    aria-expanded={activeDropdown === 'year'}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      toggleDropdown('year')
-                    }}
-                  >
-                    <span className="pill-label">Year</span>
-                    <span className="pill-value">{year || 'All'}</span>
-                  </button>
-                  {activeDropdown === 'year' && (
-                    <div className="dropdown-menu dropdown-menu-input">
+                <FilterDropdown
+                  label="Year"
+                  valueLabel={year || 'All'}
+                  popup="dialog"
+                  menuClassName="dropdown-menu-input"
+                  {...dropdownProps('year')}
+                >
+                  {({ close }) => (
+                    <>
+                      <label htmlFor={yearInputId} className="visually-hidden">
+                        Release year
+                      </label>
                       <input
+                        id={yearInputId}
                         type="number"
-                        aria-label="Release year"
                         value={year}
                         onChange={(e) => setYear(e.target.value)}
                         placeholder="Enter year"
@@ -279,19 +332,19 @@ export default function Search() {
                         className="dropdown-item"
                         onClick={() => {
                           setYear('')
-                          setActiveDropdown(null)
+                          close()
                         }}
                       >
                         Clear
                       </button>
-                    </div>
+                    </>
                   )}
-                </div>
+                </FilterDropdown>
               </div>
             </div>
 
             {/* Genre Tags */}
-            {genres.length > 0 && (
+            {genres.length > 0 ? (
               <div className="filter-section">
                 <span className="filter-section-title">Genre</span>
                 <div className="genre-tags">
@@ -308,21 +361,21 @@ export default function Search() {
                   ))}
                 </div>
               </div>
-            )}
+            ) : null}
 
             {/* Filter Action Button */}
             <div className="filter-actions">
               <button type="submit" className="filter-apply-btn">
                 Filter
               </button>
-              {hasActiveFilters && (
+              {hasActiveFilters ? (
                 <button type="button" className="filter-clear-btn" onClick={clear}>
                   Clear All
                 </button>
-              )}
+              ) : null}
             </div>
           </div>
-        )}
+        ) : null}
       </form>
     </div>
   )

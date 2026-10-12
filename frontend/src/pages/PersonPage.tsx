@@ -1,12 +1,15 @@
-import { useParams, useNavigate } from 'react-router'
+import { Link, useParams } from 'react-router'
 import moviePlaceholder from '../assets/movie.png'
 import { ProfileImage, PosterImage } from '../components/OptimizedImage'
 import { ErrorState, Loading } from '../components/states'
 import NotFound from './NotFound'
 import { usePerson, usePersonCredits } from '../api/hooks'
 import { ApiError } from '../api/client'
-import { displayTitle, formatRating, itemPath, parseNonNegativeInt } from '../lib/media'
-import { onActivateKey } from '../lib/a11y'
+import { displayTitle, formatRating, itemKey, itemPath, parseNonNegativeInt } from '../lib/media'
+import { topCredits } from '../lib/credits'
+
+/** person-credits-grid is minmax(200px, 1fr) (150px <=768px, 2 columns <=480px). */
+const CREDIT_CARD_SIZES = '(max-width: 480px) 50vw, 240px'
 
 // Calculate age from birthday (to deathday if deceased)
 function calculateAge(birthday: string | null, deathday: string | null): number | null {
@@ -25,7 +28,6 @@ function calculateAge(birthday: string | null, deathday: string | null): number 
 export default function PersonPage() {
   const { id: rawId } = useParams()
   const id = parseNonNegativeInt(rawId)
-  const navigate = useNavigate()
   const validId = id !== undefined && id > 0 ? id : undefined
   const personQuery = usePerson(validId)
   const { data: credits } = usePersonCredits(validId)
@@ -37,20 +39,21 @@ export default function PersonPage() {
     if (personQuery.error instanceof ApiError && personQuery.error.status === 404) {
       return <NotFound message="We couldn't find that person." />
     }
-    return <ErrorState error={personQuery.error} onRetry={() => void personQuery.refetch()} />
+    return <ErrorState error={personQuery.error} onRetry={() => void personQuery.refetch()} headingLevel="h1" />
   }
 
-  if (!person) return <Loading className="person-loading" />
+  if (!person) {
+    return (
+      <>
+        <h1 className="visually-hidden">Loading person…</h1>
+        <Loading className="person-loading" />
+      </>
+    )
+  }
 
   const age = calculateAge(person.birthday, person.deathday)
-
-  // Sort and get top credits by popularity
-  const topCredits = credits?.cast
-    ? [...credits.cast]
-        .filter((c) => c.poster_path)
-        .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
-        .slice(0, 18)
-    : []
+  // Most popular titles first, one card per title.
+  const credited = topCredits(credits?.cast)
 
   return (
     <div className="person-page">
@@ -64,11 +67,14 @@ export default function PersonPage() {
                 path={person.profile_path}
                 alt={person.name}
                 size="large"
+                sizes="320px"
+                priority
                 className="person-profile-img"
-                style={{ width: 320, height: 480 }}
               />
             ) : (
-              <div className="person-profile-placeholder">{person.name.charAt(0)}</div>
+              <div className="person-profile-placeholder" aria-hidden="true">
+                {person.name?.charAt(0)}
+              </div>
             )}
           </div>
 
@@ -76,17 +82,17 @@ export default function PersonPage() {
             <h1 className="person-name">{person.name}</h1>
 
             <div className="person-meta">
-              {person.known_for_department && <span className="person-tag">{person.known_for_department}</span>}
-              {age !== null && <span className="person-detail">Age: {age}</span>}
-              {person.place_of_birth && <span className="person-detail">📍 {person.place_of_birth}</span>}
+              {person.known_for_department ? <span className="person-tag">{person.known_for_department}</span> : null}
+              {age !== null ? <span className="person-detail">Age: {age}</span> : null}
+              {person.place_of_birth ? <span className="person-detail">📍 {person.place_of_birth}</span> : null}
             </div>
 
-            {person.biography && (
+            {person.biography ? (
               <div className="person-bio-preview">
                 {person.biography.slice(0, 300)}
                 {person.biography.length > 300 ? '...' : ''}
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
@@ -97,68 +103,66 @@ export default function PersonPage() {
         <section className="person-section">
           <h2 className="person-section-title">Personal Info</h2>
           <div className="person-info-grid">
-            {person.birthday && (
+            {person.birthday ? (
               <div className="info-item">
                 <div className="info-label">Birthday</div>
                 <div className="info-value">{person.birthday}</div>
               </div>
-            )}
-            {person.place_of_birth && (
+            ) : null}
+            {person.place_of_birth ? (
               <div className="info-item">
                 <div className="info-label">Place of Birth</div>
                 <div className="info-value">{person.place_of_birth}</div>
               </div>
-            )}
-            {person.known_for_department && (
+            ) : null}
+            {person.known_for_department ? (
               <div className="info-item">
                 <div className="info-label">Known For</div>
                 <div className="info-value">{person.known_for_department}</div>
               </div>
-            )}
-            {!!person.popularity && (
+            ) : null}
+            {person.popularity != null && person.popularity > 0 ? (
               <div className="info-item">
                 <div className="info-label">Popularity</div>
                 <div className="info-value">{formatRating(person.popularity)}</div>
               </div>
-            )}
+            ) : null}
           </div>
         </section>
 
         {/* Known For / Credits */}
-        {topCredits.length > 0 && (
+        {credited.length > 0 ? (
           <section className="person-section">
             <h2 className="person-section-title">Known For</h2>
             <div className="person-credits-grid">
-              {topCredits.map((credit) => {
+              {credited.map((credit) => {
                 const name = displayTitle(credit)
-                const open = () => navigate(itemPath(credit))
                 return (
-                  <div
-                    key={credit.credit_id}
-                    className="person-credit-card"
-                    role="button"
-                    tabIndex={0}
-                    onClick={open}
-                    onKeyDown={onActivateKey(open)}
-                  >
+                  <Link key={itemKey(credit)} to={itemPath(credit)} className="person-credit-card">
                     {credit.poster_path ? (
-                      <PosterImage path={credit.poster_path} alt={name} size="medium" className="credit-poster" />
+                      <PosterImage
+                        path={credit.poster_path}
+                        alt=""
+                        size="medium"
+                        sizes={CREDIT_CARD_SIZES}
+                        className="credit-poster"
+                      />
                     ) : (
-                      <img src={moviePlaceholder} alt={name} className="credit-poster placeholder-img" />
+                      <img src={moviePlaceholder} alt="" className="credit-poster placeholder-img" loading="lazy" />
                     )}
                     <div className="credit-info">
                       <h3 className="credit-title">{name}</h3>
-                      {credit.character && <div className="credit-character">as {credit.character}</div>}
-                      {!!credit.vote_average && credit.vote_average > 0 && (
+                      {credit.character ? <div className="credit-character">as {credit.character}</div> : null}
+                      {credit.vote_average != null && credit.vote_average > 0 ? (
                         <div className="credit-rating">⭐ {formatRating(credit.vote_average)}</div>
-                      )}
+                      ) : null}
                     </div>
-                  </div>
+                  </Link>
                 )
               })}
             </div>
           </section>
-        )}
+        ) : null}
       </div>
     </div>
   )

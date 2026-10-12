@@ -1,12 +1,14 @@
 import { useEffect } from 'react'
 import type { MediaKind } from '../api/types'
+import { formatIsoDuration } from '../lib/schema'
 
 interface VideoSchemaProps {
   name?: string
   description?: string
   thumbnailUrl?: string
+  /** Release date (YYYY-MM-DD); omitted from the schema when unknown. */
   uploadDate?: string
-  /** Runtime in minutes; emitted as ISO 8601 (PT1H30M). */
+  /** Runtime in minutes; emitted as ISO 8601 (PT1H30M), omitted when unknown. */
   duration?: number | null
   /** URL to the actual video file (if available) */
   contentUrl?: string
@@ -19,10 +21,6 @@ interface VideoSchemaProps {
 }
 
 type JsonLd = Record<string, unknown>
-
-function removeSchema() {
-  document.querySelector('script[data-schema="video"]')?.remove()
-}
 
 /**
  * VideoSchema - Injects VideoObject structured data for SEO
@@ -44,9 +42,6 @@ export default function VideoSchema({
   seriesName,
 }: VideoSchemaProps) {
   useEffect(() => {
-    // Remove any existing video schema
-    removeSchema()
-
     if (!name || !description || !thumbnailUrl) return
 
     // Build the base VideoObject
@@ -56,21 +51,18 @@ export default function VideoSchema({
       name,
       description: description.slice(0, 200), // Keep it concise
       thumbnailUrl,
-      uploadDate: uploadDate || new Date().toISOString().split('T')[0],
     }
 
-    // Add duration if available (convert minutes to ISO 8601)
-    if (duration) {
-      const hours = Math.floor(duration / 60)
-      const minutes = duration % 60
-      videoSchema.duration = hours > 0 ? `PT${hours}H${minutes}M` : `PT${minutes}M`
-    }
+    // Unknown values are omitted rather than faked.
+    if (uploadDate) videoSchema.uploadDate = uploadDate
+    const isoDuration = formatIsoDuration(duration)
+    if (isoDuration) videoSchema.duration = isoDuration
 
     if (contentUrl) videoSchema.contentUrl = contentUrl
     if (embedUrl) videoSchema.embedUrl = embedUrl
 
     // For TV episodes, add episode-specific data
-    if (type === 'tv' && seasonNumber && episodeNumber) {
+    if (type === 'tv' && seasonNumber != null && episodeNumber != null) {
       videoSchema['@type'] = 'TVEpisode'
       videoSchema.episodeNumber = episodeNumber
       videoSchema.partOfSeason = {
@@ -95,7 +87,7 @@ export default function VideoSchema({
                 name,
                 description: description.slice(0, 200),
                 image: thumbnailUrl,
-                dateCreated: uploadDate,
+                ...(uploadDate ? { dateCreated: uploadDate } : {}),
               },
             ],
           }
@@ -107,8 +99,8 @@ export default function VideoSchema({
     script.textContent = JSON.stringify(schema)
     document.head.appendChild(script)
 
-    // Cleanup on unmount / change
-    return removeSchema
+    // Each instance removes exactly the script it added, on change and on unmount.
+    return () => script.remove()
   }, [name, description, thumbnailUrl, uploadDate, duration, contentUrl, embedUrl, type, seasonNumber, episodeNumber, seriesName])
 
   return null // This component doesn't render anything visible

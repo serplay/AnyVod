@@ -18,6 +18,7 @@ export default function SearchPage() {
 
   return (
     <>
+      <h1 className="visually-hidden">{query ? `Search: ${query}` : 'Search'}</h1>
       {/* Re-mount the form when the URL changes (back/forward) so it mirrors the URL. */}
       <Search key={searchParams.toString()} />
       <SearchResults />
