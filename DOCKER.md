@@ -49,4 +49,4 @@ docker compose build --no-cache backend
 
 - **Backend exits immediately:** `TMDB_API_KEY` is missing. Compose refuses to start without it.
 - **CORS errors in the browser:** add the frontend's origin to `FRONTEND_ORIGIN`.
-- **Player iframe blocked:** if you change `VIDSRC_EMBED_DOMAIN`, update `frame-src` in `frontend/nginx.conf` to match.
+- **Player iframe blocked:** if you change `VIDSRC_EMBED_DOMAIN`, update `frame-src` in `frontend/nginx.conf` to match. Providers also redirect between domains (currently `vidsrc-embed.ru` → `vidsrc.sh`); every domain in the chain must be listed.
