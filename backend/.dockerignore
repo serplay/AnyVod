@@ -1,21 +1,6 @@
 # Rust build output
 target/
 
-# Python leftovers
-__pycache__
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-*.egg
-*.egg-info
-dist
-build
-.venv
-env/
-venv/
-
 # Local / VCS
 .env
 .git

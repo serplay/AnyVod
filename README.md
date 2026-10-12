@@ -1,45 +1,61 @@
 # AnyVod
 
-This is a small full-stack scaffold for a streaming app using React (Vite) frontend and a Python FastAPI backend. The backend proxies The Movie Database (TMDB) for metadata and an external vidsrc-like API for stream sources.
+A streaming front end for movies and TV. It has two parts:
 
-WARNING: This is a starter scaffold. You need valid API keys for TMDB and your vidsrc provider and you must comply with their terms of service when using content.
+- **`backend/`**: a Rust ([axum](https://github.com/tokio-rs/axum)) API. It proxies [TMDB](https://www.themoviedb.org/) for metadata, caching responses in memory, and builds vidsrc embed URLs.
+- **`frontend/`**: a React 19 + TypeScript + Vite single-page app. It uses TanStack Query for data and React Router for routing.
 
-## Structure
+The API contract is documented in [`docs/API.md`](docs/API.md).
 
-- `backend/`: FastAPI backend
-- `frontend/`: Vite + React frontend
+> You need a TMDB API key. You are responsible for complying with the terms of service of TMDB and of any embed provider you configure.
 
-## Setup
+## Quick start (Docker)
 
-1. Backend
+```bash
+cp .env.example .env          # add your TMDB_API_KEY
+docker compose up --build
+```
 
- Create a Python virtual environment and install dependencies:
+- Frontend: http://localhost:5173
+- API: http://localhost:8000 (health check at `/health`)
 
-    ```bash
-    cd backend
-    python3 -m venv .venv
-    source .venv/bin/activate
-    pip install -r requirements.txt
-    cp .env.example .env
-    # edit .env and add TMDB_API_KEY and VIDSRC_API_KEY
-    ./run.sh
-    ```
+## Manual setup
 
-2. Frontend
+**Backend** (requires Rust stable):
 
- Install node deps and run:
+```bash
+cd backend
+TMDB_API_KEY=... cargo run          # listens on :8000
+cargo test                          # unit + integration tests (TMDB mocked with wiremock)
+```
 
-    ```bash
-    cd frontend
-    npm install
-    cp .env.example .env
-    # edit .env if needed
-    npm run dev
-    ```
+**Frontend** (requires Node 20.19 or newer; Node 22 recommended):
 
-The frontend expects the backend at the URL defined by `VITE_API_BASE` (defaults to `http://localhost:8000`) and the backend allows CORS from `FRONTEND_ORIGIN` in `.env`.
+```bash
+cd frontend
+npm install
+npm run dev                         # http://localhost:5173, calls http://localhost:8000 by default
+npm run typecheck && npm run lint && npm test
+```
 
-## Notes
+## Configuration
 
-- TMDB image URLs use `https://image.tmdb.org/t/p/w342{poster_path}` — you can change size in the components.
-- The vidsrc endpoints are proxied in `backend/app/routers/vidsrc.py`. Replace `VIDSRC_BASE_URL` and keys accordingly.
+| Variable | Used by | Default | Notes |
+|---|---|---|---|
+| `TMDB_API_KEY` | backend | – | Required. The backend refuses to start without it. |
+| `PORT` | backend | `8000` | Render sets this automatically. |
+| `ENVIRONMENT` | backend | `development` | `development` also allows CORS from localhost:5173 and localhost:3000. |
+| `FRONTEND_ORIGIN` | backend | – | Comma-separated list of extra allowed CORS origins. `*.vercel.app` is always allowed. |
+| `VIDSRC_EMBED_DOMAIN` | backend | `vidsrc-embed.ru` | Domain used to build embed URLs. |
+| `RUST_LOG` | backend | `info` | Log filter, e.g. `anyvod_backend=debug`. |
+| `VITE_API_BASE` | frontend (build time) | dev: `http://localhost:8000`; prod: same origin | Base URL of the backend. |
+
+## Deployment
+
+- **Render:** `render.yaml` defines the backend (Docker, health check on `/health`) and the frontend (static site).
+- **Docker:** `docker compose -f docker-compose.prod.yml up -d --build` serves the frontend on port 80 and the API on port 8000. See [DOCKER.md](DOCKER.md).
+- **Vercel** (frontend only): `frontend/vercel.json` rewrites every route to the SPA.
+
+CI (`.github/workflows/ci.yml`) runs the following on each push and pull request:
+- backend: `cargo fmt`, `clippy` and tests
+- frontend: lint, typecheck, tests and build
