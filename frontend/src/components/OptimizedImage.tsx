@@ -1,59 +1,23 @@
-import React, { useState, useRef, useEffect, memo } from 'react'
+import { useState, useRef, useEffect, memo, type CSSProperties, type ImgHTMLAttributes, type SyntheticEvent } from 'react'
+import { tmdbImageFor, tmdbSrcSet, type ImageRole, type ImageSize } from '../lib/media'
 
-/**
- * TMDB Image size configurations
- * Using smaller sizes for thumbnails, larger for detail views
- */
-const TMDB_SIZES = {
-  poster: {
-    small: 'w185',     // ~185px - for small cards
-    medium: 'w342',    // ~342px - for category cards
-    large: 'w500',     // ~500px - for movie page posters
-    original: 'original'
-  },
-  backdrop: {
-    small: 'w300',     // ~300px - for thumbnails
-    medium: 'w780',    // ~780px - for medium screens
-    large: 'w1280',    // ~1280px - for large screens
-    original: 'original'
-  },
-  profile: {
-    small: 'w45',      // ~45px - for tiny avatars
-    medium: 'w185',    // ~185px - for cast cards
-    large: 'h632',     // ~632px height - for person page
-    original: 'original'
-  },
-  still: {
-    small: 'w185',     // ~185px
-    medium: 'w300',    // ~300px - for episode thumbnails
-    large: 'w500',     // ~500px
-    original: 'original'
-  }
-}
+type ImgPassthrough = Omit<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt' | 'width' | 'height' | 'onLoad' | 'onError' | 'style' | 'className'>
 
-/**
- * Get optimized TMDB image URL based on container size
- */
-export function getTMDBImageUrl(path, type = 'poster', size = 'medium') {
-  if (!path) return null
-  const sizeConfig = TMDB_SIZES[type] || TMDB_SIZES.poster
-  const sizeValue = sizeConfig[size] || sizeConfig.medium
-  return `https://image.tmdb.org/t/p/${sizeValue}${path}.webp`
-}
-
-/**
- * Generate srcset for responsive images
- */
-export function getTMDBSrcSet(path, type = 'poster') {
-  if (!path) return ''
-  const sizeConfig = TMDB_SIZES[type] || TMDB_SIZES.poster
-  const sizes = Object.entries(sizeConfig)
-    .filter(([key]) => key !== 'original')
-    .map(([, value]) => {
-      const width = parseInt(value.replace(/\D/g, '')) || 500
-      return `https://image.tmdb.org/t/p/${value}${path}.webp ${width}w`
-    })
-  return sizes.join(', ')
+export interface OptimizedImageProps extends ImgPassthrough {
+  src?: string
+  alt?: string
+  className?: string
+  width?: number | string
+  height?: number | string
+  placeholderSrc?: string
+  tmdbPath?: string | null
+  tmdbType?: ImageRole
+  tmdbSize?: ImageSize
+  /** Load immediately without lazy loading */
+  priority?: boolean
+  onLoad?: (e: SyntheticEvent<HTMLImageElement>) => void
+  onError?: (e: SyntheticEvent<HTMLImageElement>) => void
+  style?: CSSProperties
 }
 
 /**
@@ -69,74 +33,61 @@ const OptimizedImage = memo(function OptimizedImage({
   tmdbPath,
   tmdbType = 'poster',
   tmdbSize = 'medium',
-  priority = false, // Load immediately without lazy loading
+  priority = false,
   onLoad,
   onError,
   style,
   ...props
-}) {
+}: OptimizedImageProps) {
   const [isLoaded, setIsLoaded] = useState(false)
   const [isInView, setIsInView] = useState(priority)
   const [hasError, setHasError] = useState(false)
-  const imgRef = useRef(null)
-  const observerRef = useRef(null)
+  const imgRef = useRef<HTMLDivElement>(null)
 
   // Compute the actual image source
-  const imageSrc = tmdbPath 
-    ? getTMDBImageUrl(tmdbPath, tmdbType, tmdbSize)
-    : src
+  const imageSrc = tmdbPath ? tmdbImageFor(tmdbPath, tmdbType, tmdbSize) : src
 
   // Generate srcset for responsive loading
-  const srcSet = tmdbPath ? getTMDBSrcSet(tmdbPath, tmdbType) : undefined
+  const srcSet = tmdbPath ? tmdbSrcSet(tmdbPath, tmdbType) : undefined
 
   // Set up Intersection Observer for lazy loading
   useEffect(() => {
-    if (priority || !imgRef.current) {
+    const el = imgRef.current
+    if (priority || !el || !('IntersectionObserver' in window)) {
       setIsInView(true)
       return
     }
 
-    // Check if IntersectionObserver is supported
-    if (!('IntersectionObserver' in window)) {
-      setIsInView(true)
-      return
-    }
-
-    observerRef.current = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsInView(true)
-            observerRef.current?.disconnect()
-          }
-        })
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setIsInView(true)
+          observer.disconnect()
+        }
       },
       {
         rootMargin: '200px 800px', // 200px vertical, 800px horizontal for category rows
-        threshold: 0.01
-      }
+        threshold: 0.01,
+      },
     )
 
-    observerRef.current.observe(imgRef.current)
-
-    return () => {
-      observerRef.current?.disconnect()
-    }
+    observer.observe(el)
+    return () => observer.disconnect()
   }, [priority])
 
-  const handleLoad = (e) => {
+  const handleLoad = (e: SyntheticEvent<HTMLImageElement>) => {
     setIsLoaded(true)
     onLoad?.(e)
   }
 
-  const handleError = (e) => {
+  const handleError = (e: SyntheticEvent<HTMLImageElement>) => {
     setHasError(true)
     onError?.(e)
   }
 
   // Determine what to render
   const showPlaceholder = !isLoaded || hasError
-  const shouldLoadImage = isInView && imageSrc && !hasError
+  const shouldLoadImage = isInView && !!imageSrc && !hasError
 
   return (
     <div
@@ -147,7 +98,7 @@ const OptimizedImage = memo(function OptimizedImage({
         overflow: 'hidden',
         width: width || '100%',
         height: height || 'auto',
-        ...style
+        ...style,
       }}
     >
       {/* Placeholder/blur background */}
@@ -172,15 +123,18 @@ const OptimizedImage = memo(function OptimizedImage({
                 height: '100%',
                 objectFit: 'cover',
                 opacity: 0.5,
-                filter: 'grayscale(0.3)'
+                filter: 'grayscale(0.3)',
               }}
             />
           ) : (
-            <div style={{ 
-              color: 'var(--muted, #d4a5c0)', 
-              fontSize: '14px',
-              opacity: 0.6 
-            }}>
+            <div
+              aria-hidden="true"
+              style={{
+                color: 'var(--muted, #d4a5c0)',
+                fontSize: '14px',
+                opacity: 0.6,
+              }}
+            >
               🎬
             </div>
           )}
@@ -215,16 +169,15 @@ const OptimizedImage = memo(function OptimizedImage({
 
 export default OptimizedImage
 
+interface RoleImageProps extends Omit<OptimizedImageProps, 'tmdbPath' | 'tmdbType' | 'tmdbSize'> {
+  path: string | null | undefined
+  size?: ImageSize
+}
+
 /**
  * Specialized component for movie/show posters
  */
-export const PosterImage = memo(function PosterImage({
-  path,
-  alt,
-  size = 'medium',
-  className = '',
-  ...props
-}) {
+export const PosterImage = memo(function PosterImage({ path, alt, size = 'medium', className = '', ...props }: RoleImageProps) {
   return (
     <OptimizedImage
       tmdbPath={path}
@@ -247,7 +200,7 @@ export const BackdropImage = memo(function BackdropImage({
   className = '',
   priority = true, // Backdrops are usually above-the-fold
   ...props
-}) {
+}: RoleImageProps) {
   return (
     <OptimizedImage
       tmdbPath={path}
@@ -264,13 +217,7 @@ export const BackdropImage = memo(function BackdropImage({
 /**
  * Specialized component for cast/person profile images
  */
-export const ProfileImage = memo(function ProfileImage({
-  path,
-  alt,
-  size = 'medium',
-  className = '',
-  ...props
-}) {
+export const ProfileImage = memo(function ProfileImage({ path, alt, size = 'medium', className = '', ...props }: RoleImageProps) {
   return (
     <OptimizedImage
       tmdbPath={path}
@@ -286,13 +233,7 @@ export const ProfileImage = memo(function ProfileImage({
 /**
  * Specialized component for episode still images
  */
-export const StillImage = memo(function StillImage({
-  path,
-  alt,
-  size = 'medium',
-  className = '',
-  ...props
-}) {
+export const StillImage = memo(function StillImage({ path, alt, size = 'medium', className = '', ...props }: RoleImageProps) {
   return (
     <OptimizedImage
       tmdbPath={path}

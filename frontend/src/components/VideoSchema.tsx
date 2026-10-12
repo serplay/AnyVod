@@ -1,40 +1,61 @@
 import { useEffect } from 'react'
+import type { MediaKind } from '../api/types'
+
+interface VideoSchemaProps {
+  name?: string
+  description?: string
+  thumbnailUrl?: string
+  uploadDate?: string
+  /** Runtime in minutes; emitted as ISO 8601 (PT1H30M). */
+  duration?: number | null
+  /** URL to the actual video file (if available) */
+  contentUrl?: string
+  /** URL to the embed player */
+  embedUrl?: string
+  type?: MediaKind
+  seasonNumber?: number
+  episodeNumber?: number
+  seriesName?: string
+}
+
+type JsonLd = Record<string, unknown>
+
+function removeSchema() {
+  document.querySelector('script[data-schema="video"]')?.remove()
+}
 
 /**
  * VideoSchema - Injects VideoObject structured data for SEO
  * Helps Google index video content and show rich snippets in search results
- * 
+ *
  * @see https://developers.google.com/search/docs/appearance/structured-data/video
  */
-export default function VideoSchema({ 
+export default function VideoSchema({
   name,
   description,
   thumbnailUrl,
   uploadDate,
-  duration,     // ISO 8601 format: PT1H30M (1h 30m)
-  contentUrl,   // URL to the actual video file (if available)
-  embedUrl,     // URL to the embed player
-  type = 'movie', // 'movie' or 'tv'
+  duration,
+  contentUrl,
+  embedUrl,
+  type = 'movie',
   seasonNumber,
   episodeNumber,
   seriesName,
-}) {
+}: VideoSchemaProps) {
   useEffect(() => {
     // Remove any existing video schema
-    const existingSchema = document.querySelector('script[data-schema="video"]')
-    if (existingSchema) {
-      existingSchema.remove()
-    }
+    removeSchema()
 
     if (!name || !description || !thumbnailUrl) return
 
     // Build the base VideoObject
-    const videoSchema = {
+    const videoSchema: JsonLd = {
       '@context': 'https://schema.org',
       '@type': 'VideoObject',
-      name: name,
+      name,
       description: description.slice(0, 200), // Keep it concise
-      thumbnailUrl: thumbnailUrl,
+      thumbnailUrl,
       uploadDate: uploadDate || new Date().toISOString().split('T')[0],
     }
 
@@ -45,13 +66,8 @@ export default function VideoSchema({
       videoSchema.duration = hours > 0 ? `PT${hours}H${minutes}M` : `PT${minutes}M`
     }
 
-    // Add content/embed URLs if available
-    if (contentUrl) {
-      videoSchema.contentUrl = contentUrl
-    }
-    if (embedUrl) {
-      videoSchema.embedUrl = embedUrl
-    }
+    if (contentUrl) videoSchema.contentUrl = contentUrl
+    if (embedUrl) videoSchema.embedUrl = embedUrl
 
     // For TV episodes, add episode-specific data
     if (type === 'tv' && seasonNumber && episodeNumber) {
@@ -59,53 +75,40 @@ export default function VideoSchema({
       videoSchema.episodeNumber = episodeNumber
       videoSchema.partOfSeason = {
         '@type': 'TVSeason',
-        seasonNumber: seasonNumber,
+        seasonNumber,
         partOfSeries: {
           '@type': 'TVSeries',
-          name: seriesName || name
-        }
+          name: seriesName || name,
+        },
       }
     }
 
-    // For movies, add Movie type
-    if (type === 'movie') {
-      // Create a combined schema with both VideoObject and Movie
-      const combinedSchema = {
-        '@context': 'https://schema.org',
-        '@graph': [
-          videoSchema,
-          {
-            '@type': 'Movie',
-            name: name,
-            description: description.slice(0, 200),
-            image: thumbnailUrl,
-            dateCreated: uploadDate,
+    // For movies, combine VideoObject and Movie
+    const schema: JsonLd =
+      type === 'movie'
+        ? {
+            '@context': 'https://schema.org',
+            '@graph': [
+              videoSchema,
+              {
+                '@type': 'Movie',
+                name,
+                description: description.slice(0, 200),
+                image: thumbnailUrl,
+                dateCreated: uploadDate,
+              },
+            ],
           }
-        ]
-      }
-      
-      const script = document.createElement('script')
-      script.type = 'application/ld+json'
-      script.setAttribute('data-schema', 'video')
-      script.textContent = JSON.stringify(combinedSchema)
-      document.head.appendChild(script)
-      return
-    }
+        : videoSchema
 
-    // Inject the schema
     const script = document.createElement('script')
     script.type = 'application/ld+json'
     script.setAttribute('data-schema', 'video')
-    script.textContent = JSON.stringify(videoSchema)
+    script.textContent = JSON.stringify(schema)
     document.head.appendChild(script)
 
-    // Cleanup on unmount
-    return () => {
-      const schema = document.querySelector('script[data-schema="video"]')
-      if (schema) {
-        schema.remove()
-      }
-    }
+    // Cleanup on unmount / change
+    return removeSchema
   }, [name, description, thumbnailUrl, uploadDate, duration, contentUrl, embedUrl, type, seasonNumber, episodeNumber, seriesName])
 
   return null // This component doesn't render anything visible
