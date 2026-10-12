@@ -3,9 +3,10 @@ import CategoryRow from '../components/CategoryRow'
 import OptimizedImage from '../components/OptimizedImage'
 import Search from '../components/Search'
 import { ErrorState } from '../components/states'
+import Seo from '../components/Seo'
 import { useCategory, useDetails, useTrending } from '../api/hooks'
 import type { CategoryPath } from '../api/types'
-import { SITE_NAME } from '../config'
+import { DEFAULT_TITLE, SITE_NAME } from '../config'
 import { displayTitle, formatRating, formatYear, getMediaKind, isPerson, releaseDate } from '../lib/media'
 
 /** Cards in the first row that load eagerly (roughly what fits above the fold). */
@@ -37,6 +38,7 @@ export default function Home() {
 
   return (
     <>
+      <Seo title={DEFAULT_TITLE} path="/" />
       <h1 className="visually-hidden">{SITE_NAME}: watch movies and TV shows</h1>
       <Search />
       <div className="home-page">

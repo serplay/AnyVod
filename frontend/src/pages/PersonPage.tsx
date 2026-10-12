@@ -3,10 +3,12 @@ import moviePlaceholder from '../assets/movie.png'
 import { ProfileImage, PosterImage } from '../components/OptimizedImage'
 import { ErrorState, Loading } from '../components/states'
 import NotFound from './NotFound'
+import Seo from '../components/Seo'
 import { usePerson, usePersonCredits } from '../api/hooks'
 import { ApiError } from '../api/client'
-import { displayTitle, formatRating, itemKey, itemPath, parseNonNegativeInt } from '../lib/media'
+import { displayTitle, formatRating, itemKey, itemPath, parseNonNegativeInt, tmdbImageFor } from '../lib/media'
 import { topCredits } from '../lib/credits'
+import { truncate } from '../lib/seo'
 
 /** person-credits-grid is minmax(200px, 1fr) (150px <=768px, 2 columns <=480px). */
 const CREDIT_CARD_SIZES = '(max-width: 480px) 50vw, 240px'
@@ -45,6 +47,7 @@ export default function PersonPage() {
   if (!person) {
     return (
       <>
+        <Seo title="Person" path={`/person/${validId}`} type="profile" />
         <h1 className="visually-hidden">Loading person…</h1>
         <Loading className="person-loading" />
       </>
@@ -57,6 +60,13 @@ export default function PersonPage() {
 
   return (
     <div className="person-page">
+      <Seo
+        title={person.name}
+        description={truncate(person.biography) || undefined}
+        path={`/person/${validId}`}
+        image={tmdbImageFor(person.profile_path, 'profile', 'large')}
+        type="profile"
+      />
       {/* Hero Section */}
       <div className="person-hero">
         <div className="person-hero-gradient"></div>
