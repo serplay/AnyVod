@@ -1,166 +1,97 @@
-import { useState, useRef, useEffect, memo, type CSSProperties, type ImgHTMLAttributes, type SyntheticEvent } from 'react'
+import { memo, useState, type ImgHTMLAttributes, type SyntheticEvent } from 'react'
 import { tmdbImageFor, tmdbSrcSet, type ImageRole, type ImageSize } from '../lib/media'
 
-type ImgPassthrough = Omit<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt' | 'width' | 'height' | 'onLoad' | 'onError' | 'style' | 'className'>
+type ImgPassthrough = Omit<
+  ImgHTMLAttributes<HTMLImageElement>,
+  'src' | 'srcSet' | 'sizes' | 'alt' | 'onLoad' | 'onError' | 'style' | 'className' | 'loading' | 'fetchPriority'
+>
 
 export interface OptimizedImageProps extends ImgPassthrough {
   src?: string
   alt?: string
+  /** Class for the wrapper element. */
   className?: string
-  width?: number | string
-  height?: number | string
   placeholderSrc?: string
   tmdbPath?: string | null
   tmdbType?: ImageRole
   tmdbSize?: ImageSize
-  /** Load immediately without lazy loading */
+  /**
+   * The `sizes` attribute for the srcset: the image's rendered width per
+   * viewport (e.g. `"200px"`, `"100vw"`, `"(max-width: 480px) 50vw, 200px"`).
+   */
+  sizes?: string
+  /** Above-the-fold image: loads eagerly with `fetchpriority="high"`. */
   priority?: boolean
   onLoad?: (e: SyntheticEvent<HTMLImageElement>) => void
   onError?: (e: SyntheticEvent<HTMLImageElement>) => void
-  style?: CSSProperties
 }
 
 /**
- * OptimizedImage component with lazy loading and progressive enhancement
+ * Image with a placeholder, native lazy loading and a TMDB srcset.
+ * Load/error state is tracked per source URL, so it resets when the path changes.
  */
 const OptimizedImage = memo(function OptimizedImage({
   src,
   alt = '',
   className = '',
-  width,
-  height,
   placeholderSrc,
   tmdbPath,
   tmdbType = 'poster',
   tmdbSize = 'medium',
+  sizes,
   priority = false,
   onLoad,
   onError,
-  style,
   ...props
 }: OptimizedImageProps) {
-  const [isLoaded, setIsLoaded] = useState(false)
-  const [isInView, setIsInView] = useState(priority)
-  const [hasError, setHasError] = useState(false)
-  const imgRef = useRef<HTMLDivElement>(null)
-
-  // Compute the actual image source
   const imageSrc = tmdbPath ? tmdbImageFor(tmdbPath, tmdbType, tmdbSize) : src
-
-  // Generate srcset for responsive loading
   const srcSet = tmdbPath ? tmdbSrcSet(tmdbPath, tmdbType) : undefined
 
-  // Set up Intersection Observer for lazy loading
-  useEffect(() => {
-    const el = imgRef.current
-    if (priority || !el || !('IntersectionObserver' in window)) {
-      setIsInView(true)
-      return
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          setIsInView(true)
-          observer.disconnect()
-        }
-      },
-      {
-        rootMargin: '200px 800px', // 200px vertical, 800px horizontal for category rows
-        threshold: 0.01,
-      },
-    )
-
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [priority])
+  // Remember which URL loaded / failed: a new path is automatically "not loaded yet".
+  const [loadedSrc, setLoadedSrc] = useState<string | undefined>(undefined)
+  const [failedSrc, setFailedSrc] = useState<string | undefined>(undefined)
+  const isLoaded = !!imageSrc && loadedSrc === imageSrc
+  const hasError = !!imageSrc && failedSrc === imageSrc
 
   const handleLoad = (e: SyntheticEvent<HTMLImageElement>) => {
-    setIsLoaded(true)
+    setLoadedSrc(imageSrc)
     onLoad?.(e)
   }
 
   const handleError = (e: SyntheticEvent<HTMLImageElement>) => {
-    setHasError(true)
+    setFailedSrc(imageSrc)
     onError?.(e)
   }
 
-  // Determine what to render
   const showPlaceholder = !isLoaded || hasError
-  const shouldLoadImage = isInView && !!imageSrc && !hasError
 
   return (
-    <div
-      ref={imgRef}
-      className={`optimized-image-wrapper ${className}`}
-      style={{
-        position: 'relative',
-        overflow: 'hidden',
-        width: width || '100%',
-        height: height || 'auto',
-        ...style,
-      }}
-    >
-      {/* Placeholder/blur background */}
+    <div className={`optimized-image-wrapper ${className}`.trim()}>
       {showPlaceholder && (
-        <div
-          className="optimized-image-placeholder"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(135deg, var(--card, #3B1C32), var(--card-2, #6A1E55))',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
+        <div className="optimized-image-placeholder">
           {placeholderSrc ? (
-            <img
-              src={placeholderSrc}
-              alt=""
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                opacity: 0.5,
-                filter: 'grayscale(0.3)',
-              }}
-            />
+            <img src={placeholderSrc} alt="" className="optimized-image-placeholder-img" />
           ) : (
-            <div
-              aria-hidden="true"
-              style={{
-                color: 'var(--muted, #d4a5c0)',
-                fontSize: '14px',
-                opacity: 0.6,
-              }}
-            >
+            <div className="optimized-image-placeholder-icon" aria-hidden="true">
               🎬
             </div>
           )}
         </div>
       )}
 
-      {/* Actual image */}
-      {shouldLoadImage && (
+      {imageSrc && !hasError && (
         <img
+          {...props}
           src={imageSrc}
           srcSet={srcSet}
+          sizes={srcSet ? sizes : undefined}
           alt={alt}
-          width={width}
-          height={height}
           loading={priority ? 'eager' : 'lazy'}
+          fetchPriority={priority ? 'high' : undefined}
           decoding="async"
           onLoad={handleLoad}
           onError={handleError}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            opacity: isLoaded ? 1 : 0,
-            transition: 'opacity 0.3s ease-in-out',
-          }}
-          {...props}
+          className={`optimized-image-img${isLoaded ? ' is-loaded' : ''}`}
         />
       )}
     </div>
@@ -174,74 +105,17 @@ interface RoleImageProps extends Omit<OptimizedImageProps, 'tmdbPath' | 'tmdbTyp
   size?: ImageSize
 }
 
-/**
- * Specialized component for movie/show posters
- */
-export const PosterImage = memo(function PosterImage({ path, alt, size = 'medium', className = '', ...props }: RoleImageProps) {
-  return (
-    <OptimizedImage
-      tmdbPath={path}
-      tmdbType="poster"
-      tmdbSize={size}
-      alt={alt}
-      className={`poster-image ${className}`}
-      {...props}
-    />
-  )
+/** Movie/show poster. */
+export const PosterImage = memo(function PosterImage({ path, size = 'medium', className = '', ...props }: RoleImageProps) {
+  return <OptimizedImage {...props} tmdbPath={path} tmdbType="poster" tmdbSize={size} className={`poster-image ${className}`} />
 })
 
-/**
- * Specialized component for backdrop images
- */
-export const BackdropImage = memo(function BackdropImage({
-  path,
-  alt,
-  size = 'large',
-  className = '',
-  priority = true, // Backdrops are usually above-the-fold
-  ...props
-}: RoleImageProps) {
-  return (
-    <OptimizedImage
-      tmdbPath={path}
-      tmdbType="backdrop"
-      tmdbSize={size}
-      alt={alt}
-      className={`backdrop-image ${className}`}
-      priority={priority}
-      {...props}
-    />
-  )
+/** Cast/person profile photo. */
+export const ProfileImage = memo(function ProfileImage({ path, size = 'medium', className = '', ...props }: RoleImageProps) {
+  return <OptimizedImage {...props} tmdbPath={path} tmdbType="profile" tmdbSize={size} className={`profile-image ${className}`} />
 })
 
-/**
- * Specialized component for cast/person profile images
- */
-export const ProfileImage = memo(function ProfileImage({ path, alt, size = 'medium', className = '', ...props }: RoleImageProps) {
-  return (
-    <OptimizedImage
-      tmdbPath={path}
-      tmdbType="profile"
-      tmdbSize={size}
-      alt={alt}
-      className={`profile-image ${className}`}
-      {...props}
-    />
-  )
-})
-
-/**
- * Specialized component for episode still images
- */
-export const StillImage = memo(function StillImage({ path, alt, size = 'medium', className = '', ...props }: RoleImageProps) {
-  return (
-    <OptimizedImage
-      tmdbPath={path}
-      tmdbType="still"
-      tmdbSize={size}
-      alt={alt}
-      className={`still-image ${className}`}
-      {...props}
-    />
-  )
+/** Episode still. */
+export const StillImage = memo(function StillImage({ path, size = 'medium', className = '', ...props }: RoleImageProps) {
+  return <OptimizedImage {...props} tmdbPath={path} tmdbType="still" tmdbSize={size} className={`still-image ${className}`} />
 })

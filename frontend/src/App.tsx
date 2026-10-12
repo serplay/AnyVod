@@ -21,9 +21,10 @@ export default function App() {
     <div className="app">
       <ScrollToTop />
       <header>
-        <Link to="/" className="logo-container" style={{ color: 'inherit', textDecoration: 'none' }}>
-          <img src={AppIcon} alt="" style={{ height: '40px', marginRight: '10px' }} />
-          <h1>{SITE_NAME}</h1>
+        <Link to="/" className="logo-container" aria-label={`${SITE_NAME} home`}>
+          <img src={AppIcon} alt="" className="logo-img" />
+          {/* Not an <h1>: each page renders its own single <h1>. */}
+          <span className="site-title">{SITE_NAME}</span>
         </Link>
       </header>
       <main>
@@ -41,7 +42,6 @@ export default function App() {
             </Routes>
           </Suspense>
         </ErrorBoundary>
-        <Analytics />
       </main>
       <footer className="app-footer">
         <div className="footer-content">
@@ -60,6 +60,7 @@ export default function App() {
           </div>
         </div>
       </footer>
+      <Analytics />
     </div>
   )
 }

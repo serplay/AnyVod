@@ -19,12 +19,20 @@ interface ErrorStateProps {
   onRetry?: () => void
   title?: string
   className?: string
+  /** Use 'h1' when the error replaces a whole page, so the page keeps one <h1>. */
+  headingLevel?: 'h1' | 'h2'
 }
 
-export function ErrorState({ error, onRetry, title = 'Something went wrong', className = '' }: ErrorStateProps) {
+export function ErrorState({
+  error,
+  onRetry,
+  title = 'Something went wrong',
+  className = '',
+  headingLevel: Heading = 'h2',
+}: ErrorStateProps) {
   return (
     <div className={`state state-error ${className}`} role="alert">
-      <h2 className="state-title">{title}</h2>
+      <Heading className="state-title">{title}</Heading>
       <p className="state-message">{errorMessage(error)}</p>
       {onRetry && (
         <button type="button" className="state-retry-btn" onClick={onRetry}>

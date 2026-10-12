@@ -1,13 +1,15 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import CategoryRow from '../components/CategoryRow'
+import OptimizedImage from '../components/OptimizedImage'
 import Search from '../components/Search'
 import { ErrorState } from '../components/states'
 import { useCategory, useDetails, useTrending } from '../api/hooks'
 import type { CategoryPath } from '../api/types'
-import { displayTitle, formatRating, formatYear, getMediaKind, isPerson, releaseDate, tmdbImageFor } from '../lib/media'
+import { SITE_NAME } from '../config'
+import { displayTitle, formatRating, formatYear, getMediaKind, isPerson, releaseDate } from '../lib/media'
 
-const HERO_CANDIDATES = 5
+/** Cards in the first row that load eagerly (roughly what fits above the fold). */
+const FIRST_ROW_PRIORITY = 4
 
 function Category({ title, path }: { title: string; path: CategoryPath }) {
   const { data, error, refetch } = useCategory(path)
@@ -17,13 +19,13 @@ function Category({ title, path }: { title: string; path: CategoryPath }) {
 export default function Home() {
   const navigate = useNavigate()
   const trending = useTrending()
-  // Pick the hero once per mount from the first few trending titles.
-  const [heroIndex] = useState(() => Math.floor(Math.random() * HERO_CANDIDATES))
 
-  const candidates = (trending.data?.results ?? []).filter((item) => !isPerson(item)).slice(0, HERO_CANDIDATES)
-  const heroItem = candidates.length > 0 ? candidates[heroIndex % candidates.length] : undefined
+  const trendingTitles = (trending.data?.results ?? []).filter((item) => !isPerson(item))
+  // Deterministic hero: the first trending title that has a backdrop.
+  const heroItem = trendingTitles.find((item) => !!item.backdrop_path)
   const heroKind = heroItem ? getMediaKind(heroItem) : 'movie'
   const { data: hero } = useDetails(heroKind, heroItem?.id)
+  const heroBackdrop = heroItem?.backdrop_path ?? hero?.backdrop_path
 
   const handleHeroPlay = () => {
     if (hero) navigate(`/player/${heroKind}/${hero.id}`)
@@ -33,42 +35,49 @@ export default function Home() {
     if (hero) navigate(`/${heroKind}/${hero.id}`)
   }
 
-  const backdrop = tmdbImageFor(hero?.backdrop_path, 'backdrop', 'large')
-
   return (
     <>
+      <h1 className="visually-hidden">{SITE_NAME}: watch movies and TV shows</h1>
       <Search />
       <div className="home-page">
         {/* Hero banner with fixed dimensions to prevent CLS */}
-        <div
-          className={`hero-banner-home ${!hero ? 'hero-banner-skeleton' : ''}`}
-          style={{ backgroundImage: backdrop ? `url(${backdrop})` : 'none' }}
-        >
+        <div className={`hero-banner-home ${!hero ? 'hero-banner-skeleton' : ''}`}>
+          {heroBackdrop ? (
+            <OptimizedImage
+              tmdbPath={heroBackdrop}
+              tmdbType="backdrop"
+              tmdbSize="large"
+              sizes="100vw"
+              priority
+              alt=""
+              className="hero-banner-backdrop"
+            />
+          ) : null}
           {hero ? (
-            <div className="hero-banner-overlay" itemType="https://schema.org/Movie">
+            <div className="hero-banner-overlay">
               <div className="hero-banner-content">
-                <h1 className="hero-banner-title">{displayTitle(hero)}</h1>
+                <h2 className="hero-banner-title">{displayTitle(hero)}</h2>
                 <div className="hero-banner-meta">
                   <span className="hero-banner-rating">⭐ {formatRating(hero.vote_average)}</span>
                   <span className="hero-banner-year">{formatYear(releaseDate(hero))}</span>
-                  {hero.genres && hero.genres.length > 0 && (
+                  {hero.genres != null && hero.genres.length > 0 ? (
                     <span className="hero-banner-genres">
                       {hero.genres
                         .slice(0, 3)
                         .map((g) => g.name)
                         .join(' • ')}
                     </span>
-                  )}
+                  ) : null}
                 </div>
                 <p className="hero-banner-overview">
                   {hero.overview && hero.overview.length > 200 ? hero.overview.slice(0, 200) + '...' : hero.overview}
                 </p>
                 <div className="hero-banner-buttons">
-                  <button className="hero-btn hero-btn-play" onClick={handleHeroPlay}>
-                    ▶ Play
+                  <button type="button" className="hero-btn hero-btn-play" onClick={handleHeroPlay}>
+                    <span aria-hidden="true">▶</span> Play
                   </button>
-                  <button className="hero-btn hero-btn-info" onClick={handleHeroInfo}>
-                    ℹ More Info
+                  <button type="button" className="hero-btn hero-btn-info" onClick={handleHeroInfo}>
+                    <span aria-hidden="true">ℹ</span> More Info
                   </button>
                 </div>
               </div>
@@ -90,7 +99,13 @@ export default function Home() {
         </div>
 
         <div className="categories-container">
-          <CategoryRow title="Trending Now" items={trending.data?.results} />
+          <CategoryRow
+            title="Trending Now"
+            items={trendingTitles}
+            error={trending.error}
+            onRetry={() => void trending.refetch()}
+            priorityCount={FIRST_ROW_PRIORITY}
+          />
           <Category title="Popular Movies" path="popular" />
           <Category title="Popular TV Shows" path="tv/popular" />
           <Category title="Top Rated Movies" path="movie/top_rated" />
