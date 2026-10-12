@@ -1,27 +1,27 @@
 services:
-  # Backend API
+  # Backend API (Rust, built from backend/Dockerfile)
   - type: web
     name: anyvod-backend
-    runtime: python
+    runtime: docker
     region: oregon
     plan: free
     branch: main
     rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
     envVars:
       - key: TMDB_API_KEY
         sync: false
       - key: ENVIRONMENT
         value: production
-      - key: PYTHON_VERSION
-        value: 3.11.0
+      - key: VIDSRC_EMBED_DOMAIN
+        value: vidsrc-embed.ru
       - key: FRONTEND_ORIGIN
         fromService:
           type: web
           name: anyvod-frontend
           envVarKey: RENDER_EXTERNAL_URL
-    healthCheckPath: /docs
 
   # Frontend Static Site
   - type: web

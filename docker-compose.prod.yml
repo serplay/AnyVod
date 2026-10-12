@@ -1,27 +1,28 @@
+# Production: same images, production CORS and restart policy.
 services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile.prod
     container_name: anyvod-backend-prod
     ports:
       - "8000:8000"
     environment:
-      - TMDB_API_KEY=${TMDB_API_KEY}
+      - TMDB_API_KEY=${TMDB_API_KEY:?TMDB_API_KEY must be set}
+      - VIDSRC_EMBED_DOMAIN=${VIDSRC_EMBED_DOMAIN:-vidsrc-embed.ru}
+      - FRONTEND_ORIGIN=${FRONTEND_ORIGIN:-}
+      - ENVIRONMENT=production
+      - RUST_LOG=${RUST_LOG:-info}
     restart: always
-    networks:
-      - anyvod-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      test: ["CMD", "/usr/local/bin/anyvod-backend", "--healthcheck"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
-      start_period: 40s
+      start_period: 5s
 
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
       args:
         - VITE_API_BASE=${VITE_API_BASE:-http://localhost:8000}
     container_name: anyvod-frontend-prod
@@ -31,9 +32,3 @@ services:
       backend:
         condition: service_healthy
     restart: always
-    networks:
-      - anyvod-network
-
-networks:
-  anyvod-network:
-    driver: bridge
