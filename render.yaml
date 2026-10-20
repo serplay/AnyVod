@@ -40,12 +40,10 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "22"
-      # Baked into the bundle at build time.
+      # Baked into the bundle at build time. Must be the backend's public URL (an empty value
+      # makes the app call its own host, which answers every API path with index.html).
       - key: VITE_API_BASE
-        fromService:
-          type: web
-          name: anyvod-backend
-          envVarKey: RENDER_EXTERNAL_URL
+        value: https://anyvod-backend.onrender.com
     routes:
       - type: rewrite
         source: /*
