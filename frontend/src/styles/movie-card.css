@@ -51,10 +51,6 @@
 }
 
 /* Similar Movies Grid */
-.similar-row {
-  overflow: visible;
-}
-
 .similar-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -81,18 +77,6 @@
   display: block;
 }
 
-.similar-placeholder {
-  width: 100%;
-  aspect-ratio: 2/3;
-  background: linear-gradient(135deg, var(--card), var(--card-2));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 48px;
-  font-weight: 700;
-  color: var(--muted);
-}
-
 .similar-info {
   padding: 12px;
 }
@@ -110,4 +94,66 @@
 .similar-rating {
   font-size: 13px;
   color: var(--accent-2);
+}
+
+/* ================================
+   Responsive
+   ================================ */
+
+@media (max-width: 768px) {
+  .similar-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .movie-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .movie-card {
+    padding: 8px;
+  }
+
+  .meta {
+    font-size: 12px;
+    padding-top: 6px;
+  }
+}
+
+@media (max-width: 374px) {
+  .similar-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .similar-title {
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 767px) {
+  .movie-grid,
+  .similar-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Touch devices: no hover lift, use a press state instead */
+@media (hover: none) and (pointer: coarse) {
+  .movie-card:hover {
+    box-shadow: none;
+  }
+
+  .similar-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .similar-card:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
 }

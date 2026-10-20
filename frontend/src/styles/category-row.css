@@ -62,18 +62,6 @@
   background: rgba(255,255,255,0.05);
 }
 
-.category-poster-placeholder {
-  width: 100%;
-  height: 300px;
-  background: linear-gradient(135deg, var(--card), var(--card-2));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--muted);
-  font-size: 14px;
-  border-radius: 8px;
-}
-
 .category-card-overlay {
   position: absolute;
   bottom: 0;
@@ -146,4 +134,123 @@
 
 .category-arrow-right {
   right: 10px;
+}
+
+/* Keyboard users get the same title overlay as hover */
+.category-card:focus-visible .category-card-overlay {
+  opacity: 1;
+}
+
+/* ================================
+   Responsive
+   ================================ */
+
+@media (max-width: 1024px) {
+  .category-card {
+    width: 180px;
+  }
+
+  .category-card img {
+    height: 270px;
+  }
+}
+
+@media (max-width: 768px) {
+  .category-slider-wrapper {
+    padding: 0 30px;
+  }
+
+  .category-card {
+    width: 150px;
+  }
+
+  .category-card img {
+    height: 225px;
+  }
+
+  .category-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 36px;
+  }
+}
+
+@media (max-width: 480px) {
+  .category-title {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 374px) {
+  .category-row {
+    margin-bottom: 32px;
+  }
+
+  .category-title {
+    font-size: 18px;
+    padding-left: 8px;
+  }
+
+  .category-card {
+    width: 120px;
+  }
+
+  .category-card img {
+    height: 180px;
+  }
+
+  .category-scroll-container {
+    gap: 8px;
+    padding: 6px 8px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 767px) {
+  .category-card {
+    width: 160px;
+  }
+
+  .category-card img {
+    height: 240px;
+  }
+
+  .category-scroll-container {
+    gap: 14px;
+  }
+}
+
+/* Touch devices: native swipe instead of arrows, overlay always visible,
+   press state instead of hover */
+@media (hover: none) and (pointer: coarse) {
+  .category-arrow {
+    display: none;
+  }
+
+  .category-slider-wrapper {
+    padding: 0;
+  }
+
+  .category-scroll-container {
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+  }
+
+  .category-card {
+    scroll-snap-align: start;
+  }
+
+  .category-card-overlay {
+    opacity: 1;
+    background: linear-gradient(0deg, rgba(26,26,29,0.9) 0%, transparent 100%);
+  }
+
+  .category-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .category-card:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
 }

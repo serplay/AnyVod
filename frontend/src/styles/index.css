@@ -25,6 +25,5 @@
 @import './skeleton.css';
 @import './states.css';
 
-/* Responsive (should be last to override) */
-@import './responsive.css';
-@import './mobile.css';
+/* Responsive rules live at the end of each component file
+   (breakpoints documented in variables.css). */
