@@ -97,7 +97,7 @@ footer {
 
 /* ================================
    Focus indication
-   B2 is turning clickable divs into links/buttons, so every interactive
+   Cards are links/buttons, so every interactive
    element gets a visible keyboard focus ring. :is() lifts specificity to
    (0,2,0) so component rules with `outline: none` don't hide it.
    ================================ */
