@@ -4,16 +4,13 @@
 User-agent: *
 Allow: /
 
-# Sitemap location
-Sitemap: https://vod.losingsanity.com/sitemap.xml
-
-# Disallow API endpoints (if exposed)
+# API endpoints
 Disallow: /api/
 
-# Allow crawlers to access all public pages
-# But block any admin or private routes
-Disallow: /admin/
-Disallow: /private/
+# Search result pages should not be indexed.
+Disallow: /search
 
-# Crawl-delay for polite crawling (optional, not all bots respect this)
-Crawl-delay: 1
+# Player pages are thin and canonicalised to the /movie/:id and /tv/:id detail pages.
+Disallow: /player/
+
+Sitemap: https://vod.losingsanity.com/sitemap.xml

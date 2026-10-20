@@ -1,0 +1,87 @@
+# Builds backend/Dockerfile and pushes it to GHCR. This is the only place the
+# Rust backend is compiled for deployment: Render pulls the finished image and
+# never builds anything itself.
+#
+# Runs only when asked: the "Run workflow" button (workflow_dispatch) or a
+# pushed `v*` tag. Ordinary pushes never trigger it.
+name: backend image
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: backend-image
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/serplay/anyvod-api
+
+jobs:
+  # Same gate as CI: a tag never publishes an image that fails its checks.
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      # Full checkout: tests/contract.rs reads ../frontend/src/api/types.gen.ts.
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: backend
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets --locked -- -D warnings
+      - run: cargo test --locked
+
+  build-push:
+    needs: test
+    runs-on: ubuntu-latest
+    env:
+      # Job-level so the step `if` below can see it (a step's own env is not
+      # available to its `if`). Empty when the secret is not set.
+      RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=sha,prefix=sha-,format=short
+            type=raw,value=latest
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: backend
+          file: backend/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Optional: set the RENDER_DEPLOY_HOOK repo secret to deploy the new
+      # `latest` image on Render right after the push. Without it, deploy
+      # manually from the Render dashboard.
+      - name: Trigger Render deploy
+        if: env.RENDER_DEPLOY_HOOK != ''
+        run: curl -fsS -X POST "$RENDER_DEPLOY_HOOK"

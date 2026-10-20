@@ -1,0 +1,248 @@
+/* ================================
+   Shared UI: link-card resets, a11y utilities, component and image styles.
+   Imported from main.tsx after styles/index.css.
+   ================================ */
+
+/* Screen-reader-only text */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Header logo (was inline styles + an <h1>) ---------- */
+.logo-container {
+  color: inherit;
+  text-decoration: none;
+}
+
+.logo-img {
+  height: 40px;
+  margin-right: 10px;
+}
+
+header .site-title {
+  display: block;
+  font-size: 2em;
+  font-weight: bold;
+  margin: 0.67em 0;
+}
+
+@media (max-width: 768px) {
+  header .site-title {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  header .site-title {
+    font-size: 22px;
+  }
+}
+
+/* ---------- Clickable cards turned into real links ---------- */
+a.category-card,
+a.movie-card,
+a.similar-card,
+a.person-credit-card {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+a.episode-card,
+a.episode-item,
+a.mobile-episode-card {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.category-card:focus-visible,
+a.movie-card:focus-visible,
+a.similar-card:focus-visible,
+a.person-credit-card:focus-visible,
+a.episode-card:focus-visible,
+a.episode-item:focus-visible,
+a.mobile-episode-card:focus-visible,
+a.cast-card:focus-visible {
+  outline: 2px solid var(--accent, #a64d79);
+  outline-offset: 2px;
+}
+
+/* ---------- OptimizedImage (was inline styles) ----------
+   :where() keeps these at zero specificity so caller classes
+   (e.g. .cast-photo, .credit-poster) still win, as the old inline
+   `...style` override did. */
+:where(.optimized-image-wrapper) {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: auto;
+}
+
+:where(.optimized-image-placeholder) {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--card, #3b1c32), var(--card-2, #6a1e55));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.optimized-image-placeholder > img.optimized-image-placeholder-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.5;
+  filter: grayscale(0.3);
+}
+
+.optimized-image-placeholder-icon {
+  color: var(--muted, #d4a5c0);
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+/* Higher specificity than e.g. `.cast-card img` / `.category-card img`,
+   matching the old inline width/height. */
+.optimized-image-wrapper > img.optimized-image-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.optimized-image-wrapper > img.optimized-image-img.is-loaded {
+  opacity: 1;
+}
+
+/* Call-site sizing helpers */
+.optimized-image-wrapper.oi-fill {
+  width: 100%;
+  height: 100%;
+}
+
+.optimized-image-wrapper.oi-rounded {
+  border-radius: 8px;
+}
+
+.optimized-image-wrapper.oi-hero-poster {
+  width: 280px;
+  height: 420px;
+  border-radius: 12px;
+}
+
+/* ---------- Home hero backdrop as a real <img> ---------- */
+.optimized-image-wrapper.hero-banner-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.optimized-image-wrapper.hero-banner-backdrop > img.optimized-image-img {
+  object-position: center;
+}
+
+.hero-banner-backdrop .optimized-image-placeholder-icon {
+  display: none;
+}
+
+/* ---------- Movie page ---------- */
+.movie-hero:not(.movie-hero-skeleton) {
+  background-image: var(--hero-bg, none);
+}
+
+.poster-skeleton.poster-skeleton-hero {
+  width: 280px;
+  height: 420px;
+}
+
+.movie-skeleton {
+  border-radius: 6px;
+  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.movie-skeleton.skeleton-title {
+  width: 60%;
+  height: 40px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.movie-skeleton.skeleton-meta {
+  width: 40%;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.movie-skeleton.skeleton-genres {
+  width: 50%;
+  height: 32px;
+}
+
+.movie-skeleton.skeleton-overview {
+  width: 90%;
+  height: 80px;
+  margin-bottom: 24px;
+}
+
+.movie-skeleton.skeleton-button {
+  width: 160px;
+  height: 48px;
+  margin-bottom: 0;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Trailer click-to-load facade */
+button.trailer-facade {
+  all: unset;
+  position: absolute;
+  inset: 0;
+  display: block;
+  cursor: pointer;
+  background: #000;
+}
+
+button.trailer-facade:focus-visible {
+  outline: 3px solid var(--accent, #a64d79);
+  outline-offset: -3px;
+}
+
+.trailer-facade-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
+}
+
+button.trailer-facade:hover .trailer-facade-thumb {
+  opacity: 1;
+}
+
+.trailer-facade-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 68px;
+  height: 48px;
+  transform: translate(-50%, -50%);
+  border-radius: 12px;
+  background: rgba(220, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 22px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}

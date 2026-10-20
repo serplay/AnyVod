@@ -3,35 +3,21 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5" />
-    <meta name="description" content="AnyVod - Stream your favorite movies and TV shows for free. Discover trending films, popular series, and explore a vast library of entertainment content." />
-    <meta name="keywords" content="free movies, free tv shows, stream movies online, watch tv series, movie streaming, tv streaming, AnyVod, watch movies free, streaming site, HD movies, tv episodes" />
     <meta name="author" content="AnyVod" />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="theme-color" content="#1A1A1D" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://vod.losingsanity.com/" />
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://vod.losingsanity.com/" />
-    <meta property="og:title" content="AnyVod - Free Movie and TV Show Streaming" />
-    <meta property="og:description" content="Stream your favorite movies and TV shows for free. Discover trending films, popular series, and explore a vast library of entertainment content." />
-    <meta property="og:image" content="https://vod.losingsanity.com/og-image.png" />
     <meta property="og:site_name" content="AnyVod" />
-    
-    <!-- X (Twitter) Cards -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://vod.losingsanity.com/" />
-    <meta name="twitter:title" content="AnyVod - Free Movie and TV Show Streaming" />
-    <meta name="twitter:description" content="Stream your favorite movies and TV shows for free. Discover trending films, popular series, and explore a vast library of entertainment content." />
-    <meta name="twitter:image" content="https://vod.losingsanity.com/og-image.png" />
-    
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <title>AnyVod - Free Movie and TV Show Streaming</title>
-    
+
+    <!--
+      Per-page tags (<title>, description, robots, canonical, og:*, twitter:*) are rendered by
+      src/components/Seo.tsx and hoisted into <head> by React 19. React does not dedupe against
+      tags in this file, so do not add them back here. That includes a fallback <title>: React
+      inserts its hoisted <title> next to an existing one instead of replacing it
+      (see src/components/Seo.test.tsx).
+    -->
+
     <!-- Schema.org Structured Data -->
     <script type="application/ld+json">
     {
@@ -50,6 +36,6 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

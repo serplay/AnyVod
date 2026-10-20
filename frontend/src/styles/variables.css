@@ -2,6 +2,25 @@
    CSS Variables & Base Styles
    ================================ */
 
+/*
+ * Breakpoints (max-width, desktop-first). Custom properties can't be used
+ * inside @media queries, so this comment is the source of truth:
+ *
+ *   1024px  small laptops / tablets landscape
+ *    768px  tablets portrait and below ("mobile" layout)
+ *    480px  phones
+ *
+ * Plus two narrow ranges kept from the original design:
+ *    374px                                  very small phones (<= iPhone SE 1st gen)
+ *    (min-width: 481px) and (max-width: 767px)  large phones / small tablets
+ *
+ * Non-width queries also in use: (hover: none) and (pointer: coarse) for touch,
+ * (max-height: 500px) and (orientation: landscape) for phones in landscape.
+ *
+ * Each component file ends with its own @media blocks, in the order
+ * 1024 -> 768 -> 480 -> 374, so later (narrower) blocks win.
+ */
+
 :root {
   --bg-900: #1A1A1D; /* deep dark gray */
   --bg-800: #3B1C32; /* dark purple */
@@ -17,16 +36,26 @@ body {
   margin: 0;
   font-family: Inter, system-ui, Arial;
   color: #e6eef8;
-  background: linear-gradient(180deg, var(--bg-900) 0%, var(--bg-800) 100%);
-  background-attachment: fixed;
-  background-size: cover;
+  background: var(--bg-900);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Prevent body scroll when player is open */
-body.player-open {
-  overflow: hidden;
+/* Viewport-fixed gradient. Replaces `background-attachment: fixed`, which
+   forces a full repaint on every scroll on mobile. */
+body::before {
+  content: '';
   position: fixed;
-  width: 100%;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, var(--bg-900) 0%, var(--bg-800) 100%);
+  pointer-events: none;
+}
+
+/* 16px minimum stops iOS Safari from zooming in when a field is focused. */
+input,
+select,
+textarea {
+  font-size: 16px;
 }

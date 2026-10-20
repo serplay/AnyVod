@@ -41,19 +41,23 @@
   align-items: flex-start;
 }
 
+/* Profile size is driven by these two custom properties; the media blocks
+   below only change them. */
 .person-profile-container {
+  --person-profile-w: 320px;
+  --person-profile-h: 480px;
   flex-shrink: 0;
-  width: 320px;
-  height: 480px;
-  min-width: 320px;
-  min-height: 480px;
+  width: var(--person-profile-w);
+  height: var(--person-profile-h);
+  min-width: var(--person-profile-w);
+  min-height: var(--person-profile-h);
   contain: layout style;
 }
 
 .person-profile-img,
 .person-profile-container .optimized-image-wrapper {
-  width: 320px !important;
-  height: 480px !important;
+  width: var(--person-profile-w);
+  height: var(--person-profile-h);
   object-fit: cover;
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.6);
@@ -61,8 +65,8 @@
 }
 
 .person-profile-placeholder {
-  width: 320px;
-  height: 480px;
+  width: var(--person-profile-w);
+  height: var(--person-profile-h);
   background: linear-gradient(135deg, var(--card), var(--card-2));
   border-radius: 16px;
   display: flex;
@@ -136,17 +140,6 @@
   font-weight: 700;
   margin-bottom: 28px;
   color: #fff;
-}
-
-.person-biography {
-  max-width: 900px;
-  font-size: 16px;
-  line-height: 1.8;
-  color: #c8d6e8;
-}
-
-.person-biography p {
-  margin-bottom: 16px;
 }
 
 .person-info-grid {
@@ -233,4 +226,106 @@
   font-size: 13px;
   color: var(--accent-2);
   font-weight: 600;
+}
+
+/* ================================
+   Responsive
+   ================================ */
+
+@media (max-width: 1024px) {
+  .person-hero-content {
+    padding: 40px 30px;
+    gap: 30px;
+  }
+
+  .person-profile-container {
+    --person-profile-w: 260px;
+    --person-profile-h: 390px;
+  }
+
+  .person-name {
+    font-size: 44px;
+  }
+
+  .person-content {
+    padding: 50px 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .person-page {
+    overflow-x: hidden;
+  }
+
+  .person-hero-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 30px 20px;
+  }
+
+  .person-profile-container {
+    --person-profile-w: 240px;
+    --person-profile-h: 360px;
+  }
+
+  .person-name {
+    font-size: 36px;
+  }
+
+  .person-meta {
+    justify-content: center;
+  }
+
+  .person-bio-preview {
+    max-width: 100%;
+  }
+
+  .person-content {
+    padding: 40px 20px;
+  }
+
+  .person-credits-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+  }
+
+  .person-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 374px) {
+  .person-profile-container {
+    --person-profile-w: 180px;
+    --person-profile-h: 270px;
+  }
+
+  .person-name {
+    font-size: 28px;
+  }
+
+  .person-credits-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 767px) {
+  .person-credits-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Touch devices: press state instead of hover lift */
+@media (hover: none) and (pointer: coarse) {
+  .person-credit-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .person-credit-card:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
 }

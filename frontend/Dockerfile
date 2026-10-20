@@ -1,5 +1,5 @@
 # Build stage
-FROM node:18-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -13,7 +13,8 @@ RUN npm ci
 COPY . .
 
 # Build argument for API base URL
-ARG VITE_API_BASE=http://localhost:8000
+# Empty = same-origin API (production default); compose passes an explicit URL.
+ARG VITE_API_BASE=
 ENV VITE_API_BASE=$VITE_API_BASE
 
 # Build the application

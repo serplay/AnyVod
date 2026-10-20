@@ -95,57 +95,85 @@ footer {
   height: 20px;
 }
 
-/* Details overlay */
-.details-overlay {
-  position: fixed;
-  inset: 0;
-  background: linear-gradient(rgba(2,6,14,0.7), rgba(2,6,14,0.9));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+/* ================================
+   Focus indication
+   Cards are links/buttons, so every interactive
+   element gets a visible keyboard focus ring. :is() lifts specificity to
+   (0,2,0) so component rules with `outline: none` don't hide it.
+   ================================ */
+
+:is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
-.details {
-  background: linear-gradient(180deg, rgba(10,18,34,0.95), rgba(6,12,24,0.95));
-  padding: 22px;
-  border-radius: 10px;
-  width: 100%;
-  max-width: 1000px;
-  border: 1px solid rgba(255,255,255,0.025);
+/* Cards sit in scroll containers / overflow:hidden parents, so draw the
+   ring inside the card instead of around it. */
+:is(
+  .movie-card,
+  .similar-card,
+  .category-card,
+  .cast-card,
+  .person-credit-card,
+  .episode-card,
+  .episode-item,
+  .mobile-episode-card
+):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
 }
 
-.details-page .details {
-  padding: 20px;
+/* ================================
+   Reduced motion
+   ================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
-.close {
-  float: right;
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.04);
-  padding: 6px 8px;
-  border-radius: 6px;
-  color: var(--muted);
+/* ================================
+   Responsive
+   ================================ */
+
+@media (max-width: 768px) {
+  .app {
+    margin: 12px;
+    padding: 12px;
+    overflow-x: hidden;
+  }
 }
 
-/* Tabs */
-.tabs {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
+@media (max-width: 480px) {
+  .app {
+    margin: 10px;
+    padding: 14px;
+    border-radius: 8px;
+  }
+
+  header {
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+    gap: 8px;
+  }
 }
 
-.tab-btn {
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.03);
-  padding: 8px 10px;
-  border-radius: 8px;
-  color: var(--muted);
-  cursor: pointer;
+@media (max-width: 374px) {
+  .logo-container img {
+    height: 32px;
+  }
 }
 
-.tab-btn.active {
-  background: linear-gradient(90deg, var(--accent), #c75f9a);
-  color: #fff;
-  border-color: transparent;
+/* Safe-area insets for notched phones. Must stay after the media blocks:
+   these side/bottom paddings apply at every width. */
+.app {
+  padding-left: max(14px, env(safe-area-inset-left));
+  padding-right: max(14px, env(safe-area-inset-right));
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
 }
