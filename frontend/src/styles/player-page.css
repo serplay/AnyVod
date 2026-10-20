@@ -2,33 +2,6 @@
    Player Page - HiAnime-inspired layout
    ============================================ */
 
-/* Player wrap (legacy) */
-.player {
-  margin-top: 12px;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.player-wrap-container {
-  overflow: visible;
-  position: relative;
-}
-
-.player-wrap {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 140%;
-  max-width: 1400px;
-  aspect-ratio: 16/9;
-}
-
-.player-wrap iframe {
-  width: 100%;
-  height: 100%;
-  border-radius: 8px;
-}
-
 /* Base player page */
 .player-page {
   position: fixed;
@@ -186,7 +159,7 @@
   background: transparent;
   border: none;
   color: #fff;
-  font-size: 13px;
+  font-size: 16px;
   outline: none;
 }
 
@@ -456,37 +429,55 @@
   display: none;
 }
 
-/* Mobile styles for player page */
+/* ================================
+   Responsive
+   ================================ */
+
 @media (max-width: 768px) {
-  /* Hide sidebar on mobile, show mobile episode section */
-  .episode-sidebar {
-    display: none !important;
+  /* Stack vertically: the sidebar is replaced by the mobile episode list */
+  .player-page-tv {
+    flex-direction: column;
+    overflow-y: auto;
   }
-  
+
+  .episode-sidebar,
   .sidebar-expand-btn {
-    display: none !important;
+    display: none;
   }
-  
+
+  .player-main {
+    flex: none;
+    overflow: visible;
+  }
+
+  .player-video-container {
+    flex: none;
+    aspect-ratio: 16/9;
+    min-height: auto;
+  }
+
   .mobile-episode-section {
     display: block;
     padding: 16px;
     background: #16161a;
     border-top: 1px solid rgba(255,255,255,0.06);
   }
-  
+
   .mobile-section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 16px;
+    padding: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
   }
-  
+
   .mobile-section-title {
     color: #fff;
     font-size: 16px;
     font-weight: 600;
   }
-  
+
   .mobile-episode-search {
     display: flex;
     align-items: center;
@@ -494,118 +485,187 @@
     background: #0d0d0f;
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 6px;
-    padding: 8px 12px;
+    padding: 6px 10px;
+    width: 140px;
   }
-  
+
   .mobile-episode-search input {
+    flex: 1;
     background: transparent;
     border: none;
     color: #fff;
-    font-size: 13px;
+    font-size: 16px;
     outline: none;
-    width: 100px;
+    width: 100%;
   }
-  
+
   .mobile-episode-search input::placeholder {
     color: rgba(255,255,255,0.4);
   }
-  
-  /* Episode list as vertical stack on mobile */
+
   .mobile-episode-grid {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    padding: 12px;
     max-height: 300px;
     overflow-y: auto;
   }
-  
+
   .mobile-episode-card {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 12px 16px;
     background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
     border-radius: 8px;
     cursor: pointer;
-    transition: background 0.2s;
-    border: 1px solid transparent;
+    transition: all 0.2s;
+    text-align: left;
   }
-  
+
   .mobile-episode-card:hover,
   .mobile-episode-card:active {
     background: rgba(255,255,255,0.08);
   }
-  
+
   .mobile-episode-card.active {
-    background: linear-gradient(90deg, rgba(166,77,121,0.2) 0%, rgba(166,77,121,0.05) 100%);
+    background: rgba(166,77,121,0.2);
     border-color: var(--accent);
   }
-  
+
   .mobile-episode-card .ep-num {
-    color: rgba(255,255,255,0.5);
-    font-size: 14px;
-    font-weight: 600;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
     min-width: 30px;
+    margin-bottom: 4px;
   }
-  
+
   .mobile-episode-card.active .ep-num {
     color: var(--accent);
   }
-  
+
   .mobile-episode-card .ep-name {
     flex: 1;
-    color: #e0e0e0;
-    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    font-size: 11px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  
+
   .mobile-episode-card.active .ep-name {
     color: #fff;
     font-weight: 500;
   }
-  
+
   .mobile-episode-card .ep-playing {
     color: var(--accent);
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
+    margin-top: 4px;
   }
-  
-  /* Player controls layout on mobile */
+
   .player-controls-bar {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
     padding: 12px 16px;
   }
-  
+
   .player-controls-left {
     text-align: center;
   }
-  
+
   .player-controls-center {
     justify-content: center;
   }
-  
+
   .control-btn {
     flex: 1;
   }
-  
-  /* Season selector on mobile */
+
   .player-page .season-selector {
     flex-direction: column;
     align-items: stretch;
     padding: 12px 16px;
   }
-  
+
   .season-tabs {
+    width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    padding-bottom: 8px;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
   }
-  
+
   .season-tab {
     flex-shrink: 0;
+    padding: 8px 16px;
+    font-size: 13px;
+    white-space: nowrap;
   }
+}
+
+@media (max-width: 480px) {
+  .player-top-bar {
+    padding: 10px 12px;
+  }
+
+  .player-show-title {
+    font-size: 14px;
+  }
+
+  .player-back-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .player-controls-bar {
+    text-align: center;
+    padding: 12px;
+  }
+
+  .control-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .mobile-episode-grid {
+    gap: 6px;
+    padding: 10px;
+  }
+
+  .mobile-episode-card {
+    padding: 10px 12px;
+  }
+
+  .mobile-episode-card .ep-num {
+    font-size: 14px;
+    min-width: 28px;
+  }
+
+  .mobile-episode-card .ep-name {
+    font-size: 13px;
+  }
+}
+
+/* Safe-area insets for notched phones. Must stay after the media blocks:
+   these paddings apply at every width. */
+.player-page {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+.player-top-bar {
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+  padding-top: env(safe-area-inset-top);
+}
+
+.player-controls-bar {
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
 }
