@@ -103,14 +103,14 @@ An invalid `sort_by`, `type` or `exid` returns `400`.
 
 ## vidsrc (`/vidsrc`)
 
-The default `VIDSRC_EMBED_DOMAIN` is `vidsrc-embed.ru`.
+The default `VIDSRC_EMBED_DOMAIN` is `vidsrc.sh`.
 
 | Route | Params | Response |
 |---|---|---|
 | `/embed/movie` | `tmdb?`, `imdb?`, `ds_lang?`, `sub_url?`, `autoplay?` | `{ embed_url }` |
 | `/embed/tv` | the movie params, plus `season?`, `episode?`, `autonext?` | `{ embed_url }` |
 | `/latest/movies`, `/latest/tvshows` | `page` | Proxies `https://{domain}/{movies\|tvshows}/latest/page-{page}.json` unchanged. |
-| `/movie/availability/{id}` | – | `{ available: bool, reason?, embed_url?, confidence?, tmdb_id, type: "movie" }` |
+| `/movie/availability/{id}` | – | `{ available: bool, reason?, embed_url?, tmdb_id, type: "movie" }` |
 | `/tv/availability/{id}` | `season?`, `episode?` | Same as the movie version with `type: "tv"`, plus `season` and `episode` when given. |
 
 **Embed URL format.** The base is `https://{domain}/embed/{movie|tv}`.
@@ -122,5 +122,5 @@ How the URL is built:
 - When there is no id, `tmdb` and `imdb` go in the query string as well.
 
 Examples:
-- `https://vidsrc-embed.ru/embed/movie/550`
-- `https://vidsrc-embed.ru/embed/tv/1399/1-2?autonext=1`
+- `https://vidsrc.sh/embed/movie/550`
+- `https://vidsrc.sh/embed/tv/1399/1-2?autonext=1`

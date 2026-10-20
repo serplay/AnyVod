@@ -4,7 +4,6 @@ use std::{sync::Arc, time::Duration};
 
 use axum::{Json, Router, extract::State, routing::get};
 use moka::future::Cache;
-use reqwest::header;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
@@ -18,23 +17,6 @@ pub const LATEST_TIMEOUT: Duration = Duration::from_secs(10);
 pub const AVAILABILITY_TIMEOUT: Duration = Duration::from_secs(15);
 pub const LATEST_TTL: Duration = Duration::from_secs(5 * 60);
 pub const AVAILABILITY_TTL: Duration = Duration::from_secs(30 * 60);
-
-const BROWSER_UA: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
-const BROWSER_ACCEPT: &str =
-    "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
-
-const UNAVAILABLE_INDICATORS: &[&str] = &[
-    "not found",
-    "no sources",
-    "unavailable",
-    "error 404",
-    "doesn't exist",
-    "does not exist",
-    "no video",
-    "removed",
-    "dmca",
-];
-const AVAILABLE_INDICATORS: &[&str] = &["iframe", "player", "video", "source", "embed", "stream"];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EmbedKind {
@@ -110,7 +92,22 @@ pub fn build_embed_url(base: &str, kind: EmbedKind, p: &EmbedParams) -> String {
     url
 }
 
-/// Result of probing an embed page. Serializes like the Python dict.
+/// `{base}/info/movie/{id}.json`, `/info/tv/{id}.json` or `/info/tv/{id}/{season}/{episode}.json`.
+pub fn build_info_url(
+    base: &str,
+    kind: EmbedKind,
+    id: u32,
+    season: Option<u32>,
+    episode: Option<u32>,
+) -> String {
+    let base = base.trim_end_matches('/');
+    match (kind, season, episode) {
+        (EmbedKind::Tv, Some(s), Some(e)) => format!("{base}/info/tv/{id}/{s}/{e}.json"),
+        _ => format!("{base}/info/{}/{id}.json", kind.as_str()),
+    }
+}
+
+/// Result of probing the Content Info endpoint. Serializes like the Python dict.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct EmbedCheck {
     pub available: bool,
@@ -118,8 +115,6 @@ pub struct EmbedCheck {
     pub reason: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub embed_url: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub confidence: Option<&'static str>,
 }
 
 impl EmbedCheck {
@@ -128,33 +123,23 @@ impl EmbedCheck {
             available: false,
             reason: Some(reason.into()),
             embed_url: None,
-            confidence: None,
         }
     }
 }
 
-/// The availability heuristic, applied to an HTTP status and page body.
-pub fn classify_embed_page(status: u16, body: &str, embed_url: &str) -> EmbedCheck {
-    if status != 200 {
-        return EmbedCheck::unavailable(format!("HTTP {status}"));
+/// Maps the status of vidsrc's Content Info endpoint to an availability answer: 200 means the
+/// title is on the stream, 404 means it is not. (Scraping the embed page cannot tell the two
+/// apart: it returns 200 for unknown ids too.)
+pub fn classify_info_status(status: u16, embed_url: &str) -> EmbedCheck {
+    match status {
+        200 => EmbedCheck {
+            available: true,
+            reason: None,
+            embed_url: Some(embed_url.to_string()),
+        },
+        404 => EmbedCheck::unavailable("not found"),
+        other => EmbedCheck::unavailable(format!("HTTP {other}")),
     }
-    let content = body.to_lowercase();
-    if let Some(ind) = UNAVAILABLE_INDICATORS.iter().find(|i| content.contains(*i)) {
-        return EmbedCheck::unavailable(*ind);
-    }
-    let available = |confidence| EmbedCheck {
-        available: true,
-        reason: None,
-        embed_url: Some(embed_url.to_string()),
-        confidence,
-    };
-    if AVAILABLE_INDICATORS.iter().any(|i| content.contains(i)) {
-        return available(None);
-    }
-    if content.chars().count() > 500 {
-        return available(Some("low"));
-    }
-    EmbedCheck::unavailable("empty or minimal response")
 }
 
 #[derive(Debug, Serialize)]
@@ -229,13 +214,24 @@ impl VidsrcClient {
             .map_err(|e| (*e).clone())
     }
 
-    /// Probes an embed page. Definitive answers are cached for 30 minutes per URL; transport
-    /// failures (timeouts, connection errors) are not cached so they are retried next time.
-    pub async fn check_availability(&self, embed_url: &str) -> EmbedCheck {
+    pub fn info_url(
+        &self,
+        kind: EmbedKind,
+        id: u32,
+        season: Option<u32>,
+        episode: Option<u32>,
+    ) -> String {
+        build_info_url(&self.base_url, kind, id, season, episode)
+    }
+
+    /// Asks the Content Info endpoint whether a title is on the stream. Definitive answers are
+    /// cached for 30 minutes per URL; transport failures (timeouts, connection errors) are not
+    /// cached so they are retried next time.
+    pub async fn check_availability(&self, info_url: &str, embed_url: &str) -> EmbedCheck {
         // `probe` returns transport failures as `Err`, which moka does not cache.
         let result = self
             .availability_cache
-            .try_get_with(embed_url.to_string(), self.probe(embed_url))
+            .try_get_with(info_url.to_string(), self.probe(info_url, embed_url))
             .await;
         match result {
             Ok(check) => check,
@@ -243,22 +239,15 @@ impl VidsrcClient {
         }
     }
 
-    async fn probe(&self, embed_url: &str) -> Result<EmbedCheck, EmbedCheck> {
-        let referer = format!("{}/", self.base_url);
+    async fn probe(&self, info_url: &str, embed_url: &str) -> Result<EmbedCheck, EmbedCheck> {
         let resp = self
             .http
-            .get(embed_url)
-            .header(header::USER_AGENT, BROWSER_UA)
-            .header(header::ACCEPT, BROWSER_ACCEPT)
-            .header(header::ACCEPT_LANGUAGE, "en-US,en;q=0.5")
-            .header(header::REFERER, referer)
+            .get(info_url)
             .timeout(AVAILABILITY_TIMEOUT)
             .send()
             .await
             .map_err(|e| transport_check(&e))?;
-        let status = resp.status().as_u16();
-        let body = resp.text().await.map_err(|e| transport_check(&e))?;
-        Ok(classify_embed_page(status, &body, embed_url))
+        Ok(classify_info_status(resp.status().as_u16(), embed_url))
     }
 }
 
@@ -376,7 +365,8 @@ async fn movie_availability(
         ..Default::default()
     };
     let url = state.vidsrc.embed_url(EmbedKind::Movie, &params);
-    let check = state.vidsrc.check_availability(&url).await;
+    let info = state.vidsrc.info_url(EmbedKind::Movie, id, None, None);
+    let check = state.vidsrc.check_availability(&info, &url).await;
     Json(AvailabilityResponse {
         check,
         tmdb_id: id,
@@ -398,7 +388,10 @@ async fn tv_availability(
         ..Default::default()
     };
     let url = state.vidsrc.embed_url(EmbedKind::Tv, &params);
-    let check = state.vidsrc.check_availability(&url).await;
+    let info = state
+        .vidsrc
+        .info_url(EmbedKind::Tv, id, q.season, q.episode);
+    let check = state.vidsrc.check_availability(&info, &url).await;
     Json(AvailabilityResponse {
         check,
         tmdb_id: id,
@@ -412,7 +405,7 @@ async fn tv_availability(
 mod tests {
     use super::*;
 
-    const BASE: &str = "https://vidsrc-embed.ru";
+    const BASE: &str = "https://vidsrc.sh";
 
     fn s(v: &str) -> Option<String> {
         Some(v.to_string())
@@ -426,7 +419,7 @@ mod tests {
         };
         assert_eq!(
             build_embed_url(BASE, EmbedKind::Movie, &p),
-            "https://vidsrc-embed.ru/embed/movie/550"
+            "https://vidsrc.sh/embed/movie/550"
         );
     }
 
@@ -441,7 +434,7 @@ mod tests {
         };
         assert_eq!(
             build_embed_url(BASE, EmbedKind::Tv, &p),
-            "https://vidsrc-embed.ru/embed/tv/1399/1-2?autonext=1"
+            "https://vidsrc.sh/embed/tv/1399/1-2?autonext=1"
         );
     }
 
@@ -478,7 +471,7 @@ mod tests {
         };
         assert_eq!(
             build_embed_url(BASE, EmbedKind::Movie, &p),
-            "https://vidsrc-embed.ru/embed/movie/550?ds_lang=de&sub_url=https%3A%2F%2Fsubs.example%2Fa+b.vtt&autoplay=0"
+            "https://vidsrc.sh/embed/movie/550?ds_lang=de&sub_url=https%3A%2F%2Fsubs.example%2Fa+b.vtt&autoplay=0"
         );
     }
 
@@ -528,33 +521,45 @@ mod tests {
     }
 
     #[test]
-    fn classify_heuristic() {
-        let url = "u";
+    fn info_urls() {
         assert_eq!(
-            classify_embed_page(404, "", url),
-            EmbedCheck::unavailable("HTTP 404")
+            build_info_url(BASE, EmbedKind::Movie, 550, None, None),
+            format!("{BASE}/info/movie/550.json")
         );
         assert_eq!(
-            classify_embed_page(200, "<h1>Not Found</h1><iframe>", url),
-            EmbedCheck::unavailable("not found")
+            build_info_url(BASE, EmbedKind::Tv, 1399, None, None),
+            format!("{BASE}/info/tv/1399.json")
         );
-        let ok = classify_embed_page(200, "<iframe src=x>", url);
+        assert_eq!(
+            build_info_url(BASE, EmbedKind::Tv, 1399, Some(1), Some(2)),
+            format!("{BASE}/info/tv/1399/1/2.json")
+        );
+        // an episode needs both numbers; otherwise ask about the whole series
+        assert_eq!(
+            build_info_url(BASE, EmbedKind::Tv, 1399, Some(1), None),
+            format!("{BASE}/info/tv/1399.json")
+        );
+    }
+
+    #[test]
+    fn classify_info_status_maps_statuses() {
+        let ok = classify_info_status(200, "u");
         assert!(ok.available);
         assert_eq!(ok.embed_url.as_deref(), Some("u"));
-        assert_eq!(ok.confidence, None);
-        let low = classify_embed_page(200, &"a".repeat(501), url);
-        assert!(low.available);
-        assert_eq!(low.confidence, Some("low"));
         assert_eq!(
-            classify_embed_page(200, "hello", url),
-            EmbedCheck::unavailable("empty or minimal response")
+            classify_info_status(404, "u"),
+            EmbedCheck::unavailable("not found")
+        );
+        assert_eq!(
+            classify_info_status(503, "u"),
+            EmbedCheck::unavailable("HTTP 503")
         );
     }
 
     #[test]
     fn availability_serializes_like_python() {
         let r = AvailabilityResponse {
-            check: classify_embed_page(200, "<video>", "u"),
+            check: classify_info_status(200, "u"),
             tmdb_id: 1,
             kind: "tv",
             season: Some(2),

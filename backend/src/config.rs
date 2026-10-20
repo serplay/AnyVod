@@ -3,7 +3,7 @@
 use std::env;
 
 pub const DEFAULT_TMDB_BASE_URL: &str = "https://api.themoviedb.org/3";
-pub const DEFAULT_VIDSRC_EMBED_DOMAIN: &str = "vidsrc-embed.ru";
+pub const DEFAULT_VIDSRC_EMBED_DOMAIN: &str = "vidsrc.sh";
 pub const DEFAULT_PORT: u16 = 8000;
 
 #[derive(Debug, thiserror::Error)]
@@ -19,7 +19,7 @@ pub struct Config {
     pub tmdb_api_key: String,
     /// Base URL of the TMDB v3 API, without a trailing slash.
     pub tmdb_base_url: String,
-    /// Domain used for vidsrc embeds, e.g. `vidsrc-embed.ru`.
+    /// Domain used for vidsrc embeds, e.g. `vidsrc.sh`.
     pub vidsrc_embed_domain: String,
     /// Base URL (scheme + host) for vidsrc requests and embed URLs, without a trailing slash.
     pub vidsrc_base_url: String,
@@ -115,8 +115,8 @@ mod tests {
     fn defaults() {
         let c = cfg(&[("TMDB_API_KEY", "k")]).unwrap();
         assert_eq!(c.tmdb_base_url, DEFAULT_TMDB_BASE_URL);
-        assert_eq!(c.vidsrc_embed_domain, "vidsrc-embed.ru");
-        assert_eq!(c.vidsrc_base_url, "https://vidsrc-embed.ru");
+        assert_eq!(c.vidsrc_embed_domain, "vidsrc.sh");
+        assert_eq!(c.vidsrc_base_url, "https://vidsrc.sh");
         assert_eq!(c.environment, "development");
         assert_eq!(c.port, 8000);
         assert!(c.frontend_origins.is_empty());

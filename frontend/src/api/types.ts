@@ -141,7 +141,6 @@ export interface Availability {
   available: boolean
   reason?: string
   embed_url?: string
-  confidence?: number
   tmdb_id: number
   type: MediaKind
   season?: number

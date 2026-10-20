@@ -8,25 +8,6 @@ use wiremock::{
     matchers::{method, path},
 };
 
-/// Matches the Python client's browser-like headers. A closure is used because wiremock's
-/// `header` matcher splits values on commas, which these headers contain.
-fn browser_headers(referer: String) -> impl Fn(&wiremock::Request) -> bool {
-    move |req| {
-        let h = |name: &str| {
-            req.headers
-                .get(name)
-                .and_then(|v| v.to_str().ok())
-                .unwrap_or_default()
-                .to_string()
-        };
-        h("user-agent")
-            == "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-            && h("accept").starts_with("text/html,application/xhtml+xml")
-            && h("accept-language") == "en-US,en;q=0.5"
-            && h("referer") == referer
-    }
-}
-
 #[tokio::test]
 async fn embed_movie_url() {
     let t = TestApp::new().await;
@@ -115,15 +96,12 @@ async fn latest_upstream_error_passthrough() {
 }
 
 #[tokio::test]
-async fn movie_availability_positive_with_browser_headers() {
+async fn movie_availability_positive_uses_info_endpoint_and_caches() {
     let t = TestApp::new().await;
     let base = t.vidsrc.uri();
     Mock::given(method("GET"))
-        .and(path("/embed/movie/550"))
-        .and(browser_headers(format!("{base}/")))
-        .respond_with(
-            ResponseTemplate::new(200).set_body_string("<html><iframe src='/x'></iframe></html>"),
-        )
+        .and(path("/info/movie/550.json"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({"status_code": 200})))
         .expect(1) // second call is served from the availability cache
         .mount(&t.vidsrc)
         .await;
@@ -147,18 +125,18 @@ async fn movie_availability_positive_with_browser_headers() {
 async fn tv_availability_negative_cases() {
     let t = TestApp::new().await;
     Mock::given(method("GET"))
-        .and(path("/embed/tv/1399/1-2"))
+        .and(path("/info/tv/1399/1/2.json"))
         .respond_with(ResponseTemplate::new(404))
         .mount(&t.vidsrc)
         .await;
     Mock::given(method("GET"))
-        .and(path("/embed/tv/1400"))
-        .respond_with(ResponseTemplate::new(200).set_body_string("<h1>DMCA takedown</h1>"))
+        .and(path("/info/tv/1400.json"))
+        .respond_with(ResponseTemplate::new(503))
         .mount(&t.vidsrc)
         .await;
     Mock::given(method("GET"))
-        .and(path("/embed/tv/1401"))
-        .respond_with(ResponseTemplate::new(200).set_body_string(" ".repeat(600)))
+        .and(path("/info/tv/1401.json"))
+        .respond_with(ResponseTemplate::new(200))
         .mount(&t.vidsrc)
         .await;
 
@@ -167,16 +145,15 @@ async fn tv_availability_negative_cases() {
         .await;
     assert_eq!(
         res.body,
-        json!({"available": false, "reason": "HTTP 404", "tmdb_id": 1399, "type": "tv", "season": 1, "episode": 2})
+        json!({"available": false, "reason": "not found", "tmdb_id": 1399, "type": "tv", "season": 1, "episode": 2})
     );
     let res = t.get("/vidsrc/tv/availability/1400").await;
     assert_eq!(
         res.body,
-        json!({"available": false, "reason": "dmca", "tmdb_id": 1400, "type": "tv"})
+        json!({"available": false, "reason": "HTTP 503", "tmdb_id": 1400, "type": "tv"})
     );
     let res = t.get("/vidsrc/tv/availability/1401").await;
     assert_eq!(res.body["available"], true);
-    assert_eq!(res.body["confidence"], "low");
 }
 
 #[tokio::test]
