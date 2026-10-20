@@ -86,7 +86,7 @@ function MoviePage({ kind, id }: { kind: MediaKind; id: number }) {
   const voteCount = details?.vote_count ?? 0
   const title = details ? displayTitle(details) : ''
   const backdrop = tmdbImageFor(details?.backdrop_path, 'backdrop', 'large')
-  // Dynamic value passed as a custom property; b2.css applies it as the background.
+  // Dynamic value passed as a custom property; ui.css applies it as the background.
   const heroStyle = backdrop ? ({ '--hero-bg': `url(${JSON.stringify(backdrop)})` } as CSSProperties) : undefined
 
   const year = formatYear(details ? releaseDate(details) : undefined)

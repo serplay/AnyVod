@@ -61,9 +61,9 @@
   object-fit: cover;
 }
 
-/* Extra class in the selector so it beats b2.css's fixed-size
+/* Extra class in the selector so it beats ui.css's fixed-size
    .optimized-image-wrapper.oi-hero-poster (loaded later). The <img> inside
-   the wrapper fills it via b2.css. */
+   the wrapper fills it via ui.css. */
 .hero-poster .placeholder-img,
 .hero-poster .optimized-image-wrapper.poster-image {
   width: var(--hero-poster-w);

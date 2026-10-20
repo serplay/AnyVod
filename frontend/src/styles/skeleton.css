@@ -21,7 +21,7 @@
 }
 
 /* Tracks the poster size set in movie-page.css. The extra classes beat
-   b2.css's fixed 280x420 .poster-skeleton.poster-skeleton-hero. */
+   ui.css's fixed 280x420 .poster-skeleton.poster-skeleton-hero. */
 .hero-poster .poster-skeleton.poster-skeleton-hero {
   width: var(--hero-poster-w, 280px);
   height: var(--hero-poster-h, 420px);
