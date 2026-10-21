@@ -43,7 +43,7 @@ async fn embed_tv_url() {
         .await;
     assert_eq!(
         res.body["embed_url"],
-        format!("{base}/embed/tv/1399/1-2?autonext=1")
+        format!("{base}/embed/tv/1399/1/2?autonext=1")
     );
 
     let res = t.get("/vidsrc/embed/tv?tmdb=1399&season=1").await;
