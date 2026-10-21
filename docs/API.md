@@ -117,10 +117,10 @@ The default `VIDSRC_EMBED_DOMAIN` is `vidsrc.sh`.
 
 How the URL is built:
 - If there is an id, append `/{tmdb or imdb}`, with `tmdb` taking precedence.
-- For TV, if both `season` and `episode` are given and there is an id, also append `/{season}-{episode}`.
+- For TV, if both `season` and `episode` are given and there is an id, also append `/{season}/{episode}`.
 - Add the remaining optional params (`ds_lang`, `sub_url`, `autoplay`, `autonext`) as a URL-encoded query string.
 - When there is no id, `tmdb` and `imdb` go in the query string as well.
 
 Examples:
 - `https://vidsrc.sh/embed/movie/550`
-- `https://vidsrc.sh/embed/tv/1399/1-2?autonext=1`
+- `https://vidsrc.sh/embed/tv/1399/1/2?autonext=1`

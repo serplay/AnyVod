@@ -50,10 +50,10 @@ fn present(v: &Option<String>) -> Option<&str> {
     v.as_deref().map(str::trim).filter(|s| !s.is_empty())
 }
 
-/// Builds `{base}/embed/{kind}[/{id}[/{season}-{episode}]][?query]`.
+/// Builds `{base}/embed/{kind}[/{id}[/{season}/{episode}]][?query]`.
 ///
 /// - `tmdb` takes precedence over `imdb` for the id path segment.
-/// - For TV with an id and both `season` and `episode`, `/{season}-{episode}` is appended.
+/// - For TV with an id and both `season` and `episode`, `/{season}/{episode}` is appended.
 /// - `ds_lang`, `sub_url`, `autoplay`, `autonext` are appended as a URL-encoded query
 ///   string, with or without an id.
 pub fn build_embed_url(base: &str, kind: EmbedKind, p: &EmbedParams) -> String {
@@ -67,7 +67,7 @@ pub fn build_embed_url(base: &str, kind: EmbedKind, p: &EmbedParams) -> String {
         if kind == EmbedKind::Tv
             && let (Some(season), Some(episode)) = (p.season, p.episode)
         {
-            url.push_str(&format!("/{season}-{episode}"));
+            url.push_str(&format!("/{season}/{episode}"));
         }
     }
 
@@ -434,7 +434,7 @@ mod tests {
         };
         assert_eq!(
             build_embed_url(BASE, EmbedKind::Tv, &p),
-            "https://vidsrc.sh/embed/tv/1399/1-2?autonext=1"
+            "https://vidsrc.sh/embed/tv/1399/1/2?autonext=1"
         );
     }
 
