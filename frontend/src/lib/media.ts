@@ -126,6 +126,14 @@ export function formatYear(date: string | null | undefined): string | undefined 
   return year || undefined
 }
 
+/** 148 -> "2h 28m", 45 -> "45m". */
+export function formatRuntime(minutes: number | null | undefined): string | undefined {
+  if (typeof minutes !== 'number' || !Number.isFinite(minutes) || minutes <= 0) return undefined
+  const h = Math.floor(minutes / 60)
+  const m = Math.round(minutes % 60)
+  return h > 0 ? (m > 0 ? `${h}h ${m}m` : `${h}h`) : `${m}m`
+}
+
 export function formatRating(rating: number | null | undefined): string | undefined {
   if (typeof rating !== 'number' || Number.isNaN(rating)) return undefined
   return rating.toFixed(1)

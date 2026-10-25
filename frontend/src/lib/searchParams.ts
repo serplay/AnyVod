@@ -61,6 +61,20 @@ export function toUrlSearchParams(params: SearchParams): URLSearchParams {
   return sp
 }
 
+/**
+ * Whether the backend narrows each TMDB results page itself (rating, genres, and year
+ * outside movie search, which TMDB filters upstream). TMDB's totals then count the
+ * unfiltered results, so they can't be shown as the number of matches.
+ */
+export function isFilteredPerPage(params: SearchParams): boolean {
+  if (params.type === 'person') return false
+  return (
+    params.min_rating !== undefined ||
+    (params.genres?.length ?? 0) > 0 ||
+    (params.year !== undefined && params.type !== 'movie')
+  )
+}
+
 export function searchPath(params: SearchParams): string {
   return `/search?${toUrlSearchParams(params).toString()}`
 }

@@ -1,9 +1,11 @@
 import { useNavigate, useSearchParams } from 'react-router'
-import MovieList from './MovieList'
+import PosterCard, { GRID_POSTER_SIZES } from './PosterCard'
+import { ChevronLeftIcon, ChevronRightIcon } from './icons'
 import { ErrorState, Loading } from './states'
 import { useSearch } from '../api/hooks'
 import type { MediaListItem } from '../api/types'
-import { parseSearchParams, searchPath } from '../lib/searchParams'
+import { itemKey, itemPath } from '../lib/media'
+import { isFilteredPerPage, parseSearchParams, searchPath } from '../lib/searchParams'
 import { getPageNumbers } from '../lib/pagination'
 
 /** Results for the search described by the current URL (/search?q=...). */
@@ -15,11 +17,9 @@ export default function SearchResults() {
 
   if (!params) {
     return (
-      <div className="search-results">
-        <div className="search-results-header">
-          <h2>Search</h2>
-          <p className="search-results-count">Type something above to search movies, TV shows and people.</p>
-        </div>
+      <div className="search-results-header">
+        <h1 className="search-title">Search</h1>
+        <p className="search-results-count">Find movies, TV shows and people.</p>
       </div>
     )
   }
@@ -33,6 +33,8 @@ export default function SearchResults() {
     : (data?.results ?? [])
   const totalPages = data?.total_pages ?? 1
   const totalResults = data?.total_results ?? 0
+  const filteredPerPage = isFilteredPerPage(params)
+  const matches = results.length
 
   const goToPage = (p: number) => {
     if (p < 1 || p > totalPages || p === page) return
@@ -43,8 +45,19 @@ export default function SearchResults() {
   return (
     <div className="search-results">
       <div className="search-results-header">
-        <h2>Search Results for &quot;{params.query}&quot;</h2>
-        {data && <p className="search-results-count">{totalResults.toLocaleString()} results found</p>}
+        <h1 className="search-title">
+          <span className="visually-hidden">Results for</span> {params.query}
+        </h1>
+        {data && (
+          <p className="search-results-count">
+            {filteredPerPage
+              ? `${matches} ${matches === 1 ? 'match' : 'matches'} on page ${page} of ${totalPages}`
+              : `${totalResults.toLocaleString()} results found`}
+          </p>
+        )}
+        {data && (filteredPerPage || params.sort_by) && (
+          <p className="search-results-count">Filters and sorting apply to one page of results at a time.</p>
+        )}
       </div>
 
       {error ? (
@@ -53,15 +66,33 @@ export default function SearchResults() {
         <Loading label="Searching…" />
       ) : (
         <div aria-busy={isFetching}>
-          <MovieList movies={results} />
+          {results.length > 0 ? (
+            <div className="poster-grid">
+              {results.map((item) => (
+                <PosterCard key={itemKey(item)} item={item} href={itemPath(item)} sizes={GRID_POSTER_SIZES} />
+              ))}
+            </div>
+          ) : (
+            <p className="search-empty">Nothing found. Try another title, or fewer filters.</p>
+          )}
         </div>
       )}
 
       {!error && totalPages > 1 && (
         <nav className="pagination" aria-label="Search results pages">
-          <button className="pagination-btn pagination-prev" onClick={() => goToPage(page - 1)} disabled={page <= 1}>
-            ← Previous
+          <button
+            className="btn pagination-step"
+            onClick={() => goToPage(page - 1)}
+            disabled={page <= 1}
+            aria-label="Previous page"
+          >
+            <ChevronLeftIcon />
+            <span className="pagination-step-label">Previous</span>
           </button>
+
+          <span className="pagination-compact" aria-hidden="true">
+            Page {page} of {totalPages}
+          </span>
 
           <div className="pagination-numbers">
             {getPageNumbers(page, totalPages).map((p) =>
@@ -76,18 +107,20 @@ export default function SearchResults() {
                 </button>
               ) : (
                 <span key={p} className="pagination-ellipsis">
-                  ...
+                  …
                 </span>
               ),
             )}
           </div>
 
           <button
-            className="pagination-btn pagination-next"
+            className="btn pagination-step"
             onClick={() => goToPage(page + 1)}
             disabled={page >= totalPages}
+            aria-label="Next page"
           >
-            Next →
+            <span className="pagination-step-label">Next</span>
+            <ChevronRightIcon />
           </button>
         </nav>
       )}

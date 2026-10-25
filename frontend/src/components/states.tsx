@@ -8,7 +8,7 @@ interface LoadingProps {
 export function Loading({ label = 'Loading…', className = '' }: LoadingProps) {
   return (
     <div className={`state state-loading ${className}`} role="status" aria-live="polite">
-      <span className="state-spinner" aria-hidden="true" />
+      <span className="spinner" aria-hidden="true" />
       <span className="state-label">{label}</span>
     </div>
   )
@@ -35,7 +35,7 @@ export function ErrorState({
       <Heading className="state-title">{title}</Heading>
       <p className="state-message">{errorMessage(error)}</p>
       {onRetry && (
-        <button type="button" className="state-retry-btn" onClick={onRetry}>
+        <button type="button" className="btn" onClick={onRetry}>
           Try again
         </button>
       )}

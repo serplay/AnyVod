@@ -1,379 +1,154 @@
 /* ================================
-   Netflix-like Home Page
+   Home: full-bleed hero, then rails
    ================================ */
 
-.home-page {
-  margin: -20px;
-  padding: 0;
-}
-
-/* Hero Banner */
-.hero-banner-home {
-  width: 100%;
-  height: 70vh;
-  min-height: 500px;
-  max-height: 800px;
-  background-size: cover;
-  background-position: center;
+.home-hero {
   position: relative;
-  margin-bottom: 40px;
-  contain: layout style;
-}
-
-.hero-banner-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, rgba(26,26,29,0.95) 0%, rgba(59,28,50,0.7) 50%, transparent 100%),
-             linear-gradient(0deg, rgba(26,26,29,0.98) 0%, rgba(26,26,29,0.3) 40%, transparent 60%);
   display: flex;
   align-items: flex-end;
-  padding: 60px;
+  min-height: 520px;
+  height: 64svh;
+  max-height: 820px;
+  overflow: hidden;
+  background: var(--surface);
+  /* Fixed box so the backdrop's arrival doesn't shift the rails. */
+  contain: layout paint;
 }
 
-.hero-banner-content {
-  max-width: 600px;
-  color: #fff;
+.home-hero-art {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  animation: stage-settle var(--slow) var(--ease) both;
 }
 
-.hero-banner-title {
-  font-size: 56px;
-  font-weight: 900;
-  margin: 0 0 16px 0;
-  line-height: 1.1;
-  text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+.home-hero-art img {
+  object-position: center 25%;
 }
 
-.hero-banner-meta {
+/* Text scrim: from the bottom on phones, also from the left on wide screens. */
+.home-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--scrim-bottom);
+  pointer-events: none;
+}
+
+.home-hero-body {
+  position: relative;
+  z-index: 1;
   display: flex;
-  gap: 16px;
-  align-items: center;
-  margin-bottom: 20px;
-  font-size: 16px;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0 var(--gutter) 28px;
 }
 
-.hero-banner-rating {
-  color: #ffd700;
-  font-weight: 700;
+.home-hero-title {
+  max-width: 14ch;
+  font-size: var(--fs-display);
+  line-height: 0.95;
+  letter-spacing: -0.035em;
 }
 
-.hero-banner-year {
-  color: var(--muted);
-  font-weight: 600;
+.home-hero .meta-line {
+  color: var(--ink);
 }
 
-.hero-banner-genres {
-  color: var(--muted);
+.home-hero-overview {
+  display: none;
+  max-width: 54ch;
+  color: var(--ink);
 }
 
-.hero-banner-overview {
-  font-size: 18px;
-  line-height: 1.6;
-  color: #e6eef8;
-  margin-bottom: 24px;
-  text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+.home-hero-actions {
+  margin-top: 8px;
 }
 
-.hero-banner-buttons {
-  display: flex;
-  gap: 16px;
+.home-hero-actions .btn {
+  flex: 1;
 }
 
-.hero-btn {
-  padding: 14px 32px;
-  border-radius: 6px;
-  font-size: 18px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
+.home-hero-skeleton {
+  display: grid;
+  gap: 14px;
 }
 
-.hero-btn-play {
-  background: linear-gradient(90deg, var(--accent), #c75f9a);
-  color: #fff;
-  box-shadow: 0 4px 20px rgba(166,77,121,0.4);
+.home-hero-skeleton-title {
+  width: min(70%, 520px);
+  height: 64px;
 }
 
-.hero-btn-play:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 30px rgba(166,77,121,0.6);
+.home-hero-skeleton-line {
+  width: min(50%, 360px);
+  height: 20px;
 }
 
-.hero-btn-info {
-  background: rgba(255,255,255,0.15);
-  color: #fff;
-  border: 1px solid rgba(255,255,255,0.3);
-  backdrop-filter: blur(10px);
+.home-hero-skeleton-btn {
+  width: 220px;
+  height: var(--tap);
 }
 
-.hero-btn-info:hover {
-  background: rgba(255,255,255,0.25);
+.home-rails {
+  margin-top: 28px;
 }
 
-/* Categories Container */
-.categories-container {
-  padding: 20px 40px 60px 40px;
-  content-visibility: auto;
-  contain-intrinsic-size: 0 2000px;
-}
-
-/* Pagination */
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 40px;
-  flex-wrap: wrap;
-}
-
-.pagination-btn {
-  padding: 12px 24px;
-  border-radius: 6px;
-  background: linear-gradient(135deg, var(--card), var(--card-2));
-  border: 1px solid rgba(255,255,255,0.1);
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.pagination-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--card-2), var(--accent));
-  border-color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(166,77,121,0.3);
-}
-
-.pagination-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.pagination-numbers {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.pagination-number {
-  padding: 10px 16px;
-  border-radius: 6px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: var(--muted);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  min-width: 44px;
-  text-align: center;
-}
-
-.pagination-number:hover {
-  background: rgba(255,255,255,0.1);
-  color: #fff;
-}
-
-.pagination-number.active {
-  background: linear-gradient(90deg, var(--accent), #c75f9a);
-  border-color: transparent;
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(166,77,121,0.4);
-}
-
-.pagination-ellipsis {
-  color: var(--muted);
-  padding: 0 8px;
-  font-weight: 600;
-}
-
-/* ================================
-   Responsive
-   ================================ */
-
-@media (max-width: 1024px) {
-  .hero-banner-overlay {
-    padding: 40px;
+@keyframes stage-settle {
+  from {
+    transform: scale(1.06);
+    opacity: 0;
   }
-
-  .hero-banner-title {
-    font-size: 44px;
-  }
-
-  .categories-container {
-    padding: 20px;
+  to {
+    transform: none;
+    opacity: 1;
   }
 }
 
-@media (max-width: 768px) {
-  .home-page {
-    overflow-x: hidden;
+@media (min-width: 600px) {
+  .home-hero-actions .btn {
+    flex: none;
+    padding: 0 28px;
   }
 
-  .hero-banner-home {
-    height: 60vh;
-    min-height: 400px;
-  }
-
-  .hero-banner-overlay {
-    padding: 30px 20px;
-  }
-
-  .hero-banner-title {
-    font-size: 32px;
-  }
-
-  .hero-banner-overview {
-    font-size: 16px;
-  }
-
-  .hero-btn {
-    padding: 12px 24px;
-    font-size: 16px;
-  }
-
-  .categories-container {
-    padding: 20px 10px;
-  }
-
-  .pagination {
-    gap: 4px;
-  }
-
-  .pagination-btn {
-    padding: 10px 16px;
-    font-size: 14px;
-  }
-
-  .pagination-number {
-    padding: 8px 12px;
-    min-width: 36px;
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 480px) {
-  .home-page .search {
-    margin-top: -20px;
-    padding: 0 12px;
-  }
-
-  .hero-banner-title {
-    font-size: 24px;
-  }
-
-  .hero-banner-meta {
-    font-size: 14px;
-    gap: 12px;
-  }
-
-  .hero-banner-overview {
-    font-size: 14px;
-  }
-
-  .hero-banner-buttons {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .hero-btn {
-    width: 100%;
-  }
-}
-
-/* Touch devices: larger tap targets (before the 374px block, which
-   shrinks the page numbers again) */
-@media (hover: none) and (pointer: coarse) {
-  .pagination-btn,
-  .pagination-number {
-    min-height: 44px;
-    min-width: 44px;
-  }
-}
-
-@media (max-width: 374px) {
-  .hero-banner-home {
-    height: 50vh;
-    min-height: 320px;
-  }
-
-  .hero-banner-overlay {
-    padding: 20px 15px;
-  }
-
-  .hero-banner-title {
-    font-size: 20px;
-    margin-bottom: 10px;
-  }
-
-  .hero-banner-meta {
-    font-size: 12px;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .hero-banner-overview {
-    font-size: 13px;
+  .home-hero-overview {
     display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    -webkit-box-orient: vertical;
     overflow: hidden;
-  }
-
-  .hero-btn {
-    padding: 10px 20px;
-    font-size: 14px;
-  }
-
-  .categories-container {
-    padding: 16px 8px;
-  }
-
-  .pagination-btn {
-    padding: 8px 12px;
-    font-size: 12px;
-  }
-
-  .pagination-number {
-    padding: 8px 10px;
-    min-width: 32px;
-    font-size: 12px;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 }
 
-/* Phones in landscape */
+@media (min-width: 900px) {
+  .home-hero {
+    height: 76svh;
+  }
+
+  .home-hero::after {
+    background: var(--scrim-bottom), var(--scrim-left);
+  }
+
+  .home-hero-body {
+    gap: 16px;
+    max-width: 760px;
+    padding-bottom: 56px;
+  }
+
+  .home-hero-overview {
+    -webkit-line-clamp: 3;
+    font-size: var(--fs-lead);
+    line-height: 1.45;
+  }
+
+  .home-rails {
+    margin-top: 8px;
+  }
+}
+
+/* Phones in landscape: keep the hero short enough to show a rail. */
 @media (max-height: 500px) and (orientation: landscape) {
-  .hero-banner-home {
-    height: 100vh;
-    min-height: unset;
+  .home-hero {
+    min-height: 0;
+    height: 92svh;
   }
-
-  .hero-banner-overlay {
-    padding: 20px 40px;
-  }
-
-  .hero-banner-content {
-    max-width: 50%;
-  }
-
-  .hero-banner-title {
-    font-size: 24px;
-  }
-
-  .hero-banner-overview {
-    display: none;
-  }
-}
-
-/* Safe-area insets for notched phones. Must stay after the media blocks:
-   these side paddings apply at every width. */
-.categories-container {
-  padding-left: max(10px, env(safe-area-inset-left));
-  padding-right: max(10px, env(safe-area-inset-right));
-}
-
-.hero-banner-overlay {
-  padding-left: max(20px, env(safe-area-inset-left));
-  padding-right: max(20px, env(safe-area-inset-right));
 }

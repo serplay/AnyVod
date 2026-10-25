@@ -44,7 +44,7 @@ describe('PersonPage', () => {
     )
 
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
-    const knownFor = screen.getByRole('heading', { name: 'Known For' }).parentElement!
+    const knownFor = screen.getByRole('heading', { name: 'Known for' }).parentElement!
     const links = within(knownFor).getAllByRole('link')
     expect(links.map((l) => l.getAttribute('href'))).toEqual(['/tv/1', '/movie/1'])
     // popularity 0 / vote_average 0 must not render a literal "0".

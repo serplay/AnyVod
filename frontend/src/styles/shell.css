@@ -1,0 +1,196 @@
+/* ================================
+   App shell: top bar, main, footer
+   ================================ */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.app > main {
+  flex: 1;
+  /* Rails bleed to the right edge; nothing else may widen the page. */
+  overflow-x: clip;
+}
+
+/* Overlay pages pull their first picture up under the transparent bar. */
+.app.has-overlay > main {
+  margin-top: calc(-1 * var(--bar-h));
+}
+
+/* The player is full-viewport (App renders no header/footer there). */
+.app.app-player > main {
+  overflow: visible;
+}
+
+/* ---------- Top bar ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: calc(var(--bar-h) + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) max(var(--gutter), env(safe-area-inset-right)) 0
+    max(var(--gutter), env(safe-area-inset-left));
+  background: var(--ground);
+  transition: background-color 0.2s ease;
+}
+
+.topbar.is-overlay {
+  background: var(--scrim-top);
+}
+
+.topbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--tap);
+  margin-right: auto;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.topbar-mark {
+  color: var(--accent);
+}
+
+.topbar-name {
+  font-size: var(--fs-lead);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.topbar-search {
+  display: none;
+}
+
+.topbar.is-overlay .topbar-search-link {
+  background: var(--veil);
+}
+
+@media (min-width: 900px) {
+  .topbar-search-link {
+    display: none;
+  }
+
+  .topbar-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: min(420px, 40vw);
+    height: 40px;
+    padding: 0 14px;
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--faint);
+    transition: background-color var(--fast) ease;
+  }
+
+  .topbar.is-overlay .topbar-search {
+    background: var(--veil);
+  }
+
+  .topbar-search:focus-within {
+    background: var(--raised);
+    outline: 2px solid var(--accent);
+    outline-offset: 0;
+  }
+
+  .topbar-search input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    font-size: 15px;
+    outline: none;
+  }
+
+  .topbar-search input::placeholder {
+    color: var(--faint);
+  }
+}
+
+/* ---------- Page frame ---------- */
+.page {
+  padding: calc(var(--bar-h) + 24px) var(--gutter) var(--section);
+}
+
+.app:not(.has-overlay) .page {
+  padding-top: 24px;
+}
+
+/* ---------- Footer ---------- */
+.site-footer {
+  margin-top: var(--section);
+  padding: 40px max(var(--gutter), env(safe-area-inset-right)) max(40px, env(safe-area-inset-bottom))
+    max(var(--gutter), env(safe-area-inset-left));
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.site-footer-inner {
+  display: grid;
+  gap: 20px;
+}
+
+.site-footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  justify-self: start;
+  color: var(--ink);
+  font-size: var(--fs-lead);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.site-footer-brand svg {
+  color: var(--accent);
+}
+
+.site-footer-links {
+  display: flex;
+  gap: 24px;
+}
+
+.site-footer-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.site-footer-links a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.site-footer-note {
+  max-width: 60ch;
+  color: var(--faint);
+  font-size: var(--fs-small);
+}
+
+@media (min-width: 900px) {
+  .site-footer-inner {
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    column-gap: 48px;
+  }
+
+  .site-footer-links {
+    justify-self: end;
+  }
+
+  .site-footer-note {
+    grid-column: 1 / -1;
+  }
+}

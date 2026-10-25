@@ -45,7 +45,7 @@ npm run typecheck && npm run lint && npm test
 | `TMDB_API_KEY` | backend | – | Required. The backend refuses to start without it. |
 | `PORT` | backend | `8000` | Render sets this automatically. |
 | `ENVIRONMENT` | backend | `development` | `development` also allows CORS from localhost:5173 and localhost:3000. |
-| `FRONTEND_ORIGIN` | backend | – | Comma-separated list of extra allowed CORS origins. `*.vercel.app` is always allowed. |
+| `FRONTEND_ORIGIN` | backend | – | Comma-separated list of extra allowed CORS origins. The project's own Vercel deployments (`any-vod*.vercel.app` and previews under the `infinitys-projects-38b16f39` scope) are always allowed. |
 | `VIDSRC_EMBED_DOMAIN` | backend | `vidsrc.sh` | Domain used to build embed URLs. |
 | `RUST_LOG` | backend | `info` | Log filter, e.g. `anyvod_backend=debug`. |
 | `VITE_API_BASE` | frontend (build time) | dev: `http://localhost:8000`; prod: same origin | Base URL of the backend. |
