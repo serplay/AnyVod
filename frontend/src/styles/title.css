@@ -130,7 +130,8 @@
 }
 
 .title-overview {
-  max-width: 65ch;
+  /* Clash's '0' is wide, so 65ch ran past 90 characters; 32em keeps lines near 75. */
+  max-width: 32em;
   color: var(--ink);
   line-height: 1.6;
 }

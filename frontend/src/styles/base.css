@@ -87,6 +87,11 @@ ul {
   outline-offset: 2px;
 }
 
+/* Fields whose wrapper draws the ring on :focus-within; a second ring on the input doubles it. */
+:is(.search-field, .topbar-search, .episode-panel-filter) input:focus-visible {
+  outline: none;
+}
+
 /* Screen-reader-only text */
 .visually-hidden {
   position: absolute !important;
@@ -187,6 +192,7 @@ ul {
   row-gap: 2px;
   color: var(--muted);
   font-size: var(--fs-body);
+  font-variant-numeric: tabular-nums;
 }
 
 .meta-line > * + *::before {

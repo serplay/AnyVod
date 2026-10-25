@@ -16,3 +16,11 @@ export function truncate(text: string | null | undefined, max = 155): string {
   const base = lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut
   return `${base.replace(/[\s.,;:!?-]+$/, '')}…`
 }
+
+/**
+ * Remove the static head tags index.html ships for crawlers that don't run JS.
+ * Must run before the first render: React's hoisted tags don't replace them.
+ */
+export function removeSeoFallback(doc: Document = document): void {
+  doc.head.querySelectorAll('[data-seo-fallback]').forEach((el) => el.remove())
+}

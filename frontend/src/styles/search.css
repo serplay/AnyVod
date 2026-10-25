@@ -9,6 +9,12 @@
 }
 
 /* ---- Field ---- */
+.search {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .search-field {
   display: flex;
   align-items: center;

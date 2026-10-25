@@ -4,7 +4,10 @@ import { BrowserRouter } from 'react-router'
 import { QueryClientProvider } from '@tanstack/react-query'
 import App from './App'
 import { createQueryClient } from './api/queryClient'
+import { removeSeoFallback } from './lib/seo'
 import './styles/index.css'
+
+removeSeoFallback()
 
 const queryClient = createQueryClient()
 

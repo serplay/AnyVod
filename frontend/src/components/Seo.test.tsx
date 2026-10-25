@@ -1,6 +1,7 @@
 import { cleanup, render } from '@testing-library/react'
 import Seo from './Seo'
 import { SITE_URL } from '../config'
+import { removeSeoFallback } from '../lib/seo'
 
 function head(selector: string): Element[] {
   return Array.from(document.head.querySelectorAll(selector))
@@ -53,5 +54,17 @@ describe('Seo', () => {
     render(<Seo title="Page" path="/" />)
 
     expect(head('title').map((t) => t.textContent)).toEqual(['Page | AnyVod', 'Static'])
+  })
+
+  it('drops the index.html crawler fallbacks so page tags are the only ones', () => {
+    document.head.innerHTML =
+      '<title data-seo-fallback>Static</title><meta data-seo-fallback property="og:image" content="/x.png" /><meta property="og:site_name" content="AnyVod" />'
+
+    removeSeoFallback()
+    render(<Seo title="Page" path="/" />)
+
+    expect(head('title').map((t) => t.textContent)).toEqual(['Page | AnyVod'])
+    expect(head('meta[property="og:image"]')).toHaveLength(1)
+    expect(head('meta[property="og:site_name"]')).toHaveLength(1)
   })
 })
