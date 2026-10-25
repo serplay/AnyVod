@@ -16,11 +16,27 @@
 
     <!--
       Per-page tags (<title>, description, robots, canonical, og:*, twitter:*) are rendered by
-      src/components/Seo.tsx and hoisted into <head> by React 19. React does not dedupe against
-      tags in this file, so do not add them back here. That includes a fallback <title>: React
-      inserts its hoisted <title> next to an existing one instead of replacing it
-      (see src/components/Seo.test.tsx).
+      src/components/Seo.tsx and hoisted into <head> by React 19.
+      The data-seo-fallback tags below exist for link-preview crawlers (WhatsApp, Discord,
+      iMessage, Slack...), which never run JS. React does not dedupe against them, so
+      src/main.tsx removes every [data-seo-fallback] tag before the first render
+      (see removeSeoFallback in src/lib/seo.ts).
     -->
+    <title data-seo-fallback>AnyVod - Free Movie and TV Show Streaming</title>
+    <meta data-seo-fallback name="description" content="Stream your favorite movies and TV shows for free. Discover trending films, popular series, and explore a vast library of entertainment content." />
+    <meta data-seo-fallback property="og:type" content="website" />
+    <meta data-seo-fallback property="og:url" content="https://vod.losingsanity.com/" />
+    <meta data-seo-fallback property="og:title" content="AnyVod - Free Movie and TV Show Streaming" />
+    <meta data-seo-fallback property="og:description" content="Stream your favorite movies and TV shows for free. Discover trending films, popular series, and explore a vast library of entertainment content." />
+    <meta data-seo-fallback property="og:image" content="https://vod.losingsanity.com/og-image.png" />
+    <meta data-seo-fallback property="og:image:width" content="1200" />
+    <meta data-seo-fallback property="og:image:height" content="630" />
+    <meta data-seo-fallback property="og:image:type" content="image/png" />
+    <meta data-seo-fallback property="og:image:alt" content="AnyVod - Free Movie and TV Show Streaming" />
+    <meta data-seo-fallback name="twitter:card" content="summary_large_image" />
+    <meta data-seo-fallback name="twitter:title" content="AnyVod - Free Movie and TV Show Streaming" />
+    <meta data-seo-fallback name="twitter:description" content="Stream your favorite movies and TV shows for free. Discover trending films, popular series, and explore a vast library of entertainment content." />
+    <meta data-seo-fallback name="twitter:image" content="https://vod.losingsanity.com/og-image.png" />
 
     <!-- Schema.org Structured Data -->
     <script type="application/ld+json">

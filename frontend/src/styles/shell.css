@@ -91,7 +91,7 @@
   }
 
   .topbar.is-overlay .topbar-search {
-    background: var(--veil);
+    background: var(--veil-field);
   }
 
   .topbar-search:focus-within {

@@ -21,7 +21,7 @@ services:
       - key: TMDB_API_KEY
         sync: false
       # Allowed CORS origins (comma separated). Set in the dashboard to the frontend's URL,
-      # e.g. https://anyvod-frontend.onrender.com (this account's own Vercel deployments and
+      # e.g. https://vod.losingsanity.com (this account's own Vercel deployments and
       # vod.losingsanity.{com,xyz} are always allowed).
       - key: FRONTEND_ORIGIN
         sync: false
@@ -43,7 +43,7 @@ services:
       # Baked into the bundle at build time. Must be the backend's public URL (an empty value
       # makes the app call its own host, which answers every API path with index.html).
       - key: VITE_API_BASE
-        value: https://anyvod-backend.onrender.com
+        value: https://vapi.losingsanity.com
     routes:
       - type: rewrite
         source: /*

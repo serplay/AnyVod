@@ -54,6 +54,8 @@
   --scrim-top: linear-gradient(to bottom, rgb(11 12 14 / 0.7), rgb(11 12 14 / 0));
   --scrim-card: linear-gradient(to top, rgb(11 12 14 / 0.9) 0%, rgb(11 12 14 / 0) 65%);
   --veil: rgb(11 12 14 / 0.6);
+  /* A field sitting on a picture: lighter than the ground so it reads on dark art too. */
+  --veil-field: rgb(39 42 47 / 0.78);
   --shadow-float: 0 16px 48px rgb(0 0 0 / 0.5);
 
   /* Type: one family, five sizes */
