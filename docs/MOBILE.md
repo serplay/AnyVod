@@ -42,9 +42,9 @@ Playback is a third-party iframe (the vidsrc embed). We don't control the video 
 ## Phase 2: PWA (about 1–2 days)
 
 - `public/manifest.webmanifest`:
-  - `display: standalone`, `background_color` / `theme_color` `#1A1A1D`
+  - `display: standalone`, `background_color` / `theme_color` `#0b0c0e`
   - `start_url: /`, `scope: /`
-  - 192px and 512px icons plus a maskable icon, generated from `src/assets/anyvod_logo.png`
+  - 192px and 512px icons plus a maskable icon, generated from the flat mark in `public/favicon.svg` (`apple-touch-icon.png` already exists)
 - Link the manifest from `index.html` and add an `apple-touch-icon`. The `apple-mobile-web-app-*` meta tags are already there.
 - Service worker (`vite-plugin-pwa`, `generateSW`):
   - Precache the app shell only.

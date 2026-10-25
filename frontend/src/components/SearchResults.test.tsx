@@ -63,7 +63,7 @@ describe('SearchResults', () => {
       page: 2,
     }
     expect(useSearchMock).toHaveBeenCalledWith(expected)
-    expect(screen.getByRole('heading', { name: 'Search Results for "dune"' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Results for dune' })).toBeInTheDocument()
     // genres/min_rating are applied per page, so TMDB's total isn't the match count
     expect(screen.getByText('2 matches on page 2 of 3')).toBeInTheDocument()
     expect(screen.queryByText('45 results found')).not.toBeInTheDocument()

@@ -1,11 +1,19 @@
-import { useEffect, useId, useState, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import VideoSchema from '../components/VideoSchema'
 import Seo from '../components/Seo'
 import PlayerFrame from '../components/PlayerFrame'
 import EpisodePanel from '../components/EpisodePanel'
-import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, EpisodesIcon, ReloadIcon } from '../components/icons'
+import {
+  ArrowLeftIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  EpisodesIcon,
+  ExitFullscreenIcon,
+  FullscreenIcon,
+  ReloadIcon,
+} from '../components/icons'
 import { truncate } from '../lib/seo'
 import NotFound from './NotFound'
 import { seasonQueryOptions, useDetails, useEmbed, useSeason } from '../api/hooks'
@@ -100,6 +108,44 @@ function usePanelCollapsed() {
   return [collapsed, toggle] as const
 }
 
+/** Locks orientation where the browser allows it (Android Chrome); `lock` is missing from older TS DOM types. */
+type LockableOrientation = ScreenOrientation & { lock?: (orientation: string) => Promise<void> }
+
+/**
+ * Our own fullscreen for the stage, plus a landscape lock on phones.
+ * Only offered where element fullscreen works (not iPhone Safari, which keeps
+ * the embed's own button).
+ */
+function useStageFullscreen(stageRef: RefObject<HTMLDivElement | null>) {
+  const supported = typeof document !== 'undefined' && document.fullscreenEnabled === true
+  const [active, setActive] = useState(false)
+
+  useEffect(() => {
+    if (!supported) return
+    const update = () => setActive(document.fullscreenElement === stageRef.current)
+    document.addEventListener('fullscreenchange', update)
+    return () => document.removeEventListener('fullscreenchange', update)
+  }, [supported, stageRef])
+
+  const toggle = async () => {
+    const stage = stageRef.current
+    if (!stage) return
+    if (document.fullscreenElement) {
+      screen.orientation?.unlock?.()
+      await document.exitFullscreen().catch(() => undefined)
+      return
+    }
+    try {
+      await stage.requestFullscreen()
+      await (screen.orientation as LockableOrientation | undefined)?.lock?.('landscape')
+    } catch {
+      // Orientation lock is refused on desktops and some phones; fullscreen alone is fine.
+    }
+  }
+
+  return { supported, active, toggle }
+}
+
 interface PlayerShellProps {
   className?: string
   title: string
@@ -118,11 +164,13 @@ interface PlayerShellProps {
 }
 
 function PlayerShell({ className = '', title, subtitle, onExit, onReload, actions, below, aside, meta, children }: PlayerShellProps) {
+  const stageRef = useRef<HTMLDivElement>(null)
+  const fullscreen = useStageFullscreen(stageRef)
   return (
     <div className={`player-page ${className}`.trim()}>
       {meta}
       <div className="player-bar">
-        <button type="button" className="player-icon-btn" onClick={onExit} aria-label="Back" title="Back">
+        <button type="button" className="btn btn-icon" onClick={onExit} aria-label="Back" title="Back">
           <ArrowLeftIcon />
         </button>
         <div className="player-heading">
@@ -130,9 +178,20 @@ function PlayerShell({ className = '', title, subtitle, onExit, onReload, action
           {subtitle ? <p className="player-subtitle">{subtitle}</p> : null}
         </div>
         <div className="player-bar-actions">
+          {fullscreen.supported ? (
+            <button
+              type="button"
+              className="btn btn-icon"
+              onClick={() => void fullscreen.toggle()}
+              aria-label={fullscreen.active ? 'Exit full screen' : 'Full screen'}
+              title={fullscreen.active ? 'Exit full screen' : 'Full screen'}
+            >
+              {fullscreen.active ? <ExitFullscreenIcon /> : <FullscreenIcon />}
+            </button>
+          ) : null}
           <button
             type="button"
-            className="player-icon-btn"
+            className="btn btn-icon"
             onClick={onReload}
             aria-label="Reload player"
             title="Reload player (if the video stalls)"
@@ -145,7 +204,9 @@ function PlayerShell({ className = '', title, subtitle, onExit, onReload, action
       <div className="player-layout">
         {/* A section, not <main>: the app shell already renders one. */}
         <section className="player-primary" aria-label="Player">
-          <div className="player-stage">{children}</div>
+          <div className="player-stage" ref={stageRef}>
+            {children}
+          </div>
           {below}
         </section>
         {aside}
@@ -258,7 +319,7 @@ function TvPlayer({ id, current }: { id: number; current: EpisodeRef }) {
       actions={
         <button
           type="button"
-          className="player-icon-btn player-panel-toggle"
+          className="btn btn-icon player-panel-toggle"
           onClick={togglePanel}
           aria-expanded={!panelCollapsed}
           aria-controls={panelId}
@@ -272,17 +333,17 @@ function TvPlayer({ id, current }: { id: number; current: EpisodeRef }) {
         <nav className="episode-nav" aria-label="Episode navigation">
           <button
             type="button"
-            className="episode-nav-btn"
+            className="btn"
             onClick={() => void goToPrevious()}
             disabled={!prev}
             aria-label="Previous episode"
           >
             <ChevronLeftIcon />
-            <span className="episode-nav-label">Previous</span>
+            <span className="episode-nav-label-prev">Previous</span>
           </button>
           <button
             type="button"
-            className="episode-nav-btn episode-nav-next"
+            className="btn btn-primary episode-nav-next"
             onClick={() => next && goTo(next)}
             disabled={!next}
             aria-label={next ? `Next episode: ${episodeLabel(next)}${nextData?.name ? `, ${nextData.name}` : ''}` : 'Next episode'}

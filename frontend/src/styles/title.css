@@ -1,0 +1,374 @@
+/* ================================
+   Split stage: title and person pages
+   The title's own picture stays fixed; everything to read scrolls beside it
+   (desktop) or over it (phones).
+   ================================ */
+
+.stage-page {
+  position: relative;
+}
+
+/* ---- The stage ---- */
+.stage {
+  position: sticky;
+  top: 0;
+  z-index: 0;
+  height: 56svh;
+  min-height: 300px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--scrim-top), var(--scrim-bottom);
+  background-size: 100% 96px, 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+.stage-art {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  animation: stage-settle var(--slow) var(--ease) both;
+}
+
+.stage-art img {
+  object-position: center 20%;
+}
+
+.stage-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.stage-preview.is-shown {
+  opacity: 1;
+}
+
+.stage-trailer {
+  position: absolute;
+  /* Below the top bar, which sits over the stage. */
+  inset: var(--bar-h) 0 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  background: var(--black);
+}
+
+.stage-trailer iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.stage-trailer-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--veil);
+}
+
+/* ---- The reading column ---- */
+.stage-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--section);
+  margin-top: -32px;
+  padding: 0 var(--gutter) 8px;
+  background: var(--ground);
+}
+
+/* The sheet's top edge: a band of ground over the stage's bottom scrim. */
+.stage-body::before {
+  content: '';
+  position: absolute;
+  inset: -1px 0 auto;
+  height: 32px;
+  background: var(--ground);
+  z-index: -1;
+}
+
+.title-head {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 8px;
+}
+
+.title-name {
+  font-size: var(--fs-display);
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  overflow-wrap: anywhere;
+}
+
+.title-actions {
+  margin-top: 6px;
+}
+
+.title-actions .btn {
+  flex: 1;
+}
+
+.title-actions .btn-primary {
+  flex-basis: 100%;
+}
+
+.title-note {
+  color: var(--muted);
+}
+
+.title-overview {
+  max-width: 65ch;
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+.title-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.title-skeleton-name {
+  display: block;
+  width: 70%;
+  height: 56px;
+}
+
+.title-skeleton-line {
+  display: block;
+  width: 45%;
+  height: 20px;
+}
+
+.title-skeleton-btn {
+  display: block;
+  width: 100%;
+  height: var(--tap);
+}
+
+.title-skeleton-text {
+  display: block;
+  width: 100%;
+  height: 96px;
+}
+
+/* ---- Cast ---- */
+.cast-list {
+  /* Without this Chrome counts the scrolled-away cards in the page width. */
+  contain: paint;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 104px;
+  gap: var(--gap);
+  margin: 0 calc(-1 * var(--gutter));
+  padding: 4px var(--gutter) 8px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--gutter);
+  scrollbar-width: none;
+}
+
+.cast-list::-webkit-scrollbar {
+  display: none;
+}
+
+.cast-list > li {
+  scroll-snap-align: start;
+  min-width: 0;
+}
+
+.cast-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.cast-photo {
+  display: block;
+  aspect-ratio: 1;
+  margin-bottom: 6px;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.cast-initial {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: var(--faint);
+  font-size: var(--fs-head);
+}
+
+.cast-name,
+.cast-character {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.cast-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.cast-character {
+  color: var(--muted);
+  font-size: var(--fs-small);
+}
+
+.cast-card:focus-visible {
+  outline: none;
+}
+
+.cast-card:focus-visible .cast-photo {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .cast-card:hover .cast-name {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+/* ---- Below the split: full width ---- */
+.title-more {
+  padding: var(--section) var(--gutter) 0;
+}
+
+/* ================================
+   Wider screens
+   ================================ */
+
+@media (min-width: 600px) {
+  .title-actions .btn,
+  .title-actions .btn-primary {
+    flex: none;
+    min-width: 160px;
+  }
+}
+
+@media (min-width: 600px) and (max-width: 1199px) {
+  .stage {
+    position: relative;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    max-height: 70svh;
+  }
+}
+
+@media (min-width: 1200px) {
+  .stage-page {
+    display: grid;
+    grid-template-columns: 45fr 55fr;
+    align-items: start;
+  }
+
+  .stage {
+    height: 100svh;
+    min-height: 560px;
+  }
+
+  .stage::after {
+    background: var(--scrim-top);
+    background-size: 100% 120px;
+    background-repeat: no-repeat;
+  }
+
+  .stage-body {
+    max-width: 760px;
+    margin-top: 0;
+    padding: calc(var(--bar-h) + 56px) clamp(32px, 4vw, 72px) 0;
+  }
+
+  .stage-body::before {
+    display: none;
+  }
+}
+
+/* ================================
+   Person page
+   ================================ */
+
+.stage-portrait .stage-art img {
+  object-position: center 15%;
+}
+
+.stage-initial {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: var(--faint);
+  font-size: var(--fs-display);
+}
+
+.person-bio {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 65ch;
+  line-height: 1.6;
+}
+
+.person-bio summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.person-bio summary::-webkit-details-marker {
+  display: none;
+}
+
+.person-bio:not([open]) .person-bio-preview {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+}
+
+.person-bio-toggle {
+  align-self: flex-start;
+  color: var(--ink);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.person-bio[open] .person-bio-toggle {
+  display: none;
+}
+
+/* Portraits are 2:3: on mid-size screens show them as a tall crop, not 16:9. */
+@media (min-width: 600px) and (max-width: 1199px) {
+  .stage-portrait {
+    aspect-ratio: 4 / 3;
+  }
+}
+
+.title-genres {
+  margin-top: -8px;
+  color: var(--muted);
+}

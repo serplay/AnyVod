@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import type { SeasonSummary } from '../api/types'
-import { isUnaired, loadLastEpisode, nextEpisode, previousEpisode, saveLastEpisode } from './episodes'
+import { isUnaired, loadLastEpisode, nextEpisode, previousEpisode, recentShows, saveLastEpisode } from './episodes'
 
 const seasons: SeasonSummary[] = [
   { season_number: 0, name: 'Specials', episode_count: 2 },
@@ -82,5 +82,16 @@ describe('last episode storage', () => {
     expect(loadLastEpisode(1)).toBeUndefined()
     expect(loadLastEpisode(2)).toEqual({ season: 1, episode: 1 })
     expect(loadLastEpisode(101)).toEqual({ season: 1, episode: 1 })
+  })
+
+  it('lists recent shows, most recently played first', () => {
+    saveLastEpisode(1, { season: 1, episode: 2 })
+    saveLastEpisode(2, { season: 3, episode: 4 })
+    saveLastEpisode(1, { season: 1, episode: 3 })
+    expect(recentShows(10)).toEqual([
+      { tvId: 1, episode: { season: 1, episode: 3 } },
+      { tvId: 2, episode: { season: 3, episode: 4 } },
+    ])
+    expect(recentShows(1)).toHaveLength(1)
   })
 })

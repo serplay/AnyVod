@@ -1,0 +1,107 @@
+/* ================================
+   Design tokens
+   The only file allowed to hold raw colour values (scripts/check-css.ts).
+   ================================ */
+
+/*
+ * Breakpoints (min-width, phone-first). Custom properties can't be used
+ * inside @media queries, so this comment is the source of truth:
+ *
+ *    600px  large phones / small tablets
+ *    900px  tablets landscape / small laptops (top bar search field appears)
+ *   1200px  desktop (split stage on title and person pages)
+ *
+ * Plus (hover: hover) for pointer-only details (rail arrows, card hover) and
+ * (max-height: 500px) and (orientation: landscape) for phones in landscape.
+ */
+
+@font-face {
+  font-family: 'Clash Grotesk';
+  src: url('/fonts/clash-grotesk-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Clash Grotesk';
+  src: url('/fonts/clash-grotesk-500.woff2') format('woff2');
+  font-weight: 500 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+
+  /* Colour: one ground, one ink, one accent. Posters carry every other colour. */
+  --ground: #0b0c0e;
+  --surface: #141518;
+  --raised: #1d1f23;
+  --active: #272a2f;
+  --line: #2c2f35;
+  --ink: #f2f0ed;
+  --muted: #b3b5b9;
+  --faint: #8e9196;
+  --accent: #ff7a1f;
+  --accent-press: #e86a12;
+  --accent-ink: #0b0c0e;
+  --black: #000;
+
+  /* Neutral scrims: the only gradients, and only under text on a photograph. */
+  --scrim-bottom: linear-gradient(to top, rgb(11 12 14 / 0.94) 0%, rgb(11 12 14 / 0.6) 35%, rgb(11 12 14 / 0) 70%);
+  --scrim-left: linear-gradient(to right, rgb(11 12 14 / 0.85) 0%, rgb(11 12 14 / 0.35) 45%, rgb(11 12 14 / 0) 70%);
+  --scrim-top: linear-gradient(to bottom, rgb(11 12 14 / 0.7), rgb(11 12 14 / 0));
+  --scrim-card: linear-gradient(to top, rgb(11 12 14 / 0.9) 0%, rgb(11 12 14 / 0) 65%);
+  --veil: rgb(11 12 14 / 0.6);
+  --shadow-float: 0 16px 48px rgb(0 0 0 / 0.5);
+
+  /* Type: one family, five sizes */
+  --font: 'Clash Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fs-small: 0.8125rem;
+  --fs-body: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
+  --fs-lead: clamp(1.125rem, 1rem + 0.5vw, 1.375rem);
+  --fs-head: clamp(1.75rem, 1.2rem + 2.2vw, 2.75rem);
+  --fs-display: clamp(2.5rem, 1.4rem + 5vw, 5.5rem);
+
+  /* Shape and space */
+  --radius: 4px;
+  --gutter: clamp(16px, 4vw, 48px);
+  --gap: 12px;
+  --section: clamp(40px, 6vw, 72px);
+  --tap: 44px;
+  --bar-h: 56px;
+
+  /* Card widths in rails (also used in the `sizes` attributes in code) */
+  --poster-w: 128px;
+  --still-w: 260px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --fast: 120ms;
+  --slow: 600ms;
+}
+
+@media (min-width: 600px) {
+  :root {
+    --poster-w: 150px;
+    --still-w: 300px;
+  }
+}
+
+@media (min-width: 900px) {
+  :root {
+    --bar-h: 64px;
+    --poster-w: 172px;
+    --still-w: 320px;
+    --gap: 14px;
+  }
+}
+
+@media (min-width: 1200px) {
+  :root {
+    --poster-w: 192px;
+    --still-w: 360px;
+    --gap: 16px;
+  }
+}

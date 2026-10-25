@@ -52,7 +52,7 @@ function LoadingCover({ backdropUrl }: { backdropUrl?: string }) {
   return (
     <div className="player-cover" role="status" aria-live="polite">
       {backdropUrl ? <img src={backdropUrl} alt="" className="player-cover-img" /> : null}
-      <span className="state-spinner" aria-hidden="true" />
+      <span className="spinner" aria-hidden="true" />
       <span className="visually-hidden">Loading player…</span>
     </div>
   )

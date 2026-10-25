@@ -1,17 +1,17 @@
-import { Link, useParams } from 'react-router'
-import moviePlaceholder from '../assets/movie.png'
-import { ProfileImage, PosterImage } from '../components/OptimizedImage'
-import { ErrorState, Loading } from '../components/states'
+import { useParams } from 'react-router'
+import OptimizedImage from '../components/OptimizedImage'
+import PosterCard, { GRID_POSTER_SIZES } from '../components/PosterCard'
+import { ErrorState } from '../components/states'
 import NotFound from './NotFound'
 import Seo from '../components/Seo'
 import { usePerson, usePersonCredits } from '../api/hooks'
 import { ApiError } from '../api/client'
-import { displayTitle, formatRating, itemKey, itemPath, parseNonNegativeInt, tmdbImageFor } from '../lib/media'
+import { itemKey, itemPath, parseNonNegativeInt, tmdbImageFor } from '../lib/media'
 import { topCredits } from '../lib/credits'
 import { truncate } from '../lib/seo'
 
-/** person-credits-grid is minmax(200px, 1fr) (150px <=768px, 2 columns <=480px). */
-const CREDIT_CARD_SIZES = '(max-width: 480px) 50vw, 240px'
+/** Biographies longer than this start collapsed. */
+const BIO_PREVIEW_CHARS = 600
 
 // Calculate age from birthday (to deathday if deceased)
 function calculateAge(birthday: string | null, deathday: string | null): number | null {
@@ -25,6 +25,13 @@ function calculateAge(birthday: string | null, deathday: string | null): number 
     age--
   }
   return age
+}
+
+/** "1974-11-12" -> "12 Nov 1974" (dates are calendar days, so format in UTC). */
+function formatDate(date: string): string {
+  const d = new Date(`${date}T00:00:00Z`)
+  if (Number.isNaN(d.getTime())) return date
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
 }
 
 export default function PersonPage() {
@@ -41,139 +48,116 @@ export default function PersonPage() {
     if (personQuery.error instanceof ApiError && personQuery.error.status === 404) {
       return <NotFound message="We couldn't find that person." />
     }
-    return <ErrorState error={personQuery.error} onRetry={() => void personQuery.refetch()} headingLevel="h1" />
-  }
-
-  if (!person) {
     return (
-      <>
-        <Seo title="Person" path={`/person/${validId}`} type="profile" />
-        <h1 className="visually-hidden">Loading person…</h1>
-        <Loading className="person-loading" />
-      </>
+      <div className="page">
+        <ErrorState error={personQuery.error} onRetry={() => void personQuery.refetch()} headingLevel="h1" />
+      </div>
     )
   }
 
-  const age = calculateAge(person.birthday, person.deathday)
+  const age = person ? calculateAge(person.birthday, person.deathday) : null
   // Most popular titles first, one card per title.
   const credited = topCredits(credits?.cast)
+  const bio = person?.biography?.trim() ?? ''
+  const paragraphs = bio.split(/\n+/).filter(Boolean)
 
   return (
-    <div className="person-page">
+    <>
       <Seo
-        title={person.name}
-        description={truncate(person.biography) || undefined}
+        title={person?.name ?? 'Person'}
+        description={truncate(person?.biography) || undefined}
         path={`/person/${validId}`}
-        image={tmdbImageFor(person.profile_path, 'profile', 'large')}
+        image={tmdbImageFor(person?.profile_path, 'profile', 'large')}
         type="profile"
       />
-      {/* Hero Section */}
-      <div className="person-hero">
-        <div className="person-hero-gradient"></div>
-        <div className="person-hero-content">
-          <div className="person-profile-container">
-            {person.profile_path ? (
-              <ProfileImage
-                path={person.profile_path}
-                alt={person.name}
-                size="large"
-                sizes="320px"
-                priority
-                className="person-profile-img"
-              />
-            ) : (
-              <div className="person-profile-placeholder" aria-hidden="true">
-                {person.name?.charAt(0)}
-              </div>
-            )}
-          </div>
+      <div className="stage-page person-page">
+        <div className="stage stage-portrait">
+          {person?.profile_path ? (
+            <OptimizedImage
+              tmdbPath={person.profile_path}
+              tmdbType="profile"
+              tmdbSize="large"
+              sizes="(min-width: 1200px) 45vw, 100vw"
+              priority
+              alt={person.name}
+              className="stage-art"
+            />
+          ) : person ? (
+            <span className="stage-initial" aria-hidden="true">
+              {person.name?.charAt(0)}
+            </span>
+          ) : null}
+        </div>
 
-          <div className="person-info">
-            <h1 className="person-name">{person.name}</h1>
-
-            <div className="person-meta">
-              {person.known_for_department ? <span className="person-tag">{person.known_for_department}</span> : null}
-              {age !== null ? <span className="person-detail">Age: {age}</span> : null}
-              {person.place_of_birth ? <span className="person-detail">📍 {person.place_of_birth}</span> : null}
+        <div className="stage-body">
+          {person ? (
+            <header className="title-head">
+              <h1 className="title-name">{person.name}</h1>
+              <p className="meta-line">
+                {person.known_for_department ? <span>{person.known_for_department}</span> : null}
+                {person.birthday ? (
+                  <span>
+                    Born {formatDate(person.birthday)}
+                    {age !== null && !person.deathday ? ` (${age})` : ''}
+                  </span>
+                ) : null}
+                {person.deathday ? (
+                  <span>
+                    Died {formatDate(person.deathday)}
+                    {age !== null ? ` (${age})` : ''}
+                  </span>
+                ) : null}
+                {person.place_of_birth ? <span>{person.place_of_birth}</span> : null}
+              </p>
+              {paragraphs.length > 0 ? (
+                bio.length > BIO_PREVIEW_CHARS ? (
+                  <details className="person-bio">
+                    <summary>
+                      <span className="person-bio-preview">{paragraphs[0]}</span>
+                      <span className="person-bio-toggle">Read more</span>
+                    </summary>
+                    {paragraphs.slice(1).map((p, i) => (
+                      <p key={i}>{p}</p>
+                    ))}
+                  </details>
+                ) : (
+                  <div className="person-bio">
+                    {paragraphs.map((p, i) => (
+                      <p key={i}>{p}</p>
+                    ))}
+                  </div>
+                )
+              ) : null}
+            </header>
+          ) : (
+            <div className="title-head" role="status">
+              <h1 className="visually-hidden">Loading person…</h1>
+              <span className="skeleton title-skeleton-name" />
+              <span className="skeleton title-skeleton-line" />
+              <span className="skeleton title-skeleton-text" />
             </div>
+          )}
 
-            {person.biography ? (
-              <div className="person-bio-preview">
-                {person.biography.slice(0, 300)}
-                {person.biography.length > 300 ? '...' : ''}
+          {credited.length > 0 ? (
+            <section className="title-section" aria-labelledby="known-for-heading">
+              <h2 className="section-title title-section-head" id="known-for-heading">
+                Known for
+              </h2>
+              <div className="poster-grid">
+                {credited.map((credit) => (
+                  <PosterCard
+                    key={itemKey(credit)}
+                    item={credit}
+                    href={itemPath(credit)}
+                    sizes={GRID_POSTER_SIZES}
+                    meta={credit.character ? `as ${credit.character}` : null}
+                  />
+                ))}
               </div>
-            ) : null}
-          </div>
+            </section>
+          ) : null}
         </div>
       </div>
-
-      {/* Main Content */}
-      <div className="person-content">
-        {/* Personal Info */}
-        <section className="person-section">
-          <h2 className="person-section-title">Personal Info</h2>
-          <div className="person-info-grid">
-            {person.birthday ? (
-              <div className="info-item">
-                <div className="info-label">Birthday</div>
-                <div className="info-value">{person.birthday}</div>
-              </div>
-            ) : null}
-            {person.place_of_birth ? (
-              <div className="info-item">
-                <div className="info-label">Place of Birth</div>
-                <div className="info-value">{person.place_of_birth}</div>
-              </div>
-            ) : null}
-            {person.known_for_department ? (
-              <div className="info-item">
-                <div className="info-label">Known For</div>
-                <div className="info-value">{person.known_for_department}</div>
-              </div>
-            ) : null}
-            {person.popularity != null && person.popularity > 0 ? (
-              <div className="info-item">
-                <div className="info-label">Popularity</div>
-                <div className="info-value">{formatRating(person.popularity)}</div>
-              </div>
-            ) : null}
-          </div>
-        </section>
-
-        {/* Known For / Credits */}
-        {credited.length > 0 ? (
-          <section className="person-section">
-            <h2 className="person-section-title">Known For</h2>
-            <div className="person-credits-grid">
-              {credited.map((credit) => {
-                const name = displayTitle(credit)
-                return (
-                  <Link key={itemKey(credit)} to={itemPath(credit)} className="person-credit-card">
-                    {credit.poster_path ? (
-                      <PosterImage
-                        path={credit.poster_path}
-                        alt=""
-                        size="medium"
-                        sizes={CREDIT_CARD_SIZES}
-                        className="credit-poster"
-                      />
-                    ) : (
-                      <img src={moviePlaceholder} alt="" className="credit-poster placeholder-img" loading="lazy" />
-                    )}
-                    <div className="credit-info">
-                      <h3 className="credit-title">{name}</h3>
-                      {credit.character ? <div className="credit-character">as {credit.character}</div> : null}
-                      {credit.vote_average != null && credit.vote_average > 0 ? (
-                        <div className="credit-rating">⭐ {formatRating(credit.vote_average)}</div>
-                      ) : null}
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-          </section>
-        ) : null}
-      </div>
-    </div>
+    </>
   )
 }

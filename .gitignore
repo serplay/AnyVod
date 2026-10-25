@@ -19,3 +19,4 @@ coverage/
 
 # Claude Code worktrees
 .claude/
+.taste-skill/

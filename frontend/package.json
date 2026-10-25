@@ -9,6 +9,7 @@
     "prebuild": "npm run sitemap",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "lint:css": "node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/check-css.ts",
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "test": "vitest run",

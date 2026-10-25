@@ -1,11 +1,10 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { Link } from 'react-router'
 import { useSeason } from '../api/hooks'
 import type { SeasonSummary } from '../api/types'
-import { StillImage } from './OptimizedImage'
+import EpisodeRow, { SeasonSelect } from './EpisodeRow'
 import { ErrorState } from './states'
-import { PlayIcon, SearchIcon } from './icons'
-import { episodePath, isUnaired, type EpisodeRef } from '../lib/episodes'
+import { SearchIcon } from './icons'
+import { episodePath, type EpisodeRef } from '../lib/episodes'
 
 /** Seasons longer than this get a filter box. */
 const FILTER_THRESHOLD = 12
@@ -16,8 +15,6 @@ interface EpisodePanelProps {
   seasons: SeasonSummary[]
   current: EpisodeRef
 }
-
-const seasonName = (s: SeasonSummary) => (s.season_number === 0 ? s.name || 'Specials' : `Season ${s.season_number}`)
 
 /**
  * Season picker + episode list. Picking a season only browses it; playback
@@ -30,7 +27,6 @@ export default function EpisodePanel({ id, tvId, seasons, current }: EpisodePane
   const [filter, setFilter] = useState('')
   const seasonQuery = useSeason(tvId, browseSeason)
   const listRef = useRef<HTMLOListElement>(null)
-  const seasonSelectId = useId()
   const filterId = useId()
 
   const episodes = seasonQuery.data?.episodes ?? []
@@ -62,24 +58,13 @@ export default function EpisodePanel({ id, tvId, seasons, current }: EpisodePane
           Episodes
         </h2>
         {seasons.length > 1 ? (
-          <>
-            <label htmlFor={seasonSelectId} className="visually-hidden">
-              Season
-            </label>
-            <select
-              id={seasonSelectId}
-              className="episode-panel-season"
-              value={browseSeason}
-              onChange={(e) => selectSeason(Number(e.target.value))}
-            >
-              {seasons.map((s) => (
-                <option key={s.season_number} value={s.season_number}>
-                  {seasonName(s)}
-                  {s.season_number === current.season ? ' (playing)' : ''}
-                </option>
-              ))}
-            </select>
-          </>
+          <SeasonSelect
+            seasons={seasons}
+            value={browseSeason}
+            onChange={selectSeason}
+            playing={current.season}
+            className="episode-panel-season"
+          />
         ) : null}
       </div>
 
@@ -110,46 +95,23 @@ export default function EpisodePanel({ id, tvId, seasons, current }: EpisodePane
       ) : seasonQuery.isPending ? (
         <ol className="episode-list" aria-busy="true" aria-label="Loading episodes">
           {Array.from({ length: 6 }, (_, i) => (
-            <li key={i} className="episode-row episode-row-skeleton" />
+            <li key={i} className="episode-row-skeleton skeleton" />
           ))}
         </ol>
       ) : visible.length === 0 ? (
         <p className="episode-panel-empty">{query ? 'No episodes match.' : 'No episodes listed for this season.'}</p>
       ) : (
         <ol className="episode-list" ref={listRef}>
-          {visible.map((ep) => {
-            const ref = { season: browseSeason, episode: ep.episode_number }
-            const isCurrent = browseSeason === current.season && ep.episode_number === current.episode
-            const upcoming = isUnaired(ep.air_date)
-            return (
-              <li key={ep.episode_number}>
-                <Link
-                  to={episodePath(tvId, ref)}
-                  replace
-                  className={`episode-row${isCurrent ? ' is-current' : ''}${upcoming ? ' is-upcoming' : ''}`}
-                  aria-current={isCurrent ? 'page' : undefined}
-                >
-                  <span className="episode-row-thumb">
-                    <StillImage path={ep.still_path} size="small" sizes="128px" />
-                    {isCurrent ? (
-                      <span className="episode-row-playing">
-                        <PlayIcon width={14} height={14} />
-                        Playing
-                      </span>
-                    ) : null}
-                  </span>
-                  <span className="episode-row-text">
-                    <span className="episode-row-meta">
-                      E{ep.episode_number}
-                      {ep.runtime ? ` · ${ep.runtime}m` : ''}
-                      {upcoming && ep.air_date ? ` · Airs ${ep.air_date}` : ''}
-                    </span>
-                    <span className="episode-row-name">{ep.name || `Episode ${ep.episode_number}`}</span>
-                  </span>
-                </Link>
-              </li>
-            )
-          })}
+          {visible.map((ep) => (
+            <li key={ep.episode_number}>
+              <EpisodeRow
+                episode={ep}
+                to={episodePath(tvId, { season: browseSeason, episode: ep.episode_number })}
+                replace
+                current={browseSeason === current.season && ep.episode_number === current.episode}
+              />
+            </li>
+          ))}
         </ol>
       )}
     </aside>

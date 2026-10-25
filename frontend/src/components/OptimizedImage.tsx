@@ -69,13 +69,7 @@ const OptimizedImage = memo(function OptimizedImage({
     <div className={`optimized-image-wrapper ${className}`.trim()}>
       {showPlaceholder && (
         <div className="optimized-image-placeholder">
-          {placeholderSrc ? (
-            <img src={placeholderSrc} alt="" className="optimized-image-placeholder-img" />
-          ) : (
-            <div className="optimized-image-placeholder-icon" aria-hidden="true">
-              🎬
-            </div>
-          )}
+          {placeholderSrc ? <img src={placeholderSrc} alt="" className="optimized-image-placeholder-img" /> : null}
         </div>
       )}
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  formatRuntime,
   formatYear,
   getMediaKind,
   itemKey,
@@ -138,5 +139,15 @@ describe('misc helpers', () => {
       }),
     ).toBe('trailer')
     expect(pickTrailerKey({ videos: { results: [{ type: 'Trailer', site: 'Vimeo', key: 'v' }] } })).toBeUndefined()
+  })
+})
+
+describe('formatRuntime', () => {
+  it('formats minutes as hours and minutes', () => {
+    expect(formatRuntime(148)).toBe('2h 28m')
+    expect(formatRuntime(120)).toBe('2h')
+    expect(formatRuntime(45)).toBe('45m')
+    expect(formatRuntime(0)).toBeUndefined()
+    expect(formatRuntime(null)).toBeUndefined()
   })
 })

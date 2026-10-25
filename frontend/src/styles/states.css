@@ -1,60 +1,43 @@
 /* ================================
-   Shared loading / error / not-found states
+   Loading / error / not-found states
    ================================ */
 
 .state {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 32px 0;
+  color: var(--muted);
+}
+
+.state-loading {
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 12px;
   min-height: 240px;
-  padding: 32px 16px;
-  text-align: center;
-  color: var(--muted, #d4a5c0);
-}
-
-.state-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid rgba(255, 255, 255, 0.15);
-  border-top-color: var(--accent, #e91e8c);
-  border-radius: 50%;
-  animation: state-spin 0.8s linear infinite;
-}
-
-@keyframes state-spin {
-  to { transform: rotate(360deg); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .state-spinner { animation-duration: 2.4s; }
 }
 
 .state-title {
-  margin: 0;
-  font-size: 1.4rem;
-  color: var(--text, #e6eef8);
+  color: var(--ink);
+  font-size: var(--fs-lead);
 }
 
 .state-message {
-  margin: 0;
-  max-width: 48ch;
+  max-width: 52ch;
 }
 
-.state-retry-btn,
-.state-home-link {
-  padding: 10px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text, #e6eef8);
-  font: inherit;
-  text-decoration: none;
-  cursor: pointer;
+.state .btn {
+  margin-top: 4px;
 }
 
-.state-retry-btn:hover,
-.state-home-link:hover {
-  background: rgba(255, 255, 255, 0.16);
+/* Whole-page states: the not-found page and page-level errors. */
+.state-not-found {
+  min-height: 60vh;
+  justify-content: center;
+}
+
+.state-not-found .state-title,
+.page > .state-error .state-title {
+  font-size: var(--fs-head);
 }

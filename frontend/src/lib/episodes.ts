@@ -15,6 +15,11 @@ export function episodeLabel({ season, episode }: EpisodeRef): string {
   return `S${season} · E${episode}`
 }
 
+/** "Season 2", or the specials' own name. */
+export function seasonName(s: SeasonSummary): string {
+  return s.season_number === 0 ? s.name || 'Specials' : `Season ${s.season_number}`
+}
+
 /** Regular seasons in order. Specials (season 0) are reachable from the season picker, not by prev/next. */
 function regularSeasons(seasons: SeasonSummary[]): SeasonSummary[] {
   return seasons.filter((s) => s.season_number > 0)
@@ -91,6 +96,19 @@ export function loadLastEpisode(tvId: number): EpisodeRef | undefined {
     return undefined
   }
   return { season: entry.season, episode: entry.episode }
+}
+
+/** Shows with a remembered episode, most recently played first. */
+export function recentShows(limit: number): Array<{ tvId: number; episode: EpisodeRef }> {
+  const shows: Array<{ tvId: number; episode: EpisodeRef }> = []
+  for (const key of Object.keys(readLastEpisodes()).reverse()) {
+    const tvId = Number(key.replace(/^tv-/, ''))
+    if (!Number.isSafeInteger(tvId) || tvId <= 0) continue
+    const episode = loadLastEpisode(tvId)
+    if (episode) shows.push({ tvId, episode })
+    if (shows.length >= limit) break
+  }
+  return shows
 }
 
 /** Remember the episode being played. Keeps the most recent shows only. */
