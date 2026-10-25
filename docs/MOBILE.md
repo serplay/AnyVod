@@ -65,7 +65,7 @@ Do this only if the PWA isn't enough. What it adds over the PWA:
 Setup:
 
 - Add `frontend/capacitor.config.ts` and bundle `dist/` into the app (`server.url` would load the live site, which is simpler but makes the app depend on the hosted frontend).
-- `VITE_API_BASE` must be absolute in the app build (`https://anyvod-backend.onrender.com`).
+- `VITE_API_BASE` must be absolute in the app build (`https://vapi.losingsanity.com`).
 - Backend CORS: allow `https://localhost` (Capacitor's Android origin) through `FRONTEND_ORIGIN`.
 - Routing: `BrowserRouter` works when the app is bundled, because Capacitor serves `index.html` for unknown paths.
 - Build the APK in GitHub Actions (`gradle assembleRelease`, signed with a secret keystore) and attach it to a GitHub Release. Builds stay manual, matching the backend image (no auto-build on push).
