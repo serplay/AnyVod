@@ -51,7 +51,7 @@ async fn cors_preflight() {
         "https://frontend.example",
         "https://vod.losingsanity.com",
         "https://vod.losingsanity.xyz",
-        "https://anyvod-git-feature.vercel.app",
+        "https://any-vod-git-feature-infinitys-projects-38b16f39.vercel.app",
     ] {
         let res = t.request(preflight(origin)).await;
         assert!(res.status.is_success(), "{origin}");
@@ -63,7 +63,11 @@ async fn cors_preflight() {
         );
     }
     // ENVIRONMENT=production in tests, so localhost is not allowed.
-    for origin in ["https://evil.example", "http://localhost:5173"] {
+    for origin in [
+        "https://evil.example",
+        "http://localhost:5173",
+        "https://someone-else.vercel.app",
+    ] {
         let res = t.request(preflight(origin)).await;
         assert!(
             res.headers

@@ -1,671 +1,572 @@
 /* ============================================
-   Player Page - HiAnime-inspired layout
+   Player page
+   Full viewport (App drops the site header/footer on /player/*).
+
+   Wide screens: top bar, then the video beside the episode panel. Each column
+   scrolls on its own and the video is letterboxed to fit 16:9.
+   Phones (TV): one column that scrolls with the page. The video and the
+   prev/next bar stick to the top while the episode list scrolls under them.
+   Phones in landscape: the video gets the full screen height.
    ============================================ */
 
-/* Base player page */
 .player-page {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: #0d0d0f;
-  z-index: 9999;
-  overflow: hidden;
-}
+  --player-bg: #0d0d0f;
+  --player-surface: #16161a;
+  --player-surface-2: #1f1f25;
+  --player-line: rgba(255,255,255,0.08);
+  --player-dim: rgba(255,255,255,0.62);
+  --player-panel-width: 380px;
 
-/* ---- Movie Player Layout ---- */
-.player-page-movie {
   display: flex;
   flex-direction: column;
-}
-
-.player-header-movie {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 24px;
-  background: linear-gradient(180deg, rgba(13,13,15,1) 0%, rgba(13,13,15,0.9) 100%);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-.player-title-movie {
-  color: #fff;
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0;
-}
-
-.player-main-movie {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.player-main-movie .player-iframe {
-  width: 100%;
-  height: 100%;
-  max-width: 1400px;
-  aspect-ratio: 16/9;
-  border-radius: 8px;
-  border: none;
-}
-
-/* ---- TV Show Player Layout ---- */
-.player-page-tv {
-  display: flex;
-  flex-direction: row;
-}
-
-/* Episode Sidebar */
-.episode-sidebar {
-  width: 280px;
-  min-width: 280px;
   height: 100vh;
-  background: #16161a;
-  border-right: 1px solid rgba(255,255,255,0.06);
-  display: flex;
-  flex-direction: column;
-  transition: all 0.3s ease;
+  height: 100dvh;
   overflow: hidden;
-}
-
-.episode-sidebar.collapsed {
-  width: 0;
-  min-width: 0;
-  border-right: none;
-}
-
-.sidebar-header {
-  padding: 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  background: #1a1a1e;
-}
-
-.sidebar-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.sidebar-label {
+  background: var(--player-bg);
   color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
-.sidebar-collapse-btn {
-  background: rgba(255,255,255,0.1);
-  border: none;
-  color: #fff;
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-}
-
-.sidebar-collapse-btn:hover {
-  background: rgba(255,255,255,0.2);
-}
-
-.sidebar-expand-btn {
-  position: fixed;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  background: var(--accent);
-  border: none;
-  color: #fff;
-  width: 24px;
-  height: 60px;
-  border-radius: 0 6px 6px 0;
-  cursor: pointer;
-  font-size: 10px;
-  z-index: 10000;
-  transition: width 0.2s;
-}
-
-.sidebar-expand-btn:hover {
-  width: 30px;
-}
-
-.episode-search {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #0d0d0f;
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 6px;
-  padding: 8px 12px;
-}
-
-.search-icon {
-  font-size: 14px;
-  opacity: 0.6;
-}
-
-.episode-search-input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  color: #fff;
-  font-size: 16px;
-  outline: none;
-}
-
-.episode-search-input::placeholder {
-  color: rgba(255,255,255,0.4);
-}
-
-/* Episode List */
-.episode-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px 0;
-}
-
-.episode-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.episode-list::-webkit-scrollbar-track {
-  background: rgba(255,255,255,0.02);
-}
-
-.episode-list::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.15);
-  border-radius: 3px;
-}
-
-.episode-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.25);
-}
-
-.episode-item {
+/* ---- Top bar ---- */
+.player-bar {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  border-left: 3px solid transparent;
+  flex-shrink: 0;
+  padding: max(10px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 10px
+    max(16px, env(safe-area-inset-left));
+  border-bottom: 1px solid var(--player-line);
 }
 
-.episode-item:hover {
-  background: rgba(255,255,255,0.05);
-}
-
-.episode-item.active {
-  background: linear-gradient(90deg, rgba(166,77,121,0.2) 0%, rgba(166,77,121,0.05) 100%);
-  border-left-color: var(--accent);
-}
-
-.episode-number {
-  color: rgba(255,255,255,0.5);
-  font-size: 14px;
-  font-weight: 500;
-  min-width: 24px;
-}
-
-.episode-item.active .episode-number {
-  color: var(--accent);
-}
-
-.episode-name {
+.player-heading {
   flex: 1;
-  color: #e0e0e0;
-  font-size: 14px;
+  min-width: 0;
+}
+
+.player-title,
+.player-subtitle {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.episode-item.active .episode-name {
-  color: #fff;
-  font-weight: 500;
-}
-
-.episode-playing-icon {
-  color: var(--accent);
-  font-size: 12px;
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-/* Main Content Area */
-.player-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  overflow: hidden;
-}
-
-/* Top Bar */
-.player-top-bar {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 20px;
-  background: #0d0d0f;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-.player-back-btn {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: #fff;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border-radius: 50%;
+.player-title {
+  margin: 0;
   font-size: 18px;
-  cursor: pointer;
-  transition: all 0.2s;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.player-subtitle {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--player-dim);
+}
+
+.player-subtitle-ep {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.player-bar-actions {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  gap: 8px;
   flex-shrink: 0;
 }
 
-.player-back-btn:hover {
-  background: rgba(255,255,255,0.15);
-  border-color: rgba(255,255,255,0.2);
-  transform: scale(1.05);
-}
-
-.player-show-title {
-  color: #fff;
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Video Container */
-.player-video-container {
-  flex: 1;
-  display: flex;
+.player-icon-btn {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #000;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--player-line);
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.player-icon-btn:hover {
+  background: rgba(255,255,255,0.14);
+}
+
+.player-panel-toggle[aria-expanded='true'] {
+  background: rgba(166,77,121,0.25);
+  border-color: var(--accent);
+}
+
+/* ---- Video ---- */
+.player-layout {
+  display: flex;
+  flex: 1;
   min-height: 0;
 }
 
-.player-iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-}
-
-.player-loading {
-  color: #fff;
-  font-size: 18px;
-  font-weight: 500;
-}
-
-/* Player Controls Bar */
-.player-controls-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  background: #16161a;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.player-controls-left {
+.player-primary {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  flex: 1;
+  min-width: 0;
 }
 
-.now-watching {
-  color: #fff;
-  font-size: 14px;
+.player-stage {
+  display: grid;
+  place-items: center;
+  flex: 1;
+  min-height: 0;
+  background: #000;
+  /* Lets .player-screen size itself against the stage's width *and* height. */
+  container-type: size;
 }
 
-.now-watching strong {
-  color: var(--accent);
+.player-screen {
+  position: relative;
+  width: 100%;
+  max-height: 100%;
+  width: min(100cqw, 100cqh * 16 / 9);
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #000;
 }
 
-.server-hint {
-  color: rgba(255,255,255,0.5);
-  font-size: 12px;
+.player-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 
-.player-controls-center {
+.player-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  background: #000;
+}
+
+.player-cover-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.3;
+}
+
+.player-cover .state-spinner {
+  position: relative;
+}
+
+.player-screen .player-state {
+  position: absolute;
+  inset: 0;
+  min-height: 0;
+}
+
+/* ---- Prev / next ---- */
+.episode-nav {
   display: flex;
+  justify-content: space-between;
   gap: 12px;
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border-top: 1px solid var(--player-line);
+  background: var(--player-surface);
 }
 
-.control-btn {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.12);
+.episode-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 50%;
+  min-height: 44px;
+  padding: 6px 14px;
+  border: 1px solid var(--player-line);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.06);
   color: #fff;
-  padding: 10px 20px;
-  border-radius: 6px;
+  font: inherit;
   font-size: 14px;
-  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.15s, border-color 0.15s;
 }
 
-.control-btn:hover:not(:disabled) {
+.episode-nav-btn:hover:not(:disabled) {
   background: var(--accent);
   border-color: var(--accent);
 }
 
-.control-btn:disabled {
+.episode-nav-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
-/* Season Selector in Player */
-.player-page .season-selector {
+.episode-nav-next {
+  text-align: right;
+}
+
+.episode-nav-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.episode-nav-label {
+  font-weight: 600;
+}
+
+.episode-nav-detail {
+  font-size: 12px;
+  color: var(--player-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.episode-nav-btn:hover:not(:disabled) .episode-nav-detail {
+  color: rgba(255,255,255,0.85);
+}
+
+/* ---- Episode panel ---- */
+.episode-panel {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: var(--player-panel-width);
+  min-height: 0;
+  padding-right: env(safe-area-inset-right);
+  border-left: 1px solid var(--player-line);
+  background: var(--player-surface);
+}
+
+.is-panel-collapsed .episode-panel {
+  display: none;
+}
+
+.episode-panel-header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px 20px;
-  background: #1a1a1e;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--player-line);
 }
 
-.season-label {
-  color: rgba(255,255,255,0.7);
-  font-size: 14px;
-  font-weight: 500;
+.episode-panel-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
 }
 
-.season-tabs {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.season-tab {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
+/* Native <select>: the OS picker is the best season chooser on phones.
+   Font size stays 16px (variables.css) so iOS doesn't zoom on focus. */
+.episode-panel-season {
+  min-width: 0;
+  max-width: 65%;
+  padding: 8px 34px 8px 12px;
+  border: 1px solid var(--player-line);
+  border-radius: 8px;
+  background: var(--player-surface-2)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")
+    no-repeat right 12px center;
   color: #fff;
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
+  font-family: inherit;
+  text-overflow: ellipsis;
+  appearance: none;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
-.season-tab:hover {
-  background: rgba(255,255,255,0.12);
-  border-color: rgba(255,255,255,0.2);
+.episode-panel-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 16px 4px;
+  padding: 0 12px;
+  border: 1px solid var(--player-line);
+  border-radius: 8px;
+  background: var(--player-bg);
+  color: var(--player-dim);
 }
 
-.season-tab.active {
-  background: var(--accent);
+.episode-panel-filter:focus-within {
   border-color: var(--accent);
 }
 
-/* ---- Mobile Episode Section ---- */
-.mobile-episode-section {
-  display: none;
+.episode-panel-filter input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  outline: none;
+}
+
+.episode-panel-filter input::placeholder {
+  color: rgba(255,255,255,0.4);
+}
+
+.episode-list {
+  /* Positioned so rows' offsetTop is relative to the list (scroll-to-current). */
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.2) transparent;
+}
+
+.episode-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 10px;
+  transition: background 0.15s;
+}
+
+.episode-row:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+.episode-row.is-current {
+  background: rgba(166,77,121,0.22);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.episode-row.is-upcoming {
+  opacity: 0.6;
+}
+
+.episode-row-thumb {
+  position: relative;
+  flex-shrink: 0;
+  width: 128px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.episode-row-playing {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: rgba(0,0,0,0.55);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.episode-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.episode-row-meta {
+  font-size: 12px;
+  color: var(--player-dim);
+}
+
+.episode-row.is-current .episode-row-meta {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.episode-row-name {
+  display: -webkit-box;
+  font-size: 14px;
+  line-height: 1.35;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.episode-row-skeleton {
+  height: 88px;
+  margin-bottom: 4px;
+  background: rgba(255,255,255,0.04);
+  animation: player-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes player-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.episode-panel-empty {
+  margin: 0;
+  padding: 24px 16px;
+  color: var(--player-dim);
+  text-align: center;
+}
+
+.episode-panel .episode-panel-state {
+  min-height: 0;
+  padding: 24px 16px;
 }
 
 /* ================================
    Responsive
    ================================ */
 
-@media (max-width: 768px) {
-  /* Stack vertically: the sidebar is replaced by the mobile episode list */
-  .player-page-tv {
-    flex-direction: column;
-    overflow-y: auto;
+@media (max-width: 1024px) {
+  .player-page {
+    --player-panel-width: 320px;
   }
 
-  .episode-sidebar,
-  .sidebar-expand-btn {
+  .episode-row-thumb {
+    width: 104px;
+  }
+}
+
+@media (max-width: 768px) {
+  .player-bar {
+    padding-bottom: 8px;
+  }
+
+  .player-title {
+    font-size: 16px;
+  }
+
+  .player-subtitle {
+    font-size: 12px;
+  }
+
+  /* TV: one scrolling column. */
+  .player-page-tv {
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .player-page-tv .player-layout {
+    flex-direction: column;
+  }
+
+  .player-page-tv .player-primary {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    flex: none;
+  }
+
+  .player-page-tv .player-stage {
+    display: block;
+    flex: none;
+    container-type: normal;
+  }
+
+  .player-page-tv .player-screen {
+    width: 100%;
+  }
+
+  .player-panel-toggle {
     display: none;
   }
 
-  .player-main {
+  .player-page-tv .episode-panel,
+  .player-page-tv.is-panel-collapsed .episode-panel {
+    display: flex;
+    width: auto;
+    padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    border-left: 0;
+  }
+
+  .player-page-tv .episode-list {
     flex: none;
     overflow: visible;
   }
 
-  .player-video-container {
-    flex: none;
-    aspect-ratio: 16/9;
-    min-height: auto;
+  .episode-nav {
+    padding: 8px max(12px, env(safe-area-inset-right)) 8px max(12px, env(safe-area-inset-left));
   }
 
-  .mobile-episode-section {
-    display: block;
-    padding: 16px;
-    background: #16161a;
-    border-top: 1px solid rgba(255,255,255,0.06);
-  }
-
-  .mobile-section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    padding: 16px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-  }
-
-  .mobile-section-title {
-    color: #fff;
-    font-size: 16px;
-    font-weight: 600;
-  }
-
-  .mobile-episode-search {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: #0d0d0f;
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 6px;
-    padding: 6px 10px;
-    width: 140px;
-  }
-
-  .mobile-episode-search input {
+  .episode-nav-btn {
     flex: 1;
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-size: 16px;
-    outline: none;
-    width: 100%;
-  }
-
-  .mobile-episode-search input::placeholder {
-    color: rgba(255,255,255,0.4);
-  }
-
-  .mobile-episode-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 12px;
-    max-height: 300px;
-    overflow-y: auto;
-  }
-
-  .mobile-episode-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: left;
-  }
-
-  .mobile-episode-card:hover,
-  .mobile-episode-card:active {
-    background: rgba(255,255,255,0.08);
-  }
-
-  .mobile-episode-card.active {
-    background: rgba(166,77,121,0.2);
-    border-color: var(--accent);
-  }
-
-  .mobile-episode-card .ep-num {
-    color: #fff;
-    font-size: 18px;
-    font-weight: 700;
-    min-width: 30px;
-    margin-bottom: 4px;
-  }
-
-  .mobile-episode-card.active .ep-num {
-    color: var(--accent);
-  }
-
-  .mobile-episode-card .ep-name {
-    flex: 1;
-    color: rgba(255,255,255,0.6);
-    font-size: 11px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .mobile-episode-card.active .ep-name {
-    color: #fff;
-    font-weight: 500;
-  }
-
-  .mobile-episode-card .ep-playing {
-    color: var(--accent);
-    font-size: 10px;
-    font-weight: 600;
-    margin-top: 4px;
-  }
-
-  .player-controls-bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    padding: 12px 16px;
-  }
-
-  .player-controls-left {
-    text-align: center;
-  }
-
-  .player-controls-center {
-    justify-content: center;
-  }
-
-  .control-btn {
-    flex: 1;
-  }
-
-  .player-page .season-selector {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 12px 16px;
-  }
-
-  .season-tabs {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    flex-wrap: nowrap;
-    padding-bottom: 4px;
-  }
-
-  .season-tab {
-    flex-shrink: 0;
-    padding: 8px 16px;
-    font-size: 13px;
-    white-space: nowrap;
+    max-width: none;
   }
 }
 
 @media (max-width: 480px) {
-  .player-top-bar {
-    padding: 10px 12px;
+  .player-bar {
+    gap: 8px;
   }
 
-  .player-show-title {
-    font-size: 14px;
-  }
-
-  .player-back-btn {
+  .player-icon-btn {
     width: 36px;
     height: 36px;
-    font-size: 16px;
   }
 
-  .player-controls-bar {
-    text-align: center;
-    padding: 12px;
-  }
-
-  .control-btn {
-    padding: 8px 14px;
+  .episode-nav-btn {
+    padding: 6px 10px;
     font-size: 13px;
   }
 
-  .mobile-episode-grid {
-    gap: 6px;
-    padding: 10px;
+  .episode-row {
+    gap: 10px;
   }
 
-  .mobile-episode-card {
-    padding: 10px 12px;
-  }
-
-  .mobile-episode-card .ep-num {
-    font-size: 14px;
-    min-width: 28px;
-  }
-
-  .mobile-episode-card .ep-name {
-    font-size: 13px;
+  .episode-row-thumb {
+    width: 112px;
   }
 }
 
-/* Safe-area insets for notched phones. Must stay after the media blocks:
-   these paddings apply at every width. */
-.player-page {
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
-}
+/* Phones in landscape: the video takes the whole screen height; scroll down for episodes. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .player-page-tv {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
 
-.player-top-bar {
-  padding-left: max(16px, env(safe-area-inset-left));
-  padding-right: max(16px, env(safe-area-inset-right));
-  padding-top: env(safe-area-inset-top);
-}
+  .player-page-tv .player-layout {
+    flex-direction: column;
+  }
 
-.player-controls-bar {
-  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  .player-page-tv .player-primary {
+    position: static;
+    flex: none;
+  }
+
+  .player-page-tv .player-stage {
+    display: grid;
+    flex: none;
+    height: 100vh;
+    height: 100dvh;
+    container-type: size;
+  }
+
+  .player-page-tv .player-screen {
+    width: 100%;
+    width: min(100cqw, 100cqh * 16 / 9);
+  }
+
+  .player-panel-toggle {
+    display: none;
+  }
+
+  .player-page-tv .episode-panel,
+  .player-page-tv.is-panel-collapsed .episode-panel {
+    display: flex;
+    width: auto;
+    border-left: 0;
+  }
+
+  .player-page-tv .episode-list {
+    flex: none;
+    overflow: visible;
+  }
 }

@@ -1,4 +1,4 @@
-//! CORS policy: explicit origin list plus a `https://*.vercel.app` predicate. No credentials.
+//! CORS policy: explicit origin list plus this account's own Vercel deployments. No credentials.
 
 use std::{sync::Arc, time::Duration};
 
@@ -52,7 +52,16 @@ impl CorsConfig {
     }
 }
 
-/// Returns true for `https://<sub>.vercel.app` (any depth of DNS-label subdomains).
+/// The Vercel scope (team slug) that owns the frontend projects. Preview URLs end with it:
+/// `<project>-<hash>-<scope>.vercel.app` and `<project>-git-<branch>-<scope>.vercel.app`.
+pub const VERCEL_SCOPE: &str = "infinitys-projects-38b16f39";
+
+/// Production aliases of the Vercel projects (`<project>.vercel.app`).
+pub const VERCEL_PROJECTS: &[&str] = &["any-vod", "any-vod-frontend"];
+
+/// Returns true for this account's own Vercel deployments: a project's production alias, or
+/// any preview URL under [`VERCEL_SCOPE`]. Other `*.vercel.app` sites can be deployed by anyone,
+/// so they are not allowed.
 pub fn is_vercel_preview(origin: &str) -> bool {
     let Some(host) = origin
         .strip_prefix("https://")
@@ -60,10 +69,17 @@ pub fn is_vercel_preview(origin: &str) -> bool {
     else {
         return false;
     };
-    !host.is_empty()
-        && host.split('.').all(|label| {
-            !label.is_empty() && label.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
-        })
+    let is_label = !host.is_empty()
+        && host
+            .chars()
+            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-');
+    if !is_label {
+        return false;
+    }
+    VERCEL_PROJECTS.contains(&host)
+        || host
+            .strip_suffix(VERCEL_SCOPE)
+            .is_some_and(|prefix| prefix.len() > 1 && prefix.ends_with('-'))
 }
 
 /// Whether a browser `Origin` header value is allowed.
@@ -110,12 +126,40 @@ mod tests {
     #[test]
     fn vercel_predicate() {
         let cfg = CorsConfig::default();
-        assert!(is_allowed_origin(&cfg, "https://anyvod.vercel.app"));
+        // own production aliases and previews
+        assert!(is_allowed_origin(&cfg, "https://any-vod.vercel.app"));
         assert!(is_allowed_origin(
             &cfg,
-            "https://anyvod-git-main-me.vercel.app"
+            "https://any-vod-frontend.vercel.app"
         ));
-        assert!(is_allowed_origin(&cfg, "https://a.b.vercel.app"));
+        assert!(is_allowed_origin(
+            &cfg,
+            "https://any-vod-git-main-infinitys-projects-38b16f39.vercel.app"
+        ));
+        assert!(is_allowed_origin(
+            &cfg,
+            "https://any-vod-frontend-k3j2h1g0f-infinitys-projects-38b16f39.vercel.app"
+        ));
+        // anyone else's vercel.app site
+        assert!(!is_allowed_origin(&cfg, "https://anyvod.vercel.app"));
+        assert!(!is_allowed_origin(&cfg, "https://evil.vercel.app"));
+        assert!(!is_allowed_origin(
+            &cfg,
+            "https://evil-git-main-someone-else.vercel.app"
+        ));
+        assert!(!is_allowed_origin(
+            &cfg,
+            "https://evilinfinitys-projects-38b16f39.vercel.app"
+        ));
+        assert!(!is_allowed_origin(
+            &cfg,
+            "https://infinitys-projects-38b16f39.vercel.app"
+        ));
+        assert!(!is_allowed_origin(
+            &cfg,
+            "https://a.any-vod-git-x-infinitys-projects-38b16f39.vercel.app"
+        ));
+        assert!(!is_allowed_origin(&cfg, "https://a.b.vercel.app"));
         assert!(!is_allowed_origin(&cfg, "https://vercel.app"));
         assert!(!is_allowed_origin(&cfg, "https://.vercel.app"));
         assert!(!is_allowed_origin(&cfg, "http://anyvod.vercel.app"));

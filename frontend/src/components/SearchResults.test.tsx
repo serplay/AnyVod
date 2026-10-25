@@ -64,10 +64,19 @@ describe('SearchResults', () => {
     }
     expect(useSearchMock).toHaveBeenCalledWith(expected)
     expect(screen.getByRole('heading', { name: 'Search Results for "dune"' })).toBeInTheDocument()
-    expect(screen.getByText('45 results found')).toBeInTheDocument()
+    // genres/min_rating are applied per page, so TMDB's total isn't the match count
+    expect(screen.getByText('2 matches on page 2 of 3')).toBeInTheDocument()
+    expect(screen.queryByText('45 results found')).not.toBeInTheDocument()
     expect(screen.getByText('Dune')).toBeInTheDocument()
     expect(screen.getByText('Dune: Prophecy')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '2' })).toHaveAttribute('aria-current', 'page')
+  })
+
+  it('shows the TMDB total when no per-page filters are active', () => {
+    mockResult({ data: { page: 1, total_pages: 3, total_results: 45, results: [] } })
+    renderAt('/search?q=dune&type=movie&year=2021')
+    expect(screen.getByText('45 results found')).toBeInTheDocument()
+    expect(screen.queryByText(/one page of results at a time/)).not.toBeInTheDocument()
   })
 
   it('shows an error state with retry', () => {

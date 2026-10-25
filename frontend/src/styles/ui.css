@@ -57,8 +57,7 @@ a.person-credit-card {
 }
 
 a.episode-card,
-a.episode-item,
-a.mobile-episode-card {
+a.episode-row {
   color: inherit;
   text-decoration: none;
 }
@@ -68,8 +67,6 @@ a.movie-card:focus-visible,
 a.similar-card:focus-visible,
 a.person-credit-card:focus-visible,
 a.episode-card:focus-visible,
-a.episode-item:focus-visible,
-a.mobile-episode-card:focus-visible,
 a.cast-card:focus-visible {
   outline: 2px solid var(--accent, #a64d79);
   outline-offset: 2px;

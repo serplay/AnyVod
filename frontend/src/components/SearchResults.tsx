@@ -3,7 +3,7 @@ import MovieList from './MovieList'
 import { ErrorState, Loading } from './states'
 import { useSearch } from '../api/hooks'
 import type { MediaListItem } from '../api/types'
-import { parseSearchParams, searchPath } from '../lib/searchParams'
+import { isFilteredPerPage, parseSearchParams, searchPath } from '../lib/searchParams'
 import { getPageNumbers } from '../lib/pagination'
 
 /** Results for the search described by the current URL (/search?q=...). */
@@ -33,6 +33,8 @@ export default function SearchResults() {
     : (data?.results ?? [])
   const totalPages = data?.total_pages ?? 1
   const totalResults = data?.total_results ?? 0
+  const filteredPerPage = isFilteredPerPage(params)
+  const matches = results.length
 
   const goToPage = (p: number) => {
     if (p < 1 || p > totalPages || p === page) return
@@ -44,7 +46,16 @@ export default function SearchResults() {
     <div className="search-results">
       <div className="search-results-header">
         <h2>Search Results for &quot;{params.query}&quot;</h2>
-        {data && <p className="search-results-count">{totalResults.toLocaleString()} results found</p>}
+        {data && (
+          <p className="search-results-count">
+            {filteredPerPage
+              ? `${matches} ${matches === 1 ? 'match' : 'matches'} on page ${page} of ${totalPages}`
+              : `${totalResults.toLocaleString()} results found`}
+          </p>
+        )}
+        {data && (filteredPerPage || params.sort_by) && (
+          <p className="search-results-count">Filters and sorting apply to one page of results at a time.</p>
+        )}
       </div>
 
       {error ? (

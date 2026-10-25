@@ -21,8 +21,8 @@ services:
       - key: TMDB_API_KEY
         sync: false
       # Allowed CORS origins (comma separated). Set in the dashboard to the frontend's URL,
-      # e.g. https://anyvod-frontend.onrender.com (*.vercel.app and vod.losingsanity.{com,xyz}
-      # are always allowed).
+      # e.g. https://anyvod-frontend.onrender.com (this account's own Vercel deployments and
+      # vod.losingsanity.{com,xyz} are always allowed).
       - key: FRONTEND_ORIGIN
         sync: false
       - key: ENVIRONMENT
