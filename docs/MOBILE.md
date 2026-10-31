@@ -35,9 +35,9 @@ Playback is a third-party iframe (the vidsrc embed). We don't control the video 
 **Still to do:**
 - [ ] Audit the other pages (Home, details, search, person) at 360–430px wide: tap target sizes, horizontal overflow, hero image weight.
 - [ ] Search filters: move them into a bottom sheet on phones.
-- [ ] Add a "Continue watching" row on Home and a "Resume S2·E5" label on the details page's play button, using `loadLastEpisode` from `src/lib/episodes.ts`.
-- [ ] **Landscape fullscreen on Android.** Add our own fullscreen button that calls `requestFullscreen()` on `.player-stage` and then `screen.orientation.lock('landscape')`. This works on Android Chrome. iPhone Safari only supports fullscreen for `<video>` elements, so iPhone users keep the embed's own fullscreen button. Show the button only when `document.fullscreenEnabled` is true.
-- [ ] Media Session metadata (title and artwork on the lock screen): not possible, because the media element lives inside the cross-origin iframe. Listed here so nobody spends time on it.
+- [x] Add a "Continue watching" row on Home and a "Resume S2·E5" label on the details page's play button, using `loadLastEpisode` from `src/lib/episodes.ts`.
+- [x] **Landscape fullscreen on Android.** Add our own fullscreen button that calls `requestFullscreen()` on `.player-stage` and then `screen.orientation.lock('landscape')`. This works on Android Chrome. iPhone Safari only supports fullscreen for `<video>` elements, so iPhone users keep the embed's own fullscreen button. Show the button only when `document.fullscreenEnabled` is true.
+- [x] ~~Media Session metadata (title and artwork on the lock screen): not possible, because the media element lives inside the cross-origin iframe. Listed here so nobody spends time on it.~~ Won't do.
 
 ## Phase 2: PWA (about 1–2 days)
 
@@ -51,7 +51,7 @@ Playback is a third-party iframe (the vidsrc embed). We don't control the video 
   - API calls use network-first with a short cache, so the app opens offline and shows the existing error states.
   - Never cache the embed host.
 - Install prompt: capture `beforeinstallprompt` on Android and show a small "Install app" button. iOS has no such event, so show a one-time "Share → Add to Home Screen" hint there.
-- Headers: nginx's CSP already allows same-origin workers and manifests through `default-src 'self'`. On Vercel, check that `sw.js` is served with `Cache-Control: no-cache`.
+- Headers: nginx's CSP already allows same-origin workers and manifests through `default-src 'self'`. On Render, add a `headers` entry in `render.yaml` so `sw.js` is served with `Cache-Control: no-cache`.
 - Standalone mode has no browser back button, so the player's Back button must always work. It does: it falls back to the details page when there's no in-app history.
 
 ## Phase 3: Android shell with Capacitor (optional, about 3–5 days)

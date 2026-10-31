@@ -262,9 +262,9 @@ About 8–11 days in total. Steps 2–6 can be done in any order once step 1 is 
 - The Playwright screenshot job from MOBILE.md (390×844, 844×390, 1440×900) is extended to `/`, `/movie/:id`, `/tv/:id`, `/search?q=` and `/person/:id`.
 - Real devices before each release: iPhone Safari and Android Chrome, in portrait and landscape.
 
-## Open decisions
+## Decisions (settled by the overhaul)
 
-1. **Accent colour.** The plan uses orange `#ff7a1f`, from the logo. Alternatives that work on this ground: acid yellow `#e8ff3a` with black text, or plain white with no accent colour at all.
-2. **Typeface.** The plan uses Clash Grotesk. The safer option is to load Inter properly (it is already named in the CSS but never loaded).
-3. **Logo.** Redraw it as a flat single-colour mark (recommended), or keep the gradient orb as the only exception.
-4. **Light theme.** Not in this plan. The tokens make it a later add-on: a second `:root[data-theme="light"]` block.
+1. **Accent colour:** orange `#ff7a1f`, from the logo (`--accent` in `src/styles/tokens.css`).
+2. **Typeface:** Clash Grotesk, self-hosted from `public/fonts/`.
+3. **Logo:** redrawn as a flat single-colour mark.
+4. **Light theme:** not built. The tokens make it a later add-on: a second `:root[data-theme="light"]` block.

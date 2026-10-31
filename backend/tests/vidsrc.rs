@@ -92,7 +92,7 @@ async fn latest_upstream_error_passthrough() {
         .await;
     let res = t.get("/vidsrc/latest/movies?page=99").await;
     assert_eq!(res.status, StatusCode::NOT_FOUND);
-    assert_eq!(res.body, json!({"detail": "nope"}));
+    assert_eq!(res.body, json!({"detail": "Not Found"}));
 }
 
 #[tokio::test]

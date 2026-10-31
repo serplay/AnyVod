@@ -56,9 +56,13 @@ async fn serve(config: Config) -> Result<(), Box<dyn std::error::Error>> {
     let state = AppState::new(config)?;
     let app = router(state);
     let listener = tokio::net::TcpListener::bind(addr).await?;
-    axum::serve(listener, app)
-        .with_graceful_shutdown(shutdown_signal())
-        .await?;
+    // Connect info gives the rate limiter the peer address when no proxy header is present.
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .with_graceful_shutdown(shutdown_signal())
+    .await?;
     tracing::info!("shut down cleanly");
     Ok(())
 }

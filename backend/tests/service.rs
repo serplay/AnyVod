@@ -51,7 +51,6 @@ async fn cors_preflight() {
         "https://frontend.example",
         "https://vod.losingsanity.com",
         "https://vod.losingsanity.xyz",
-        "https://any-vod-git-feature-infinitys-projects-38b16f39.vercel.app",
     ] {
         let res = t.request(preflight(origin)).await;
         assert!(res.status.is_success(), "{origin}");
@@ -66,7 +65,7 @@ async fn cors_preflight() {
     for origin in [
         "https://evil.example",
         "http://localhost:5173",
-        "https://someone-else.vercel.app",
+        "https://any-vod.vercel.app",
     ] {
         let res = t.request(preflight(origin)).await;
         assert!(
@@ -114,4 +113,50 @@ async fn responses_are_gzip_compressed_when_accepted() {
         .await;
     assert_eq!(res.status, StatusCode::OK);
     assert_eq!(res.headers[header::CONTENT_ENCODING], "gzip");
+}
+
+#[tokio::test]
+async fn clients_over_the_rate_limit_get_429() {
+    use anyvod_backend::{AppState, Config, router};
+    let config = Config::from_lookup(|k| match k {
+        "TMDB_API_KEY" => Some("k".into()),
+        "TMDB_BASE_URL" => Some("http://127.0.0.1:1/3".into()),
+        "RATE_LIMIT_PER_SEC" => Some("0.001".into()),
+        "RATE_LIMIT_BURST" => Some("2".into()),
+        _ => None,
+    })
+    .unwrap();
+    let app = router(AppState::new(config).unwrap());
+    let from = |ip: &'static str| {
+        Request::get("/")
+            .header("cf-connecting-ip", ip)
+            .header(header::ORIGIN, "https://vod.losingsanity.com")
+            .body(Body::empty())
+            .unwrap()
+    };
+    for _ in 0..2 {
+        assert_eq!(
+            common::request(&app, from("1.1.1.1")).await.status,
+            StatusCode::OK
+        );
+    }
+    let res = common::request(&app, from("1.1.1.1")).await;
+    assert_eq!(res.status, StatusCode::TOO_MANY_REQUESTS);
+    assert!(res.headers.contains_key(header::RETRY_AFTER));
+    assert!(res.body["detail"].is_string());
+    // The browser must be able to read the 429.
+    assert_eq!(
+        res.headers[header::ACCESS_CONTROL_ALLOW_ORIGIN],
+        "https://vod.losingsanity.com"
+    );
+    // Other clients and health checks are unaffected.
+    assert_eq!(
+        common::request(&app, from("2.2.2.2")).await.status,
+        StatusCode::OK
+    );
+    let health = Request::get("/health")
+        .header("cf-connecting-ip", "1.1.1.1")
+        .body(Body::empty())
+        .unwrap();
+    assert_eq!(common::request(&app, health).await.status, StatusCode::OK);
 }

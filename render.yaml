@@ -21,14 +21,18 @@ services:
       - key: TMDB_API_KEY
         sync: false
       # Allowed CORS origins (comma separated). Set in the dashboard to the frontend's URL,
-      # e.g. https://vod.losingsanity.com (this account's own Vercel deployments and
-      # vod.losingsanity.{com,xyz} are always allowed).
+      # e.g. https://vod.losingsanity.com (vod.losingsanity.{com,xyz} are always allowed).
       - key: FRONTEND_ORIGIN
         sync: false
       - key: ENVIRONMENT
         value: production
       - key: VIDSRC_EMBED_DOMAIN
         value: vidsrc.sh
+      # Per-client-IP limit (token bucket). Set either to 0 to turn limiting off.
+      - key: RATE_LIMIT_PER_SEC
+        value: "10"
+      - key: RATE_LIMIT_BURST
+        value: "60"
 
   # Frontend: built by Render (npm only, no Rust) and served from its CDN.
   - type: web
@@ -48,3 +52,32 @@ services:
       - type: rewrite
         source: /*
         destination: /index.html
+    # Security headers for every path (the SPA rewrite serves index.html under all of them).
+    # Keep the CSP in step with frontend/security-headers.conf (self-hosted nginx), with
+    # VITE_API_BASE (connect-src) and with the embed provider (frame-src, see src/config.ts).
+    headers:
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://image.tmdb.org; font-src 'self'; connect-src 'self' https://vapi.losingsanity.com; frame-src https://vidsrc.sh https://www.youtube-nocookie.com https://www.youtube.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests"
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Strict-Transport-Security
+        value: max-age=31536000
+      - path: /*
+        name: Cross-Origin-Opener-Policy
+        value: same-origin
+      - path: /*
+        name: Permissions-Policy
+        value: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+      # Vite content-hashes everything under /assets, so it can be cached forever.
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable

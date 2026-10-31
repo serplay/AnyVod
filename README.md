@@ -45,16 +45,18 @@ npm run typecheck && npm run lint && npm test
 | `TMDB_API_KEY` | backend | – | Required. The backend refuses to start without it. |
 | `PORT` | backend | `8000` | Render sets this automatically. |
 | `ENVIRONMENT` | backend | `development` | `development` also allows CORS from localhost:5173 and localhost:3000. |
-| `FRONTEND_ORIGIN` | backend | – | Comma-separated list of extra allowed CORS origins. The project's own Vercel deployments (`any-vod*.vercel.app` and previews under the `infinitys-projects-38b16f39` scope) are always allowed. |
+| `FRONTEND_ORIGIN` | backend | – | Comma-separated list of extra allowed CORS origins. `https://vod.losingsanity.com` and `.xyz` are always allowed. |
 | `VIDSRC_EMBED_DOMAIN` | backend | `vidsrc.sh` | Domain used to build embed URLs. |
 | `RUST_LOG` | backend | `info` | Log filter, e.g. `anyvod_backend=debug`. |
+| `RATE_LIMIT_PER_SEC` | backend | `10` | Sustained requests per second per client IP. `0` disables rate limiting. |
+| `RATE_LIMIT_BURST` | backend | `60` | Requests a client may burst before being limited. `0` disables rate limiting. |
 | `VITE_API_BASE` | frontend (build time) | dev: `http://localhost:8000`; prod: same origin | Base URL of the backend. |
+| `VITE_EMBED_BASE` | frontend (build time) | `https://vidsrc.sh` | Origin of the player embeds. If you change it, update `frame-src` in the CSP (`render.yaml`, `frontend/security-headers.conf`). |
 
 ## Deployment
 
-- **Render:** `render.yaml` defines the backend (Docker, health check on `/health`) and the frontend (static site).
-- **Docker:** `docker compose -f docker-compose.prod.yml up -d --build` serves the frontend on port 80 and the API on port 8000. See [DOCKER.md](DOCKER.md).
-- **Vercel** (frontend only): `frontend/vercel.json` rewrites every route to the SPA.
+- **Render** (production): `render.yaml` defines the backend (a prebuilt GHCR image, health check on `/health`) and the frontend (a static site with the SPA rewrite and security headers, including the CSP).
+- **Docker** (self-hosting): `docker compose -f docker-compose.prod.yml up -d --build` serves the frontend on port 80 and the API on port 8000. See [DOCKER.md](DOCKER.md).
 
 CI (`.github/workflows/ci.yml`) runs the following on each push and pull request:
 - backend: `cargo fmt`, `clippy` and tests

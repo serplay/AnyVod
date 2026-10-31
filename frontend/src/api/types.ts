@@ -12,6 +12,8 @@ export interface Paged<T> {
   results: T[]
   total_pages: number
   total_results: number
+  /** Search only: how many items the filters were applied to, when they ran on the server. */
+  filtered_from?: number
 }
 
 export interface Genre {
@@ -131,10 +133,6 @@ export interface PersonCredit {
 
 export interface PersonCredits {
   cast: PersonCredit[]
-}
-
-export interface EmbedResponse {
-  embed_url: string
 }
 
 export interface Availability {

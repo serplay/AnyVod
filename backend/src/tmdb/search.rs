@@ -7,7 +7,7 @@ use serde_json::{Map, Value};
 
 use crate::{
     error::{AppError, AppResult},
-    extract::{opt_enum, opt_parse},
+    extract::{MAX_PAGE, checked_page, checked_rating, opt_enum, opt_parse},
 };
 
 use super::client::TmdbClient;
@@ -65,6 +65,13 @@ impl ExternalIdSource {
         })
     }
 }
+
+/// Longest accepted `query`, in characters. TMDB titles are far shorter than this.
+pub const MAX_QUERY_CHARS: usize = 200;
+
+/// When a filter runs locally, one page of our results is built from this many TMDB pages,
+/// so a filter like "rated 8+" leaves a usefully full page instead of two or three items.
+pub const SCAN_PAGES: u32 = 3;
 
 fn default_page() -> u32 {
     1
@@ -216,24 +223,33 @@ pub async fn search(client: &TmdbClient, p: SearchParams) -> AppResult<Value> {
         let source = exid.external_source().ok_or_else(|| {
             AppError::BadRequest("exid `tmdb` is not supported; use the TMDB detail routes".into())
         })?;
-        let path = format!("/find/{}", urlencoding::encode(p.query.trim()));
+        let id = p.query.trim();
+        if id.is_empty() || id.len() > 100 {
+            return Err(AppError::BadRequest(
+                "query must be an external id of at most 100 characters".into(),
+            ));
+        }
+        let path = format!("/find/{}", urlencoding::encode(id));
         let found = client
             .get(&path, &[("external_source", source.to_string())])
             .await?;
         return Ok((*found).clone());
     }
 
-    if let Some(min) = p.min_rating
-        && !(0.0..=10.0).contains(&min)
-    {
-        return Err(AppError::BadRequest(
-            "min_rating must be between 0 and 10".into(),
-        ));
+    let query = p.query.trim();
+    if query.is_empty() {
+        return Err(AppError::BadRequest("query must not be empty".into()));
     }
+    if query.chars().count() > MAX_QUERY_CHARS {
+        return Err(AppError::BadRequest(format!(
+            "query must be at most {MAX_QUERY_CHARS} characters"
+        )));
+    }
+    checked_rating("min_rating", p.min_rating)?;
     let genres = merged_genres(p.genre, p.genres.as_deref())?;
     let sort_by = p.sort_by.unwrap_or_default();
 
-    let mut params = vec![("query", p.query.clone()), ("page", p.page.to_string())];
+    let mut params = vec![("query", query.to_string())];
     let path = match p.kind {
         Some(SearchType::Person) => "/search/person",
         Some(SearchType::Movie) => {
@@ -246,31 +262,73 @@ pub async fn search(client: &TmdbClient, p: SearchParams) -> AppResult<Value> {
         None => "/search/multi",
     };
 
-    let upstream = client.get(path, &params).await?;
-    let mut body: Map<String, Value> = match &*upstream {
-        Value::Object(map) => map.clone(),
+    // Filters TMDB can't apply for us run here, on the fetched items.
+    let local_year = match p.kind {
+        Some(SearchType::Movie) | Some(SearchType::Person) => None, // sent upstream / n.a.
+        _ => p.year,
+    };
+    let filters_locally = p.kind != Some(SearchType::Person)
+        && (local_year.is_some() || p.min_rating.is_some_and(|m| m != 0.0) || !genres.is_empty());
+    let scan = if filters_locally { SCAN_PAGES } else { 1 };
+    let page = checked_page(Some(p.page), MAX_PAGE / scan)?;
+
+    // Our page N covers TMDB pages (N-1)*scan+1 ..= N*scan, fetched concurrently.
+    let first_upstream = (page - 1) * scan + 1;
+    let fetches = (first_upstream..first_upstream + scan).map(|n| {
+        let mut params = params.clone();
+        params.push(("page", n.to_string()));
+        async move { client.get(path, &params).await }
+    });
+    let pages = futures_util::future::try_join_all(fetches).await?;
+
+    let mut body: Map<String, Value> = match pages.first().map(|v| &**v) {
+        Some(Value::Object(map)) => map.clone(),
         _ => Map::new(),
     };
-    let mut results = match body.remove("results") {
-        Some(Value::Array(items)) => items,
-        _ => Vec::new(),
-    };
+    let mut seen = std::collections::HashSet::new();
+    let mut results: Vec<Value> = pages
+        .iter()
+        .filter_map(|v| v.get("results").and_then(Value::as_array))
+        .flatten()
+        // Results can shift between TMDB pages; never show the same title twice.
+        .filter(|item| {
+            let key = (
+                item.get("media_type")
+                    .and_then(Value::as_str)
+                    .map(str::to_owned),
+                item.get("id").and_then(Value::as_u64),
+            );
+            key.1.is_none() || seen.insert(key)
+        })
+        .cloned()
+        .collect();
+    let scanned = results.len();
 
-    if p.kind != Some(SearchType::Person) {
-        results = match p.kind {
-            Some(SearchType::Tv) => filter_by_year(results, p.year, Some("first_air_date")),
-            Some(SearchType::Movie) => results, // year was sent upstream
-            _ => filter_by_year(results, p.year, None),
-        };
+    if filters_locally {
+        results = filter_by_year(
+            results,
+            local_year,
+            (p.kind == Some(SearchType::Tv)).then_some("first_air_date"),
+        );
         results = filter_by_rating(results, p.min_rating);
         results = filter_by_genres(results, &genres);
+        // How many items the filters looked at, so the UI can say "4 of 60 match".
+        body.insert("filtered_from".into(), Value::from(scanned));
     }
     sort_results(&mut results, sort_by);
 
     body.insert("results".into(), Value::Array(results));
-    // Upstream pagination is preserved; only fill gaps so the shape is always complete.
-    body.entry("page").or_insert_with(|| Value::from(p.page));
-    body.entry("total_pages").or_insert_with(|| Value::from(0));
+    body.insert("page".into(), Value::from(page));
+    let upstream_pages = body
+        .get("total_pages")
+        .and_then(Value::as_u64)
+        .unwrap_or(0)
+        .min(u64::from(MAX_PAGE));
+    body.insert(
+        "total_pages".into(),
+        Value::from(upstream_pages.div_ceil(u64::from(scan))),
+    );
+    // total_results stays TMDB's count before local filtering.
     body.entry("total_results")
         .or_insert_with(|| Value::from(0));
     Ok(Value::Object(body))

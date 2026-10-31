@@ -1,11 +1,8 @@
 import { useState } from 'react'
-import { ErrorState } from './states'
-import type { EmbedResponse } from '../api/types'
 
 interface PlayerFrameProps {
-  embed: EmbedResponse | undefined
-  error: unknown
-  onRetry: () => void
+  /** Embed URL, from `embedUrl()` in lib/embed.ts. */
+  src: string
   /** Accessible name of the iframe, e.g. "Player: Show S1E2". */
   title: string
   /** Shown dimmed behind the spinner until the embed has loaded. */
@@ -14,18 +11,12 @@ interface PlayerFrameProps {
   reloadToken?: number
 }
 
-/** A 16:9 box with the embed iframe, or its loading / error state. */
-export default function PlayerFrame({ embed, error, onRetry, title, backdropUrl, reloadToken = 0 }: PlayerFrameProps) {
+/** A 16:9 box with the embed iframe, under a loading cover until it has loaded. */
+export default function PlayerFrame({ src, title, backdropUrl, reloadToken = 0 }: PlayerFrameProps) {
   return (
     <div className="player-screen">
-      {error ? (
-        <ErrorState error={error} onRetry={onRetry} title="Couldn't load the player" className="player-state" />
-      ) : embed?.embed_url ? (
-        // Keyed so a new episode or a reload starts with a fresh iframe and loading state.
-        <EmbedIframe key={`${embed.embed_url}#${reloadToken}`} src={embed.embed_url} title={title} backdropUrl={backdropUrl} />
-      ) : (
-        <LoadingCover backdropUrl={backdropUrl} />
-      )}
+      {/* Keyed so a new episode or a reload starts with a fresh iframe and loading state. */}
+      <EmbedIframe key={`${src}#${reloadToken}`} src={src} title={title} backdropUrl={backdropUrl} />
     </div>
   )
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Keeps the Render free-tier web services (backend API and the nginx frontend)
-# awake by requesting them regularly.
+# Keeps the Render free-tier backend API awake by requesting it regularly.
+# (The frontend is a Render static site, which never sleeps.)
 # Render spins a free web service down after 15 minutes without traffic, so run
 # this every 10 minutes from cron (on a Raspberry Pi or any always-on machine):
 #
@@ -16,7 +16,7 @@
 
 set -u
 
-URLS=${KEEPALIVE_URLS:-"https://vapi.losingsanity.com/health https://vod.losingsanity.com/"}
+URLS=${KEEPALIVE_URLS:-"https://vapi.losingsanity.com/health"}
 TIMEOUT=90   # seconds per attempt (covers a cold start)
 RETRIES=3
 RETRY_DELAY=15

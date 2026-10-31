@@ -1,6 +1,5 @@
 import { lazy, Suspense } from 'react'
 import { Route, Routes, useLocation } from 'react-router'
-import { Analytics } from '@vercel/analytics/react'
 import ScrollToTop from './components/ScrollTop'
 import ErrorBoundary from './components/ErrorBoundary'
 import TopBar from './components/TopBar'
@@ -53,7 +52,6 @@ export default function App() {
         </ErrorBoundary>
       </main>
       {isPlayer ? null : <Footer />}
-      <Analytics />
     </div>
   )
 }

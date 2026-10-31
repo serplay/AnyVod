@@ -51,12 +51,18 @@ export default function SearchResults() {
         {data && (
           <p className="search-results-count">
             {filteredPerPage
-              ? `${matches} ${matches === 1 ? 'match' : 'matches'} on page ${page} of ${totalPages}`
+              ? `${matches} ${matches === 1 ? 'match' : 'matches'}${
+                  data.filtered_from ? ` out of ${data.filtered_from} results` : ''
+                } on page ${page} of ${totalPages}`
               : `${totalResults.toLocaleString()} results found`}
           </p>
         )}
         {data && (filteredPerPage || params.sort_by) && (
-          <p className="search-results-count">Filters and sorting apply to one page of results at a time.</p>
+          <p className="search-results-count">
+            {filteredPerPage
+              ? 'Filters and sorting apply to each page of results; try the next page for more matches.'
+              : 'Sorting applies to one page of results at a time.'}
+          </p>
         )}
       </div>
 

@@ -227,10 +227,9 @@ async fn search_movie_filters_sorts_and_preserves_pagination() {
     Mock::given(method("GET"))
         .and(path("/3/search/movie"))
         .and(query_param("query", "fight club"))
-        .and(query_param("page", "2"))
         .and(query_param("year", "2010"))
         .respond_with(ResponseTemplate::new(200).set_body_json(search_page()))
-        .expect(1)
+        .expect(3)
         .mount(&t.tmdb)
         .await;
 
@@ -238,11 +237,48 @@ async fn search_movie_filters_sorts_and_preserves_pagination() {
         .get("/tmdb/search?query=fight%20club&page=2&type=movie&year=2010&min_rating=7&genre=28&genres=12&sort_by=rating_desc")
         .await;
     assert_eq!(res.status, StatusCode::OK);
-    // year is sent upstream for movies (no local filter), so id 3 (2011) stays.
+    // Filters run locally, so our page 2 is built from TMDB pages 4-6.
+    let mut pages: Vec<String> = t
+        .tmdb
+        .received_requests()
+        .await
+        .unwrap()
+        .iter()
+        .filter_map(|r| {
+            r.url
+                .query_pairs()
+                .find(|(k, _)| k == "page")
+                .map(|(_, v)| v.into_owned())
+        })
+        .collect();
+    pages.sort();
+    assert_eq!(pages, ["4", "5", "6"]);
+    // year is sent upstream for movies (no local filter), so id 3 (2011) stays. The mock
+    // returns the same items for every page; duplicates are dropped.
     assert_eq!(ids(&res.body), vec![3, 2, 4]);
     assert_eq!(res.body["page"], 2);
-    assert_eq!(res.body["total_pages"], 7);
+    assert_eq!(res.body["total_pages"], 3); // ceil(7 TMDB pages / 3)
     assert_eq!(res.body["total_results"], 130);
+    assert_eq!(res.body["filtered_from"], 5);
+}
+
+#[tokio::test]
+async fn search_without_local_filters_maps_pages_one_to_one() {
+    let t = TestApp::new().await;
+    Mock::given(method("GET"))
+        .and(path("/3/search/movie"))
+        .and(query_param("page", "2"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(search_page()))
+        .expect(1)
+        .mount(&t.tmdb)
+        .await;
+    let res = t
+        .get("/tmdb/search?query=x&type=movie&page=2&sort_by=rating_desc")
+        .await;
+    assert_eq!(res.status, StatusCode::OK);
+    assert_eq!(res.body["page"], 2);
+    assert_eq!(res.body["total_pages"], 7);
+    assert!(res.body.get("filtered_from").is_none());
 }
 
 #[tokio::test]
@@ -252,7 +288,7 @@ async fn search_multi_filters_year_locally_and_requires_all_genres() {
         .and(path("/3/search/multi"))
         .and(query_param_is_missing("year"))
         .respond_with(ResponseTemplate::new(200).set_body_json(search_page()))
-        .expect(1)
+        .expect(3) // filtered: TMDB pages 1-3; the unfiltered request below reuses page 1
         .mount(&t.tmdb)
         .await;
 
@@ -348,6 +384,10 @@ async fn search_bad_input_is_400_with_detail() {
         "/tmdb/search?query=x&genres=28,abc",
         "/tmdb/search?query=x&min_rating=11",
         "/tmdb/search?query=x&year=abc",
+        "/tmdb/search?query=x&page=0",
+        "/tmdb/search?query=x&page=501",
+        "/tmdb/search?query=x&page=200&min_rating=7", // filtered searches stop at 500 / 3
+        "/tmdb/search?query=%20%20",
         "/tmdb/search",
     ] {
         let res = t.get(uri).await;
@@ -372,8 +412,70 @@ async fn upstream_errors_pass_status_and_body_through() {
     for _ in 0..2 {
         let res = t.get("/tmdb/movie/999999").await;
         assert_eq!(res.status, StatusCode::NOT_FOUND);
-        assert_eq!(res.body, json!({"detail": body}));
+        assert_eq!(
+            res.body,
+            json!({"detail": "The resource you requested could not be found."})
+        );
         assert!(res.headers.get(header::CACHE_CONTROL).is_none());
+    }
+}
+
+#[tokio::test]
+async fn upstream_auth_and_server_errors_are_hidden() {
+    let t = TestApp::new().await;
+    Mock::given(method("GET"))
+        .and(path("/3/movie/1"))
+        .respond_with(ResponseTemplate::new(401).set_body_string(
+            r#"{"status_code":7,"status_message":"Invalid API key: You must be granted a valid key."}"#,
+        ))
+        .mount(&t.tmdb)
+        .await;
+    Mock::given(method("GET"))
+        .and(path("/3/movie/2"))
+        .respond_with(ResponseTemplate::new(429))
+        .mount(&t.tmdb)
+        .await;
+    let res = t.get("/tmdb/movie/1").await;
+    assert_eq!(res.status, StatusCode::BAD_GATEWAY);
+    assert!(!res.body["detail"].as_str().unwrap().contains("API key"));
+    let res = t.get("/tmdb/movie/2").await;
+    assert_eq!(res.status, StatusCode::SERVICE_UNAVAILABLE);
+}
+
+#[tokio::test]
+async fn list_and_discover_reject_bad_input_without_calling_tmdb() {
+    let t = TestApp::new().await;
+    for uri in [
+        "/tmdb/popular?page=0",
+        "/tmdb/movie/top_rated?page=501",
+        "/tmdb/movie/550/similar?page=9999",
+        "/tmdb/discover/movie?sort_by=bogus.desc",
+        "/tmdb/discover/tv?sort_by=revenue.desc",
+        "/tmdb/discover/movie?with_genres=28;1",
+        "/tmdb/discover/movie?min_rating=-2",
+    ] {
+        let res = t.get(uri).await;
+        assert_eq!(res.status, StatusCode::BAD_REQUEST, "{uri}");
+        assert!(res.body["detail"].is_string(), "{uri}");
+    }
+    assert!(t.tmdb.received_requests().await.unwrap().is_empty());
+}
+
+#[tokio::test]
+async fn slow_changing_routes_get_longer_cache_lifetimes() {
+    let t = TestApp::new().await;
+    Mock::given(method("GET"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({"ok": true})))
+        .mount(&t.tmdb)
+        .await;
+    let cases = [
+        ("/tmdb/genres/movie", "public, max-age=86400"),
+        ("/tmdb/person/287", "public, max-age=3600"),
+        ("/tmdb/movie/550", "public, max-age=300"),
+    ];
+    for (uri, expected) in cases {
+        let res = t.get(uri).await;
+        assert_eq!(res.headers[header::CACHE_CONTROL], expected, "{uri}");
     }
 }
 

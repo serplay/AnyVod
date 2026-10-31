@@ -30,7 +30,6 @@ jobs:
       run:
         working-directory: backend
     steps:
-      # Full checkout: tests/contract.rs reads ../frontend/src/api/types.gen.ts.
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:

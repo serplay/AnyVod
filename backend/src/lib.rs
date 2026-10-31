@@ -4,6 +4,7 @@ pub mod config;
 pub mod cors;
 pub mod error;
 pub mod extract;
+pub mod ratelimit;
 pub mod state;
 pub mod tmdb;
 pub mod vidsrc;
@@ -13,7 +14,7 @@ use std::time::Duration;
 use axum::{
     Json, Router,
     http::{HeaderValue, Method, StatusCode, header},
-    middleware::map_response,
+    middleware::{from_fn_with_state, map_response},
     response::{IntoResponse, Response},
     routing::get,
 };
@@ -30,8 +31,9 @@ pub const CACHE_CONTROL_VALUE: &str = "public, max-age=300";
 /// Builds the full application router.
 pub fn router(state: AppState) -> Router {
     let cors = cors::CorsConfig::from_config(&state.config).layer();
+    let rate_limit = state.config.rate_limit;
 
-    Router::new()
+    let app = Router::new()
         .route("/", get(root))
         .route("/health", get(health))
         .nest(
@@ -43,16 +45,24 @@ pub fn router(state: AppState) -> Router {
             vidsrc::router().layer(map_response(cache_control)),
         )
         .fallback(not_found)
-        .with_state(state)
-        // Innermost first: timeout, JSON-ify its empty 504, compress, CORS, trace.
-        .layer(TimeoutLayer::with_status_code(
-            StatusCode::GATEWAY_TIMEOUT,
-            REQUEST_TIMEOUT,
-        ))
-        .layer(map_response(timeout_body))
-        .layer(CompressionLayer::new())
-        .layer(cors)
-        .layer(TraceLayer::new_for_http())
+        .with_state(state);
+    // Innermost, so a 429 still gets compression and CORS headers the browser can read.
+    let app = match rate_limit {
+        Some(limit) => app.layer(from_fn_with_state(
+            ratelimit::RateLimiter::new(limit),
+            ratelimit::limit,
+        )),
+        None => app,
+    };
+    // Innermost first: timeout, JSON-ify its empty 504, compress, CORS, trace.
+    app.layer(TimeoutLayer::with_status_code(
+        StatusCode::GATEWAY_TIMEOUT,
+        REQUEST_TIMEOUT,
+    ))
+    .layer(map_response(timeout_body))
+    .layer(CompressionLayer::new())
+    .layer(cors)
+    .layer(TraceLayer::new_for_http())
 }
 
 async fn root() -> Json<serde_json::Value> {

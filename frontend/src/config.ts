@@ -14,3 +14,9 @@ export const DEFAULT_DESCRIPTION =
   'Stream your favorite movies and TV shows for free. Discover trending films, popular series, and explore a vast library of entertainment content.'
 
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`
+
+/**
+ * Origin of the embed provider the player iframes load (no trailing slash). Override with
+ * `VITE_EMBED_BASE`; keep the CSP `frame-src` in render.yaml and nginx.conf in step with it.
+ */
+export const EMBED_BASE: string = (import.meta.env.VITE_EMBED_BASE || 'https://vidsrc.sh').replace(/\/+$/, '')

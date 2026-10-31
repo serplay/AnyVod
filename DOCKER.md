@@ -4,7 +4,7 @@
 
 - **`backend/Dockerfile`**: a multi-stage build. It uses [cargo-chef](https://github.com/LukeMathWalker/cargo-chef), so dependency layers are cached, and produces a single static-ish binary. The binary runs on `gcr.io/distroless/cc-debian12:nonroot` as a non-root user.
   - The image has no shell or curl. The health check runs `anyvod-backend --healthcheck` instead, which calls `GET /health`.
-- **`frontend/Dockerfile`**: builds the app with Node 22, then serves `dist/` from nginx (`frontend/nginx.conf`). nginx handles SPA routing, sends security headers including a CSP, and caches hashed `/assets/` files forever.
+- **`frontend/Dockerfile`**: builds the app with Node 22, then serves `dist/` from nginx (`frontend/nginx.conf`). nginx handles SPA routing, sends the security headers in `frontend/security-headers.conf` (including a CSP), and caches hashed `/assets/` files forever.
   - `VITE_API_BASE` is a build argument. Leave it empty to call the API on the same origin.
 
 ## Development
@@ -49,4 +49,5 @@ docker compose build --no-cache backend
 
 - **Backend exits immediately:** `TMDB_API_KEY` is missing. Compose refuses to start without it.
 - **CORS errors in the browser:** add the frontend's origin to `FRONTEND_ORIGIN`.
-- **Player iframe blocked:** if you change `VIDSRC_EMBED_DOMAIN`, update `frame-src` in `frontend/nginx.conf` to match. Providers also redirect between domains (currently `vidsrc-embed.ru` → `vidsrc.sh`); every domain in the chain must be listed.
+- **Player iframe blocked:** the frontend loads embeds from `VITE_EMBED_BASE` (default `https://vidsrc.sh`). If you change it, update `frame-src` in `frontend/security-headers.conf` to match. If the provider redirects between domains, every domain in the chain must be listed.
+- **API calls blocked:** the CSP's `connect-src` allows `http://localhost:8000`. If you build with a different `VITE_API_BASE`, change it in `frontend/security-headers.conf`.

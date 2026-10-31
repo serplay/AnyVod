@@ -16,5 +16,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    // One jsdom per worker instead of per file; each file still gets its own module scope.
+    pool: 'vmThreads',
   },
 })

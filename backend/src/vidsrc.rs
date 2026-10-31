@@ -9,7 +9,7 @@ use serde_json::{Value, json};
 
 use crate::{
     error::{AppError, AppResult},
-    extract::{Path, Query, opt_parse},
+    extract::{Path, Query, checked_page, opt_parse},
     state::AppState,
 };
 
@@ -17,6 +17,8 @@ pub const LATEST_TIMEOUT: Duration = Duration::from_secs(10);
 pub const AVAILABILITY_TIMEOUT: Duration = Duration::from_secs(15);
 pub const LATEST_TTL: Duration = Duration::from_secs(5 * 60);
 pub const AVAILABILITY_TTL: Duration = Duration::from_secs(30 * 60);
+/// Sanity cap on `/latest` pages; vidsrc's lists are far shorter.
+pub const MAX_LATEST_PAGE: u32 = 10_000;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EmbedKind {
@@ -202,7 +204,7 @@ impl VidsrcClient {
                 let status = resp.status();
                 if !status.is_success() {
                     let body = resp.text().await.unwrap_or_default();
-                    return Err(AppError::Upstream { status, body });
+                    return Err(AppError::from_upstream("vidsrc", status, &body));
                 }
                 let v: Value = resp
                     .json()
@@ -343,7 +345,10 @@ async fn latest_movies(
     Query(q): Query<LatestQuery>,
 ) -> AppResult<Json<Arc<Value>>> {
     Ok(Json(
-        state.vidsrc.latest("movies", q.page.unwrap_or(1)).await?,
+        state
+            .vidsrc
+            .latest("movies", checked_page(q.page, MAX_LATEST_PAGE)?)
+            .await?,
     ))
 }
 
@@ -352,7 +357,10 @@ async fn latest_tvshows(
     Query(q): Query<LatestQuery>,
 ) -> AppResult<Json<Arc<Value>>> {
     Ok(Json(
-        state.vidsrc.latest("tvshows", q.page.unwrap_or(1)).await?,
+        state
+            .vidsrc
+            .latest("tvshows", checked_page(q.page, MAX_LATEST_PAGE)?)
+            .await?,
     ))
 }
 

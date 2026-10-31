@@ -3,7 +3,6 @@ import { apiGet } from './client'
 import type {
   Availability,
   CategoryPath,
-  EmbedResponse,
   GenreList,
   MediaDetails,
   MediaKind,
@@ -24,8 +23,6 @@ export const queryKeys = {
   details: (kind: MediaKind, id: Id) => ['details', kind, String(id)] as const,
   similar: (kind: MediaKind, id: Id) => ['similar', kind, String(id)] as const,
   season: (tvId: Id, n: number) => ['season', String(tvId), n] as const,
-  embed: (kind: MediaKind, id: Id, season?: number, episode?: number) =>
-    ['embed', kind, String(id), season ?? null, episode ?? null] as const,
   availability: (kind: MediaKind, id: Id) => ['availability', kind, String(id)] as const,
   search: (params: SearchParams) => ['search', params] as const,
   genres: (kind: MediaKind) => ['genres', kind] as const,
@@ -65,20 +62,6 @@ export function useSeason(tvId: Id | undefined, n: number | null | undefined) {
   return useQuery({
     ...seasonQueryOptions(tvId ?? '', n ?? -1),
     enabled: hasId(tvId) && typeof n === 'number' && n >= 0,
-  })
-}
-
-export function useEmbed(kind: MediaKind, id: Id | undefined, season?: number, episode?: number) {
-  const withEpisode = kind === 'tv' && season !== undefined && episode !== undefined
-  return useQuery({
-    queryKey: queryKeys.embed(kind, id ?? '', withEpisode ? season : undefined, withEpisode ? episode : undefined),
-    queryFn: ({ signal }) =>
-      apiGet<EmbedResponse>(
-        `/vidsrc/embed/${kind}`,
-        withEpisode ? { tmdb: id, season, episode } : { tmdb: id },
-        signal,
-      ),
-    enabled: hasId(id),
   })
 }
 

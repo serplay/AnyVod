@@ -16,7 +16,8 @@ import {
 } from '../components/icons'
 import { truncate } from '../lib/seo'
 import NotFound from './NotFound'
-import { seasonQueryOptions, useDetails, useEmbed, useSeason } from '../api/hooks'
+import { seasonQueryOptions, useDetails, useSeason } from '../api/hooks'
+import { embedUrl } from '../lib/embed'
 import type { MediaKind } from '../api/types'
 import {
   displayTitle,
@@ -217,7 +218,7 @@ function PlayerShell({ className = '', title, subtitle, onExit, onReload, action
 
 function MoviePlayer({ id }: { id: number }) {
   const { data: details } = useDetails('movie', id)
-  const embedQuery = useEmbed('movie', id)
+  const src = embedUrl('movie', id)
   const onExit = useExitPlayer('movie', id)
   const [reloadToken, setReloadToken] = useState(0)
   const movieTitle = details ? displayTitle(details) : ''
@@ -245,16 +246,14 @@ function MoviePlayer({ id }: { id: number }) {
             name={movieTitle}
             description={`Watch ${movieTitle} online`}
             thumbnailUrl={tmdbImageFor(details?.poster_path, 'poster', 'large')}
-            embedUrl={embedQuery.data?.embed_url || window.location.href}
+            embedUrl={src}
             type="movie"
           />
         </>
       }
     >
       <PlayerFrame
-        embed={embedQuery.data}
-        error={embedQuery.error}
-        onRetry={() => void embedQuery.refetch()}
+        src={src}
         title={`Player: ${movieTitle || 'movie'}`}
         backdropUrl={tmdbImageFor(details?.backdrop_path, 'backdrop', 'medium')}
         reloadToken={reloadToken}
@@ -268,7 +267,7 @@ function TvPlayer({ id, current }: { id: number; current: EpisodeRef }) {
   const queryClient = useQueryClient()
   const { data: tvDetails } = useDetails('tv', id)
   const { data: seasonData } = useSeason(id, current.season)
-  const embedQuery = useEmbed('tv', id, current.season, current.episode)
+  const src = embedUrl('tv', id, current.season, current.episode)
   const onExit = useExitPlayer('tv', id)
   const [reloadToken, setReloadToken] = useState(0)
   const [panelCollapsed, togglePanel] = usePanelCollapsed()
@@ -376,7 +375,7 @@ function TvPlayer({ id, current }: { id: number; current: EpisodeRef }) {
             description={episodeData?.overview || `Watch ${showTitle} Season ${season} Episode ${episode}`}
             thumbnailUrl={tmdbImageFor(tvDetails?.poster_path, 'poster', 'large')}
             uploadDate={episodeData?.air_date ?? undefined}
-            embedUrl={embedQuery.data?.embed_url || window.location.href}
+            embedUrl={src}
             type="tv"
             seasonNumber={season}
             episodeNumber={episode}
@@ -387,9 +386,7 @@ function TvPlayer({ id, current }: { id: number; current: EpisodeRef }) {
       }
     >
       <PlayerFrame
-        embed={embedQuery.data}
-        error={embedQuery.error}
-        onRetry={() => void embedQuery.refetch()}
+        src={src}
         title={`Player: ${episodeTitle}`}
         backdropUrl={tmdbImageFor(tvDetails?.backdrop_path, 'backdrop', 'medium')}
         reloadToken={reloadToken}

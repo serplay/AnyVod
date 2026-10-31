@@ -10,7 +10,29 @@ use crate::error::{AppError, AppResult};
 pub const TMDB_TIMEOUT: Duration = Duration::from_secs(10);
 pub const DEFAULT_TTL: Duration = Duration::from_secs(10 * 60);
 pub const LONG_TTL: Duration = Duration::from_secs(24 * 60 * 60);
-const MAX_ENTRIES: u64 = 10_000;
+/// Cache budgets in bytes of upstream JSON. A parsed `serde_json::Value` takes roughly 2-4x
+/// its JSON size, so 40 MB of JSON stays well inside a 512 MB instance. Detail responses
+/// (credits + images + videos) can be 50-200 KB each, which is why the budget is by size.
+pub const CACHE_BYTES: u64 = 40 * 1024 * 1024;
+pub const LONG_CACHE_BYTES: u64 = 2 * 1024 * 1024;
+
+/// A cached upstream body plus its JSON size, used as the cache weight.
+#[derive(Clone)]
+struct Cached {
+    value: Arc<Value>,
+    weight: u32,
+}
+
+fn sized_cache(max_bytes: u64, ttl: Duration) -> Cache<String, Cached> {
+    Cache::builder()
+        .weigher(|key: &String, v: &Cached| {
+            v.weight
+                .saturating_add(u32::try_from(key.len()).unwrap_or(u32::MAX))
+        })
+        .max_capacity(max_bytes)
+        .time_to_live(ttl)
+        .build()
+}
 
 /// How long a successful response may be served from cache.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -26,8 +48,8 @@ pub struct TmdbClient {
     http: reqwest::Client,
     base_url: String,
     api_key: String,
-    cache: Cache<String, Arc<Value>>,
-    long_cache: Cache<String, Arc<Value>>,
+    cache: Cache<String, Cached>,
+    long_cache: Cache<String, Cached>,
 }
 
 impl TmdbClient {
@@ -40,14 +62,8 @@ impl TmdbClient {
             http,
             base_url: base_url.into().trim_end_matches('/').to_string(),
             api_key: api_key.into(),
-            cache: Cache::builder()
-                .max_capacity(MAX_ENTRIES)
-                .time_to_live(DEFAULT_TTL)
-                .build(),
-            long_cache: Cache::builder()
-                .max_capacity(1_000)
-                .time_to_live(LONG_TTL)
-                .build(),
+            cache: sized_cache(CACHE_BYTES, DEFAULT_TTL),
+            long_cache: sized_cache(LONG_CACHE_BYTES, LONG_TTL),
         }
     }
 
@@ -72,10 +88,11 @@ impl TmdbClient {
         cache
             .try_get_with(key, self.fetch(path, params))
             .await
+            .map(|c| c.value)
             .map_err(|e| (*e).clone())
     }
 
-    async fn fetch(&self, path: &str, params: &[(&str, String)]) -> AppResult<Arc<Value>> {
+    async fn fetch(&self, path: &str, params: &[(&str, String)]) -> AppResult<Cached> {
         let url = format!("{}{}", self.base_url, path);
         tracing::debug!(%url, ?params, "tmdb request");
         let resp = self
@@ -91,13 +108,18 @@ impl TmdbClient {
         let status = resp.status();
         if !status.is_success() {
             let body = resp.text().await.unwrap_or_default();
-            return Err(AppError::Upstream { status, body });
+            return Err(AppError::from_upstream("TMDB", status, &body));
         }
-        let value: Value = resp
-            .json()
+        let bytes = resp
+            .bytes()
             .await
             .map_err(|e| AppError::from_transport(&e.without_url()))?;
-        Ok(Arc::new(value))
+        let value: Value = serde_json::from_slice(&bytes)
+            .map_err(|e| AppError::BadGateway(format!("invalid upstream response: {e}")))?;
+        Ok(Cached {
+            value: Arc::new(value),
+            weight: u32::try_from(bytes.len()).unwrap_or(u32::MAX),
+        })
     }
 }
 

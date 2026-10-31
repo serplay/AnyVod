@@ -2,6 +2,8 @@
 
 use std::env;
 
+use crate::ratelimit::RateLimit;
+
 pub const DEFAULT_TMDB_BASE_URL: &str = "https://api.themoviedb.org/3";
 pub const DEFAULT_VIDSRC_EMBED_DOMAIN: &str = "vidsrc.sh";
 pub const DEFAULT_PORT: u16 = 8000;
@@ -12,6 +14,8 @@ pub enum ConfigError {
     MissingTmdbApiKey,
     #[error("PORT is not a valid port number: {0}")]
     InvalidPort(String),
+    #[error("{0} must be a non-negative number, got {1:?}")]
+    InvalidNumber(&'static str, String),
 }
 
 #[derive(Debug, Clone)]
@@ -27,6 +31,9 @@ pub struct Config {
     pub frontend_origins: Vec<String>,
     pub environment: String,
     pub port: u16,
+    /// Per-client-IP limit, from `RATE_LIMIT_PER_SEC` / `RATE_LIMIT_BURST`. `None` when either
+    /// is set to 0.
+    pub rate_limit: Option<RateLimit>,
 }
 
 impl Config {
@@ -64,7 +71,23 @@ impl Config {
             None => DEFAULT_PORT,
         };
 
+        let number = |key: &'static str| -> Result<Option<f64>, ConfigError> {
+            match non_empty(key) {
+                None => Ok(None),
+                Some(v) => match v.parse::<f64>() {
+                    Ok(n) if n.is_finite() && n >= 0.0 => Ok(Some(n)),
+                    _ => Err(ConfigError::InvalidNumber(key, v)),
+                },
+            }
+        };
+        let per_second = number("RATE_LIMIT_PER_SEC")?.unwrap_or(RateLimit::DEFAULT.per_second);
+        let burst = number("RATE_LIMIT_BURST")?
+            .map(|b| b.min(f64::from(u32::MAX)) as u32)
+            .unwrap_or(RateLimit::DEFAULT.burst);
+        let rate_limit = (per_second > 0.0 && burst > 0).then_some(RateLimit { per_second, burst });
+
         Ok(Self {
+            rate_limit,
             tmdb_api_key,
             tmdb_base_url,
             vidsrc_embed_domain,
@@ -120,6 +143,30 @@ mod tests {
         assert_eq!(c.environment, "development");
         assert_eq!(c.port, 8000);
         assert!(c.frontend_origins.is_empty());
+        assert_eq!(c.rate_limit, Some(RateLimit::DEFAULT));
+    }
+
+    #[test]
+    fn rate_limit_settings() {
+        let c = cfg(&[
+            ("TMDB_API_KEY", "k"),
+            ("RATE_LIMIT_PER_SEC", "2.5"),
+            ("RATE_LIMIT_BURST", "20"),
+        ])
+        .unwrap();
+        assert_eq!(
+            c.rate_limit,
+            Some(RateLimit {
+                per_second: 2.5,
+                burst: 20
+            })
+        );
+        let off = cfg(&[("TMDB_API_KEY", "k"), ("RATE_LIMIT_PER_SEC", "0")]).unwrap();
+        assert_eq!(off.rate_limit, None);
+        assert!(matches!(
+            cfg(&[("TMDB_API_KEY", "k"), ("RATE_LIMIT_BURST", "-1")]),
+            Err(ConfigError::InvalidNumber(..))
+        ));
     }
 
     #[test]

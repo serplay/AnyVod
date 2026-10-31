@@ -3,13 +3,12 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { QueryClient, QueryClientProvider, type UseQueryResult } from '@tanstack/react-query'
 import PlayerRoute from './PlayerPage'
-import { useDetails, useEmbed, useSeason } from '../api/hooks'
-import type { EmbedResponse, MediaDetails, SeasonDetails } from '../api/types'
+import { useDetails, useSeason } from '../api/hooks'
+import type { MediaDetails, SeasonDetails } from '../api/types'
 import { loadLastEpisode, saveLastEpisode } from '../lib/episodes'
 
 vi.mock('../api/hooks', () => ({
   useDetails: vi.fn(),
-  useEmbed: vi.fn(),
   useSeason: vi.fn(),
   seasonQueryOptions: vi.fn(),
 }))
@@ -73,17 +72,13 @@ describe('PlayerPage', () => {
     episodeCounts = { 1: 3, 2: 2 }
     vi.mocked(useDetails).mockReturnValue(result(details))
     vi.mocked(useSeason).mockImplementation((_id, n) => result(seasonOf(n as number, episodeCounts[n as number] ?? 0)))
-    vi.mocked(useEmbed).mockImplementation((kind, id, s, e) =>
-      result<EmbedResponse>({ embed_url: `https://embed.example/${kind}/${id}/${s}/${e}` }),
-    )
   })
 
-  it('requests a new embed when the URL episode changes', () => {
+  it('loads a new embed when the URL episode changes', () => {
     renderAt('/player/tv/42/1/1')
 
-    expect(useEmbed).toHaveBeenLastCalledWith('tv', 42, 1, 1)
     const frame = screen.getByTitle('Player: The Show S1E1')
-    expect(frame).toHaveAttribute('src', 'https://embed.example/tv/42/1/1')
+    expect(frame).toHaveAttribute('src', 'https://vidsrc.sh/embed/tv/42/1/1')
     expect(frame).toHaveAttribute('allow', 'fullscreen; autoplay; encrypted-media; picture-in-picture')
     expect(frame).toHaveAttribute('referrerpolicy', 'origin')
 
@@ -93,8 +88,7 @@ describe('PlayerPage', () => {
     expect(links[0]).toHaveAttribute('href', '/player/tv/42/1/2')
     fireEvent.click(links[0]!)
 
-    expect(useEmbed).toHaveBeenLastCalledWith('tv', 42, 1, 2)
-    expect(screen.getByTitle('Player: The Show S1E2')).toHaveAttribute('src', 'https://embed.example/tv/42/1/2')
+    expect(screen.getByTitle('Player: The Show S1E2')).toHaveAttribute('src', 'https://vidsrc.sh/embed/tv/42/1/2')
     expect(screen.getByRole('link', { name: /S1 name 2/ })).toHaveAttribute('aria-current', 'page')
   })
 
@@ -120,7 +114,7 @@ describe('PlayerPage', () => {
     fireEvent.change(screen.getByLabelText('Season'), { target: { value: '2' } })
 
     expect(location()).toBe('/player/tv/42/1/2')
-    expect(useEmbed).toHaveBeenLastCalledWith('tv', 42, 1, 2)
+    expect(document.querySelector('iframe')).toHaveAttribute('src', 'https://vidsrc.sh/embed/tv/42/1/2')
     expect(screen.getByRole('link', { name: /S2 name 1/ })).toHaveAttribute('href', '/player/tv/42/2/1')
     expect(screen.queryByRole('link', { name: /S1 name/ })).toBeNull()
   })
@@ -154,12 +148,12 @@ describe('PlayerPage', () => {
     saveLastEpisode(42, { season: 2, episode: 2 })
     renderAt('/player/tv/42')
     expect(location()).toBe('/player/tv/42/2/2')
-    expect(useEmbed).toHaveBeenLastCalledWith('tv', 42, 2, 2)
+    expect(document.querySelector('iframe')).toHaveAttribute('src', 'https://vidsrc.sh/embed/tv/42/2/2')
   })
 
   it('starts at S1E1 without a saved episode', () => {
     renderAt('/player/tv/42')
-    expect(useEmbed).toHaveBeenLastCalledWith('tv', 42, 1, 1)
+    expect(document.querySelector('iframe')).toHaveAttribute('src', 'https://vidsrc.sh/embed/tv/42/1/1')
   })
 
   it('goes back in history when the player was opened from the app', () => {
@@ -180,7 +174,7 @@ describe('PlayerPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Reload player' }))
     const after = screen.getByTitle('Player: The Show S1E1')
     expect(after).not.toBe(before)
-    expect(after).toHaveAttribute('src', 'https://embed.example/tv/42/1/1')
+    expect(after).toHaveAttribute('src', 'https://vidsrc.sh/embed/tv/42/1/1')
   })
 
   it('remembers whether the episode panel is collapsed', () => {
