@@ -48,7 +48,7 @@ The fields used on list items are:
 
 ### Detail routes
 
-`/movie/{id}` and `/tv/{id}` call TMDB with `append_to_response=credits,images,videos`.
+`/movie/{id}` and `/tv/{id}` call TMDB with `append_to_response=credits,videos,external_ids`.
 
 The fields used are:
 - `id`, `title`, `name`, `overview`, `poster_path`, `backdrop_path`
@@ -57,7 +57,8 @@ The fields used are:
 - `runtime`, `episode_run_time[]`
 - `number_of_seasons`, `seasons[{season_number,name,episode_count}]`
 - `external_ids?`, `imdb_id?`
-- `videos.results[{type,site,key}]`
+- `videos.results[{type,site,key,name,published_at}]`
+- `credits.cast[{id,name,character,profile_path}]`, `credits.crew[{id,name,job}]` (directors), `created_by[{id,name}]` (TV)
 - `credits.cast[{id,name,character,profile_path}]`
 
 ### Season route

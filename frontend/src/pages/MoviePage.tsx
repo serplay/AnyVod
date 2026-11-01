@@ -3,7 +3,10 @@ import { useParams, Link } from 'react-router'
 import OptimizedImage, { ProfileImage } from '../components/OptimizedImage'
 import PosterCard, { GRID_POSTER_SIZES, Rating } from '../components/PosterCard'
 import EpisodeRow, { SeasonSelect } from '../components/EpisodeRow'
-import VideoSchema from '../components/VideoSchema'
+import JsonLd from '../components/JsonLd'
+import { titleJsonLd } from '../lib/schema'
+import { titleSeoDescription, titleSeoTitle } from '../lib/seoText'
+import { SITE_NAME, SITE_URL } from '../config'
 import Seo from '../components/Seo'
 import { ErrorState } from '../components/states'
 import { CloseIcon, PlayIcon } from '../components/icons'
@@ -25,7 +28,6 @@ import {
   tmdbImageFor,
 } from '../lib/media'
 import { episodeLabel, episodePath, loadLastEpisode } from '../lib/episodes'
-import { truncate } from '../lib/seo'
 
 const SIMILAR_LIMIT = 12
 const CAST_LIMIT = 24
@@ -135,7 +137,7 @@ function MoviePage({ kind, id }: { kind: MediaKind; id: number }) {
 
   const title = details ? displayTitle(details) : ''
   const year = formatYear(details ? releaseDate(details) : undefined)
-  const seoTitle = details ? (year ? `${title} (${year})` : title) : isTv ? 'TV Show' : 'Movie'
+  const seoTitle = details ? titleSeoTitle(kind, details) : isTv ? 'TV Show' : 'Movie'
   const length = isTv
     ? details?.number_of_seasons
       ? `${details.number_of_seasons} ${details.number_of_seasons === 1 ? 'season' : 'seasons'}`
@@ -153,24 +155,12 @@ function MoviePage({ kind, id }: { kind: MediaKind; id: number }) {
     <>
       <Seo
         title={seoTitle}
-        description={truncate(details?.overview) || undefined}
+        description={details ? titleSeoDescription(kind, details) : undefined}
         path={`/${kind}/${id}`}
         image={tmdbImage(details?.poster_path ?? details?.backdrop_path, 'w780')}
         type={isTv ? 'video.tv_show' : 'video.movie'}
       />
-      {details ? (
-        <VideoSchema
-          name={title}
-          description={details.overview}
-          thumbnailUrl={
-            tmdbImageFor(details.backdrop_path, 'backdrop', 'large') ?? tmdbImageFor(details.poster_path, 'poster', 'large')
-          }
-          uploadDate={releaseDate(details)}
-          duration={details.runtime ?? details.episode_run_time?.[0]}
-          embedUrl={`${window.location.origin}/player/${kind}/${id}`}
-          type={kind}
-        />
-      ) : null}
+      {details ? <JsonLd data={titleJsonLd(kind, details, SITE_URL, SITE_NAME)} /> : null}
 
       <div className="stage-page">
         <Stage

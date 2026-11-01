@@ -48,10 +48,16 @@ services:
       # makes the app call its own host, which answers every API path with index.html).
       - key: VITE_API_BASE
         value: https://vapi.losingsanity.com
+      # The postbuild step prerenders popular titles and the sitemap from this API
+      # (frontend/scripts/prerender.ts). Unset, the build skips prerendering.
+      - key: PRERENDER_API_BASE
+        value: https://vapi.losingsanity.com
+    # Existing files (/, prerendered /movie/{id} and /tv/{id}, assets) are served as they are;
+    # every other route gets the untouched SPA shell that the postbuild step writes to app.html.
     routes:
       - type: rewrite
         source: /*
-        destination: /index.html
+        destination: /app.html
     # Security headers for every path (the SPA rewrite serves index.html under all of them).
     # Keep the CSP in step with frontend/security-headers.conf (self-hosted nginx), with
     # VITE_API_BASE (connect-src) and with the embed provider (frame-src, see src/config.ts).

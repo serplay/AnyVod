@@ -52,11 +52,23 @@ npm run typecheck && npm run lint && npm test
 | `RATE_LIMIT_BURST` | backend | `60` | Requests a client may burst before being limited. `0` disables rate limiting. |
 | `VITE_API_BASE` | frontend (build time) | dev: `http://localhost:8000`; prod: same origin | Base URL of the backend. |
 | `VITE_EMBED_BASE` | frontend (build time) | `https://vidsrc.sh` | Origin of the player embeds. If you change it, update `frame-src` in the CSP (`render.yaml`, `frontend/security-headers.conf`). |
+| `PRERENDER_API_BASE` | frontend (build time) | – | Backend origin the `postbuild` step prerenders from (see below). Unset, prerendering is skipped. |
+| `PRERENDER_PAGES` | frontend (build time) | `3` | List pages per source to prerender (about 20 titles each). |
 
 ## Deployment
 
 - **Render** (production): `render.yaml` defines the backend (a prebuilt GHCR image, health check on `/health`) and the frontend (a static site with the SPA rewrite and security headers, including the CSP).
 - **Docker** (self-hosting): `docker compose -f docker-compose.prod.yml up -d --build` serves the frontend on port 80 and the API on port 8000. See [DOCKER.md](DOCKER.md).
+
+### Search engines
+
+The app is a client-side SPA, so `npm run build` ends with `scripts/prerender.ts` (when `PRERENDER_API_BASE` is set; Render sets it). It fetches trending, popular and top-rated titles and writes:
+- `dist/{movie,tv}/{id}/index.html`: the page's real title, description, canonical URL, Open Graph tags, `Movie`/`TVSeries` JSON-LD, readable content, and the detail data as a React Query seed, so the page renders without waiting for the API;
+- `dist/index.html`: the home page with links to every prerendered title;
+- `dist/sitemap.xml`: every prerendered URL (`public/sitemap.xml` is only the fallback);
+- `dist/app.html`: the plain SPA shell, which Render serves for every other route.
+
+Titles that aren't prerendered still get the same tags and JSON-LD once the app renders.
 
 CI (`.github/workflows/ci.yml`) runs the following on each push and pull request:
 - backend: `cargo fmt`, `clippy` and tests

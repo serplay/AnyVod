@@ -44,7 +44,7 @@ impl IntoResponseParts for CacheFor {
     }
 }
 
-const DETAIL_APPEND: &str = "credits,images,videos";
+const DETAIL_APPEND: &str = "credits,videos,external_ids";
 
 #[derive(Debug, Clone, Copy, Deserialize)]
 #[serde(rename_all = "snake_case")]

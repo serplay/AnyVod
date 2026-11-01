@@ -46,6 +46,14 @@ export interface Video {
   type: string
   site: string
   key: string
+  name?: string
+  published_at?: string
+}
+
+export interface CrewMember {
+  id: number
+  name: string
+  job?: string
 }
 
 export interface CastMember {
@@ -85,7 +93,8 @@ export interface MediaDetails {
   external_ids?: ExternalIds
   imdb_id?: string | null
   videos?: { results: Video[] }
-  credits?: { cast: CastMember[] }
+  credits?: { cast: CastMember[]; crew?: CrewMember[] }
+  created_by?: { id: number; name: string }[]
 }
 
 export interface Episode {
@@ -115,6 +124,7 @@ export interface Person {
   deathday: string | null
   place_of_birth: string | null
   known_for_department: string | null
+  imdb_id?: string | null
 }
 
 export interface PersonCredit {

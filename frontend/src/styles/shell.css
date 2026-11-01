@@ -194,3 +194,31 @@
     grid-column: 1 / -1;
   }
 }
+
+/* ---------- Prerendered content ----------
+ * Plain HTML that scripts/prerender.ts puts in #root for crawlers and the first paint;
+ * React replaces it on its first render. */
+.prerender {
+  max-width: 72ch;
+  padding: calc(var(--bar-h) + 24px) var(--gutter) var(--section);
+  color: var(--muted);
+}
+
+.prerender h1 {
+  font-size: var(--fs-head);
+  color: var(--ink);
+}
+
+.prerender h2 {
+  margin-top: var(--section);
+  font-size: var(--fs-lead);
+  color: var(--ink);
+}
+
+.prerender a {
+  color: var(--ink);
+}
+
+.prerender ul {
+  padding-left: 1.2em;
+}

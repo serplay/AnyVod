@@ -45,7 +45,7 @@ async fn trending_rejects_unknown_media_type() {
 }
 
 #[tokio::test]
-async fn detail_routes_append_credits_images_videos() {
+async fn detail_routes_append_credits_videos_external_ids() {
     let t = TestApp::new().await;
     for (route, upstream) in [
         ("/tmdb/movie/550", "/3/movie/550"),
@@ -53,7 +53,7 @@ async fn detail_routes_append_credits_images_videos() {
     ] {
         Mock::given(method("GET"))
             .and(path(upstream))
-            .and(query_param("append_to_response", "credits,images,videos"))
+            .and(query_param("append_to_response", "credits,videos,external_ids"))
             .and(query_param("api_key", API_KEY))
             .respond_with(
                 ResponseTemplate::new(200).set_body_json(json!({"id": 1, "credits": {"cast": []}})),

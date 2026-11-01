@@ -1,3 +1,7 @@
+import JsonLd from '../components/JsonLd'
+import { personJsonLd } from '../lib/schema'
+import { personSeoDescription } from '../lib/seoText'
+import { SITE_NAME, SITE_URL } from '../config'
 import { useParams } from 'react-router'
 import OptimizedImage from '../components/OptimizedImage'
 import PosterCard, { GRID_POSTER_SIZES } from '../components/PosterCard'
@@ -8,7 +12,6 @@ import { usePerson, usePersonCredits } from '../api/hooks'
 import { ApiError } from '../api/client'
 import { itemKey, itemPath, parseNonNegativeInt, tmdbImageFor } from '../lib/media'
 import { topCredits } from '../lib/credits'
-import { truncate } from '../lib/seo'
 
 /** Biographies longer than this start collapsed. */
 const BIO_PREVIEW_CHARS = 600
@@ -65,11 +68,12 @@ export default function PersonPage() {
     <>
       <Seo
         title={person?.name ?? 'Person'}
-        description={truncate(person?.biography) || undefined}
+        description={person ? personSeoDescription(person) : undefined}
         path={`/person/${validId}`}
         image={tmdbImageFor(person?.profile_path, 'profile', 'large')}
         type="profile"
       />
+      {person ? <JsonLd data={personJsonLd(person, SITE_URL, SITE_NAME)} /> : null}
       <div className="stage-page person-page">
         <div className="stage stage-portrait">
           {person?.profile_path ? (
