@@ -53,7 +53,10 @@ async fn detail_routes_append_credits_videos_external_ids() {
     ] {
         Mock::given(method("GET"))
             .and(path(upstream))
-            .and(query_param("append_to_response", "credits,videos,external_ids"))
+            .and(query_param(
+                "append_to_response",
+                "credits,videos,external_ids",
+            ))
             .and(query_param("api_key", API_KEY))
             .respond_with(
                 ResponseTemplate::new(200).set_body_json(json!({"id": 1, "credits": {"cast": []}})),
